@@ -49,7 +49,7 @@ Export-OVResources.ps1 is a PowerShell script that exports OV resources into Exc
    * Server Profiles
 
    * IP addresses used by Synergy components
-   * WWWNN when there are FC networks in profile 
+   * WWN when there are FC networks in profile 
    * Firmware bundles
    * Time & Locale Settings
    * SNMP Settings
