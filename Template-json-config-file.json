@@ -1,0 +1,11 @@
+{                                         
+     "ip":              "192.168.1.51",  
+     "loginAcknowledge": "true",      
+     "credentials" :    {               
+         "userName":    "administrator",         
+         "password":    "password",   
+         "authDomain":  "local"       
+      },                                  
+     "api_version" :     "1200"         
+}                                         
+
