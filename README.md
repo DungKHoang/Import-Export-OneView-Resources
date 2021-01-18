@@ -45,8 +45,8 @@ Export-OVResources.ps1 is a PowerShell script that exports OV resources into Exc
    * Local Storage connections
    * SAN Storage connections
    * iLO settings
-   * Server Profile Templates
-   * Server Profiles
+   * Server Profile Templates with network connections/localStorage/SANStorage/iLO settings
+   * Server Profiles with network connections/localStorage/SANStorage/iLO settings
 
    * IP addresses used by Synergy components
    * WWN when there are FC networks in profile 
@@ -109,8 +109,8 @@ Import-OVResources.ps1 is a PowerShell script that configures OV resources based
    * Network connections
    * Local Storage connections
    * iLO settings
-   * Server Profile Templates
-   * Server Profiles
+   * Server Profile Templates with network connections/localStorage/iLO settings
+   * Server Profiles  with network connections/localStorage/iLO settings
 
    * Backup configuration
    * Firmware bundles
