@@ -151,7 +151,7 @@ The script will:
 * read the corresponding sheeet in Excel file and genearet PowerShell script. The script will be located in the appropriate folder. For example fcnetwork.ps1 will be located under networking
 * create an AllScripts file that points to each individual script
 
-* **NEW** : The import script will generate both **PowerShell Scripts ** and **Ansible playbooks**
+* **NEW** : The import script will generate both **PowerShell Scripts** and **Ansible playbooks**
 The Ansible playbooks are stored under the sub-folder 'ansible_playbook' 
 
 ## Actions
