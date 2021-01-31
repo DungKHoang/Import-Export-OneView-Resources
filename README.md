@@ -123,9 +123,22 @@ Import-OVResources.ps1 is a PowerShell script that configures OV resources based
    * Backup Settings
    * Proxy settings
 
-   | OneView resource | PowerShell script | Ansible playbook |
-   | -----------------|:-----------------:|-----------------:|
-   |  Address Pool    |       **X**       |      **X**        
+   | OneView resource             | PowerShell script | Ansible playbook |
+   | -----------------------------|:-----------------:|-----------------:|
+   |  Address Pool                |       **X**       |     **X**        |
+   |  Ethernet networks           |       **X**       |     **X**        |
+   |  FC/FCOE networks            |       **X**       |     **X**        |
+   |  Network set                 |       **X**       |     **X**        |
+   |  Logical InterConnect Groups |       **X**       |     **X**        |
+   |  Uplink sets                 |       **X**       |     **X**        |
+   |  Enclosure group             |       **X**       |     **X**        |
+   |  Enclosure group             |       **X**       |     **X**        |
+   |  Logical enclosure           |       **X**       |                  |
+   |  Network connections         |       **X**       |     **X**        |
+   |  Local Storage connections   |       **X**       |                  |
+   |  iLO settings in profiles    |       **X**       |     **X**        |
+   |  Server profile - Templates  |       **X**       |     **X**        |
+
 
 
 ## Syntax
