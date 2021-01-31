@@ -96,7 +96,7 @@ will generate Excel files named as : ExportFrom-192.168.1.51.xlsx and ExportFrom
 
 ## Import-OVResources.PS1 
 
-Import-OVResources.ps1 is a PowerShell script that configures OV resources based on Excel sheets including:
+Import-OVResources.ps1 is a PowerShell script that configures OV resources based on Excel sheets. It generates scripts for the follwoing resources:
 
 
    | OneView resource             | PowerShell script | Ansible playbook |
