@@ -27,7 +27,8 @@ $TAB 			= '    '
 
 $Syn12K         = 'SY12000' # Synergy enclosure type
 $MAXLEN 		= 42
-
+$YMLMAXLEN 		= 50
+$indentDataStart = 3
 
 #------------------- Interconnect Types
 $ICTypes         = @{
@@ -129,19 +130,53 @@ $ResourceCategoryEnum = @{
 }
 
 #------------------- Interconnect Types
-[Hashtable]$ICModuleTypes      = $ListofICTypes = @{
-	"VirtualConnectSE40GbF8ModuleforSynergy"    =  "SEVC40f8";
-	"Synergy20GbInterconnectLinkModule"         =  "SE20ILM";
-	"Synergy10GbInterconnectLinkModule"         =  "SE10ILM";
-	"VirtualConnectSE16GbFCModuleforSynergy"    =  "SEVC16GbFC";
-	"Synergy12GbSASConnectionModule"            =  "SE12SAS"
+[Hashtable]$ICModuleTypes               = @{
+	"VirtualConnectSE40GbF8ModuleforSynergy"   =  "SEVC40f8" ;
+	"VirtualConnectSE100GbF32ModuleforSynergy" =  "SEVC100f32" ;
+	"Synergy50GbInterconnectLinkModule"        =  "SE50ILM";
+	"Synergy20GbInterconnectLinkModule"        =  "SE20ILM";
+	"Synergy10GbInterconnectLinkModule"        =  "SE10ILM";
+	"VirtualConnectSE16GbFCModuleforSynergy"   =  "SEVC16GbFC";
+	"VirtualConnectSE32GbFCModuleforSynergy"   =  "SEVC32GbFC";
+	"Synergy12GbSASConnectionModule"           =  "SE12SAS";
+	"571956-B21"                               =  "FlexFabric";
+	"455880-B21"                               =  "Flex10";
+	"638526-B21"                               =  "Flex1010D";
+	"691367-B21"                               =  "Flex2040f8";
+	"572018-B21"                               =  "VCFC20";
+	"466482-B21"                               =  "VCFC24";
+	"641146-B21"                               =  "FEX"
 }
 
-[Hashtable]$FabricModuleTypes  = @{
-	"VirtualConnectSE40GbF8ModuleforSynergy"    =  "SEVC40f8";
+[Hashtable]$ICModuleNameTypes               = @{
+	"SEVC40f8" 									= "Virtual Connect SE 40Gb F8 Module for Synergy";
+	"SEVC100f32" 								= "Virtual Connect SE 100Gb F32 Module for Synergy" ;
+	"SE50ILM"									= "Synergy 50Gb Interconnect Link Module";
+	"SE20ILM"									= "Synergy 20Gb Interconnect Link Module";
+	"SE10ILM"									= "Synergy 10Gb Interconnect Link Module";
+	"SEVC16GbFC"								= "Virtual Connect SE 16Gb FC Module for Synergy";
+	"SEVC32GbFC"								= "Virtual Connect SE 32Gb FC Module for Synergy"
+}
+
+[Hashtable]$FabricModuleTypes           = @{
+	"VirtualConnectSE40GbF8ModuleforSynergy"    =  "SEVC40f8" ;
+	"VirtualConnectSE100GbF32ModuleforSynergy"  =  "SEVC100f32" ;
 	"Synergy12GbSASConnectionModule"            =  "SAS";
 	"VirtualConnectSE16GbFCModuleforSynergy"    =  "SEVCFC";
+	"VirtualConnectSE32GbFCModuleforSynergy"    =  "SEVCFC";
 }
+
+[Hashtable]$ICModuleToFabricModuleTypes = @{
+	"SEVC40f8"                                  = "SEVC40f8" ;
+	"SEVC100f32"                                = "SEV100f32" ;
+	'SE50ILM'                                   = "SEV100f32" ;
+	'SE20ILM'                                   = "SEVC40f8" ;
+	'SE10ILM'                                   = "SEVC40f8" ;
+	"SEVC16GbFC"                                = "SEVCFC" ;
+	"SEVC32GbFC"                                = "SEVCFC" ;
+	"SE12SAS"                                   = "SAS"
+}
+
 
 [Hashtable]$ServerProfileConnectionBootPriorityEnum = @{
 	none           = 'NotBootable';
@@ -243,7 +278,18 @@ $ResourceCategoryEnum = @{
 	'Minimum'		= 'Minimum'
 	}
 
-[HashTable]$iLOPrivilgeParamEnum     = @{
+[Hashtable]$YMLconsistencyCheckingSptEnum  			= @{
+	'None'			= 'UnChecked';
+	'Exact'			= 'Checked';
+	'Minimum'		= 'CheckedMinimum'
+	}
+[Hashtable]$YMLconsistencyCheckingLigEnum  			= @{
+	'None'			= 'NotChecked';
+	'Exact'			= 'ExactMatch';
+	'Minimum'		= 'CheckedMinimum'
+	}
+
+[HashTable]$iLOPrivilegeParamEnum     = @{
 	'userConfigPriv'			= ' -AdministerUserAccounts $True '  ;
 	'remoteConsolePriv'			= ' -RemoteConsole $True '			 ;
 	'virtualMediaPriv'			= ' -VirtualMedia $True '			 ;
@@ -253,6 +299,49 @@ $ResourceCategoryEnum = @{
 	'hostBIOSConfigPriv'		= ' -HostBIOS $True '				 ;
 	'hostNICConfigPriv'			= ' -HostNIC $True '				 ;
 	'hostStorageConfigPriv'		= ' -HostStorage $True '			 
+}
+
+[HashTable]$YMLiLOPrivilegeParamEnum     = @{
+	'userConfigPriv'			= 'userConfigPriv           : True,'  	;
+	'remoteConsolePriv'			= 'remoteConsolePriv        : True,'  	;
+	'virtualMediaPriv'			= 'virtualMediaPriv         : True,'  	;
+	'virtualPowerAndResetPriv'	= 'virtualPowerAndResetPriv : True,'	;
+	'iloConfigPriv'				= 'iLOConfigPriv            : True,'	;
+	'loginPriv'					= 'loginPriv                : True,'	;
+	'hostBIOSConfigPriv'		= 'hostBIOSConfigPriv       : True,'	;
+	'hostNICConfigPriv'			= 'hostNICConfigPriv        : True,'	;
+	'hostStorageConfigPriv'		= 'hostStorageConfigPriv    : True,'			 
+}
+
+[HashTable]$YMLiLOdirAuthParamEnum     = @{
+	'DirectoryDefault'			= 'defaultSchema';  
+	'HPEExtended'				= 'extendedSchema'; 
+	'Disabled'					= 'disabledSchema'
+}
+
+[HashTable]$YMLsnmpSecurityLevelEnum     = @{
+	'AuthOnly'					= 'Authentication';  
+	'AuthAndPriv'				= 'Authentication and privacy';
+	'None'						= 'None'
+}
+
+[HashTable]$YMLsnmpProtocolEnum     = @{
+	'des56'						= 'DES';  
+	'3des'						= '3DES';
+	'AuthOnly'					= 'AES';  
+	'aes128'					= 'AES-128';
+	'aes256'					= 'AES-256';  
+	'None'						= 'None'
+}
+
+
+[HashTable]$YMLtype540Enum 			= @{
+	'ethernet'					= 'ethernet-networkV4';
+	'fcnetwork'					= 'fc-networkV4';
+	'networkset'				= 'network-setV5';
+	'ethernetSettings'			= 'EthernetInterconnectSettingsV6'   ;
+	'serverProfileTemplate'		= 'ServerProfileTemplateV7'			 ;
+	'serverProfile'				= 'ServerProfileV11'			     
 }
 # ----------------------------------------------------
 #
@@ -591,6 +680,7 @@ class uplinkset
 	[string]$networkSets
 	[string]$nativeNetwork
 	[Boolean]$Trunking 
+	[string]$fabricModuleName
 	[string]$logicalPortConfigInfos
 	[string]$fcUplinkSpeed 
 	[string]$loadBalancingMode
@@ -600,6 +690,13 @@ class uplinkset
 	[string]$consistencyChecking
 } 
 
+class uplConfig {
+	[int]$frame
+	[int]$bay
+	[string]$bayModule
+	[string]$bayModuleName
+	[string]$portName
+}
 
 # -- snmp 
 class snmpConfiguration
@@ -1011,7 +1108,63 @@ Function get-scopes($scopesUri,$hostconnection)
 	return $scopes
 }
 
-Function Generate-CustomVarCode ([String]$Prefix, [String]$Suffix, [String]$Value, $indentlevel = 0, $isVar = $True)
+function build-portInfos ($bayconfig,$logicalPortInfo )
+{
+	$bayPortInfos 	= [System.Collections.ArrayList]::new()
+	if ( ($bayConfig) -and ($bayConfig -notlike '*SAS*') )
+	{	
+		$bayConfig 		= $bayConfig.replace($Space, '')
+
+		$bayConfigArr 	= $bayConfig.Split($CR)
+		foreach ($_bConfig in $bayConfigArr)
+		{
+			$_frame, $_bay  	= $_bConfig.Split('{')											# Each frame looks like Frame1={Bay2='SEVC40f8'|Bay5='SE20ILM'}
+			if ($_bay)
+			{
+				$_bay				= $_bay.Trim() -replace '{','' -replace '}', ''
+				$_bayArr 			= $_bay.Split($SepChar)
+				foreach($_b in $_bayArr)
+				{
+					$_bayElement 		= new-object -typeName uplConfig
+					$_bayElement.frame 	= [int]($_frame.replace('Frame','').replace('=','').Trim())
+					$_bayNumber, $_ICmodule			= $_b.Split('=')
+					$_bayElement.bay				= [int]($_bayNumber.replace('Bay', ''))
+					$_ICmodule						= $_ICmodule.trim() -replace "'", ''
+					$_bayElement.bayModule 			= $_ICmodule
+					$_bayElement.bayModuleName  	= $ICModuleNameTypes.item($_ICmodule)
+
+					[void]$bayPortInfos.Add($_bayElement)
+
+				}
+			}
+		}
+
+		# ------- logical port info 'Enclosure1:Bay2:Q1|Enclosure2:Bay5:Q1.1'
+		if ($logicalPortInfo)
+		{
+			$portInfoArr = $logicalPortInfo.Split($SepChar)
+			foreach ($_p in $portInfoArr)
+			{
+				$_encl,$_bay,$_port = $_p.Trim().Split(':')
+				$_frameNumber 	= $_encl[-1]
+				$_bayNumber		= $_bay[-1]
+				$_portNumber 	= $_port.replace('.', ':') 	# normalize port naming convention	 
+				for ( $index = 0; $index -lt $bayPortInfos.count; $index++ )
+				{
+					$_el 	= $bayPortInfos[$index]
+					if (($_el.frame -match $_frameNumber) -and ($_el.bay -match $_bayNumber))
+					{
+						$_el.portName 	= $_portNumber
+					}
+				}
+
+
+			} 
+		}
+	}
+	return $bayPortInfos
+}
+Function Generate-PSCustomVarCode ([String]$Prefix, [String]$Suffix, [String]$Value, $indentlevel = 0, $isVar = $True)
 {
 
     if ($isVar)
@@ -1056,10 +1209,10 @@ function generate-scopeCode( $scopes, $indentlevel = 0)
 
 	$scopeCode	= ($TAB * $indentLevel) + ('{0}' -f $scopeList)  + ' | % { get-OVScope -name $_ | Add-OVResourceToScope -InputObject $object }'
 
-	[void]$scriptCode.Add($scopeCode)
+	[void]$PSscriptCode.Add($scopeCode)
 }
 
-function startBlock($indentlevel = 0, $code = $scriptCode )
+function startBlock($indentlevel = 0, $code = $PSscriptCode )
 {
 	[void]$code.Add(($TAB * $indentLevel) + '{')
 }
@@ -1067,49 +1220,122 @@ function startBlock($indentlevel = 0, $code = $scriptCode )
 
 function endBlock($indentlevel = 0)
 {
-	[void]$scriptCode.Add(($TAB * $indentLevel) + '}')
+	[void]$PSscriptCode.Add(($TAB * $indentLevel) + '}')
 }
 
-function ifBlock($condition, $indentlevel = 0, $code = $scriptCode )
+function ifBlock($condition, $indentlevel = 0, $code = $PSscriptCode )
 {
 
-	[void]$code.Add((Generate-CustomVarCode -Prefix  $condition 					-isVar $False -indentlevel $indentlevel) )
+	[void]$code.Add((Generate-PSCustomVarCode -Prefix  $condition 					-isVar $False -indentlevel $indentlevel) )
 	[void]$code.Add(($TAB * $indentLevel) + '{')
 }
 
-function endIfBlock ($condition='', $indentlevel = 0, $code = $scriptCode)
+function endIfBlock ($condition='', $indentlevel = 0, $code = $PSscriptCode)
 {
 
 	[void]$code.Add(($TAB * $indentLevel) + '}' + ' # {0}' -f $condition)
 }
 
-function elseBlock($indentlevel = 0, $code = $scriptCode)
+function elseBlock($indentlevel = 0, $code = $PSscriptCode)
 {
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'else' 						-isVar $False -indentlevel $indentlevel) )
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'else' 						-isVar $False -indentlevel $indentlevel) )
 	[void]$code.Add(($TAB * $indentLevel) + '{')
 }
 
 
-function endElseBlock ($indentlevel = 0, $code = $scriptCode)
+function endElseBlock ($indentlevel = 0, $code = $PSscriptCode)
 {
 	[void]$code.Add(($TAB * $indentLevel) + '}')
 }
 
-function newLine($code = $scriptCode)
+function newLine($code = $PSscriptCode)
 {
 	[void]$code.Add($CR)
 }
 
 function add_to_allScripts ($text , $ps1Files)
 {
-	[void]$allScriptCode.Add($text)
-	[void]$allScriptCode.add($ps1Files)
-	[void]$allScriptCode.add($CR)
+	[void]$allPSscriptCode.Add($text)
+	[void]$allPSscriptCode.add($ps1Files)
+	[void]$allPSscriptCode.add($CR)
+}
+
+# ----------
+# ---------- YML functions
+Function Generate-YMLCustomVarCode ([String]$Prefix, [String]$Suffix, [String]$Value, $indentlevel = 0, $isVar = $False, $isItem = $False, $distance = $YMLMAXLEN)
+{
+
+    $TAB        = $Space  * 3 
+
+
+
+    if ($isVar)
+    {
+        $Prefix = '- {0}' -f $Prefix
+    }
+	else 
+	{
+		$Prefix = '  {0}' -f $Prefix	
+	}
+
+
+
+    $VarName    = ($TAB * $indentlevel) + ('{0}{1}' -f $Prefix, $Suffix)
+    
+
+    $len 	= $VarName.Length
+    $len 	= if ($len -ge $distance) {$distance} else { $distance - $len}
+    $pad    = $Space * $len
+
+    if ($isItem)
+    {
+        $out 	= '{0}{1}{2}' -f $VarName,$pad, $Value
+    }
+    else
+    {
+        $out 	= '{0}:{1}{2}' -f $VarName,$pad, $Value
+    }
+
+    if ($prefix -like '*--*')
+    {
+        $out    = $prefix.trim()
+    }
+	
+
+	
+    return $out
 }
 
 
+function Generate-ymlheader ([string]$title, $code = $YMLscriptCode )
+{
+    [void]$code.Add((Generate-YMLCustomVarCode -prefix '---' ))                                    
+    [void]$code.Add((Generate-YMLCustomVarCode -prefix name      -value $title                   -isVar $True))
+    [void]$code.Add((Generate-YMLCustomVarCode -prefix hosts     -value 'localhost' ))             
+    [void]$code.Add((Generate-YMLCustomVarCode -prefix vars))                                  
+    [void]$code.Add((Generate-YMLCustomVarCode -prefix config    -value "'oneview_config.json'"  -indentlevel 1))
+    [void]$code.Add((Generate-YMLCustomVarCode -prefix tasks  ))
+}
+
+function Generate-ymlTask ([string]$Title, [string]$comment,[string]$ovTask, [string]$state = 'present', $isData = $True, $code = $YMLscriptCode )
+{
+	newLine	-code $YMLscriptCode
+		 
+	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $comment  						-isItem $True  					-indentlevel 1 ))
+	   
+	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 			-prefix name  				-value $title	-isVar $True 	-indentlevel 1 ))
+	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 			-prefix $ovTask		 										-indentlevel 1 ))
+	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 			-prefix config				-value "'{{config}}'"			-indentlevel 2 ))
+	if ($isData)
+	{
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 		-prefix 	state			-value $state					-indentlevel 2 ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 		-prefix 	'data'											-indentlevel 2 ))
+	}
+	   
+}
+
 # ----- connect Composer
-function connect-Composer([string]$sheetName, [string]$WorkBook, $scriptCode )
+function connect-Composer([string]$sheetName, [string]$WorkBook, $PSscriptCode )
 {
 	$composer 				= get-datafromSheet -sheetName $sheetName -workbook $WorkBook
 
@@ -1122,14 +1348,14 @@ function connect-Composer([string]$sheetName, [string]$WorkBook, $scriptCode )
 	
 
 	newLine
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'write-host "`n"'  -isVar $False )) 
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Connecting to OneView {0}" ' -f $hostName) -isVar $False ))
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'write-host "`n"'  -isVar $False )) 
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Connecting to OneView {0}" ' -f $hostName) -isVar $False ))
 	
 	ifBlock 	-condition 'if ($global:ConnectedSessions)'
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '$d = disconnect-OVMgmt -ApplianceConnection $global:ConnectedSessions' -isVar $false -indentLevel 1))
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '$d = disconnect-OVMgmt -ApplianceConnection $global:ConnectedSessions' -isVar $false -indentLevel 1))
 	endIfBlock 
-	generate-credentialCode -username $userName -password $password -component 'OneView' -scriptCode $scriptCode
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('connect-OVMgmt -hostname {0} -credential $cred -loginAcknowledge:$True -AuthLoginDomain "{1}" ' -f $hostName,$authDomain) -isVar $False ))
+	generate-credentialCode -username $userName -password $password -component 'OneView' -PSscriptCode $PSscriptCode
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('connect-OVMgmt -hostname {0} -credential $cred -loginAcknowledge:$True -AuthLoginDomain "{1}" ' -f $hostName,$authDomain) -isVar $False ))
     newLine
 
 }
@@ -1147,21 +1373,21 @@ function get-datafromSheet([string]$sheetName, [string]$WorkBook)
 }
 
 # -------- generate code for username and password
-Function generate-credentialCode ($username, $password, $component,$indentLevel=0, $scriptCode)
+Function generate-credentialCode ($username, $password, $component,$indentLevel=0, $PSscriptCode)
 {
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'userName' -value ( ' "{0}" ' -f $userName ) -indentlevel $indentLevel))
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'password' -value ( ' "{0}" ' -f $password ) -indentlevel $indentLevel))
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'userName' -value ( ' "{0}" ' -f $userName ) -indentlevel $indentLevel))
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'password' -value ( ' "{0}" ' -f $password ) -indentlevel $indentLevel))
 
 	ifBlock -condition 'if ($password)' -indentlevel $indentLevel
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'securePassword' -value '$password | ConvertTo-SecureString -AsPlainText -Force' -indentLevel ($indentLevel + 1) ))
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'securePassword' -value '$password | ConvertTo-SecureString -AsPlainText -Force' -indentLevel ($indentLevel + 1) ))
 	endIfBlock 	-indentlevel $indentLevel 
 
 	elseBlock 	-indentlevel $indentLevel 
 	$value 		= 'Read-Host "{0}: enter password for user {1}" -AsSecureString ' -f $component, $username
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'securePassword' -Value $value  -indentlevel ($indentLevel+1)))
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'securePassword' -Value $value  -indentlevel ($indentLevel+1)))
 	endElseBlock  -indentlevel $indentLevel
 
-	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'cred ' -Value 'New-Object System.Management.Automation.PSCredential  -ArgumentList $userName, $securePassword'  -indentlevel $indentLevel))
+	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'cred ' -Value 'New-Object System.Management.Automation.PSCredential  -ArgumentList $userName, $securePassword'  -indentlevel $indentLevel))
 	newLine
 	
 }
@@ -1169,10 +1395,10 @@ Function generate-credentialCode ($username, $password, $component,$indentLevel=
 # ---------- firmware Bundle
 Function Import-firmwareBaseline([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -1182,29 +1408,29 @@ Function Import-firmwareBaseline([string]$sheetName, [string]$WorkBook, [string]
 		$name 				= $fw.name
 		if ($filename)
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Adding firmware Baseline {0} "' -f $name) -isVar $False ))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('Add-OVBaseline -file  "{0}"' -f $filename) -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Adding firmware Baseline {0} "' -f $name) -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('Add-OVBaseline -file  "{0}"' -f $filename) -isVar $False ))
             newLine
         }
 	}
 
 	if ($List)
 	{
-		[void]$scriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
 }
 
 
 # ---------- Data Center
 Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -1232,17 +1458,17 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		if ($name  -or $width -or $depth )
 		{
 			newLine
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating datacenter {0} "' -f $name) -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating datacenter {0} "' -f $name) -isVar $False ))
 			$value 					= 'Get-OVDataCenter' + " | where name -eq  '{0}' " -f $name
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'dc' 						-Value $value ))		
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'dc' 						-Value $value ))		
 
 			ifBlock -condition 'if ($dc -eq $Null)'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for dc {0} ' -f $name) -isVar $False -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' 			-Value ("'{0}'" -f $name) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for dc {0} ' -f $name) -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' 			-Value ("'{0}'" -f $name) -indentlevel 1))
 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'width' 			-Value ('{0}' 	-f $width) -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'depth' 			-Value ('{0}' 	-f $depth) -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'millimeters' 	-Value ('${0}' 	-f $millimeters) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'width' 			-Value ('{0}' 	-f $width) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'depth' 			-Value ('{0}' 	-f $depth) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'millimeters' 	-Value ('${0}' 	-f $millimeters) -indentlevel 1))
 
 			$nameParam 			= ' -Name "{0}" '		-f $name
 			$widthParam 		= ' -Width {0}  ' 		-f $width
@@ -1253,7 +1479,7 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			if ($defaultVoltage)
 			{
 				$voltageParam 	= ' -DefaultVoltage $defaultVoltage'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'defaultVoltage' 	-Value ('{0}' -f $defaultVoltage) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'defaultVoltage' 	-Value ('{0}' -f $defaultVoltage) -indentlevel 1))
 
 			}
 
@@ -1261,7 +1487,7 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			if ($currency)
 			{
 				$currencyParam 	= ' -Currency $currency'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'currency' 		-Value ("'{0}'" -f $currency) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'currency' 		-Value ("'{0}'" -f $currency) -indentlevel 1))
 
 			}
 
@@ -1269,7 +1495,7 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			if ($powerCosts)
 			{
 				$powerCostsParam 	= ' -PowerCosts $powerCosts'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'powerCosts' 		-Value ('{0}' -f $powerCosts) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'powerCosts' 		-Value ('{0}' -f $powerCosts) -indentlevel 1))
 
 			}
 
@@ -1277,56 +1503,56 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			if ($coolingCapacity)
 			{
 				$coolingCapacityParam 	= ' -CoolingCapacity $coolingCapacity'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'coolingCapacity' -Value ('{0}' -f $coolingCapacity) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'coolingCapacity' -Value ('{0}' -f $coolingCapacity) -indentlevel 1))
 			}
 
 			$address1Param  = $null
 			if ($address1)
 			{
 				$address1Param 	= ' -Address1 $address1'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'address1' 		-Value ("'{0}'" -f $address1) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'address1' 		-Value ("'{0}'" -f $address1) -indentlevel 1))
 			}
 
 			$address2Param  = $null
 			if ($address2)
 			{
 				$address2Param 	= ' -Address2 $address2'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'address2' 		-Value ("'{0}'" -f $address2) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'address2' 		-Value ("'{0}'" -f $address2) -indentlevel 1))
 			}
 
 			$cityParam  = $null
 			if ($city)
 			{
 				$cityParam 	= ' -City $city'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'city' 			-Value ("'{0}'" -f $city) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'city' 			-Value ("'{0}'" -f $city) -indentlevel 1))
 			}
 
 			$stateParam  = $null
 			if ($state)
 			{
 				$stateParam 	= ' -State $state'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'state' 			-Value ("'{0}'" -f $state) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'state' 			-Value ("'{0}'" -f $state) -indentlevel 1))
 			}
 
 			$postCodeParam  = $null
 			if ($postCode)
 			{
 				$postCodeParam 	= ' -PostCode $postCode'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'postCode' 		-Value ("'{0}'" -f $postCode) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'postCode' 		-Value ("'{0}'" -f $postCode) -indentlevel 1))
 			}
 
 			$countryParam  = $null
 			if ($country)
 			{
 				$postCodeParam 	= ' -Country $country'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'country' 		-Value ("'{0}'" -f $country) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'country' 		-Value ("'{0}'" -f $country) -indentlevel 1))
 			}
 
 			$timezoneParam  = $null
 			if ($timezone)
 			{
 				$timezoneParam 	= ' -TimeZone $timezone'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'timezone' 		-Value ("'{0}'" -f $timezone) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'timezone' 		-Value ("'{0}'" -f $timezone) -indentlevel 1))
 			}
 
 			$primaryContactParam  = $null
@@ -1334,7 +1560,7 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			{
 				$primaryContactParam 	= ' -PrimaryContact $primaryContact'
 				$value					= 'Get-OVRemoteSupportContact -Name "{0}" ' -f $primaryContact
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'primaryContact' 	-Value  $value -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'primaryContact' 	-Value  $value -indentlevel 1))
 			}
 
 			$secondaryContactParam  = $null
@@ -1342,7 +1568,7 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			{
 				$secondaryContactParam 	= ' -SecondaryContact $secondaryContact'
 				$value					= 'Get-OVRemoteSupportContact -Name "{0}" ' -f $secondaryContact
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'secondaryContact' 	-Value $value  -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'secondaryContact' 	-Value $value  -indentlevel 1))
 			}
 			
 
@@ -1351,23 +1577,23 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			newLine
 
 			$prefix		= 'New-OVDatacenter {0}{1}{2}{3} `' -f $nameParam,$widthParam,$depthParam,$millimetersParam
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentLevel 1)) 
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentLevel 1)) 
 
 			$prefix 	= '{0}{1}{2}{3} `' 	-f $voltageParam, $powerCostsParam, $currencyParam, $coolingCapacityParam 
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentLevel 2))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentLevel 2))
 
 			$prefix 	= '{0}{1}{2}{3}{4}{5}{6} `' 	-f $address1Param, $address2Param, $cityParam, $stateParam, $postCodeParam,  $countryParam , $timezoneParam
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentLevel 2))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentLevel 2))
 
 			$prefix 	= '{0}{1} `' 	-f $primaryContactParam, $secondaryContactParam
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentLevel 2))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentLevel 2))
 
 			newLine # to end the command
 			endifBlock -condition 'if ($dc -eq $Null)'
 
 			# Skip creating because resource already exists
 			elseBlock
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
 			endElseBlock
 
 
@@ -1378,21 +1604,21 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
 }
 
 
 # ---------- Rack
 Function Import-rack([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -1405,22 +1631,22 @@ Function Import-rack([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 		$y 					= $rack.yCoordinate
 		$millimeters		= $rack.millimeters
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Adding rack {0} to datacenter {1} "' -f $rackSN, $dcName) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Adding rack {0} to datacenter {1} "' -f $rackSN, $dcName) -isVar $False ))
 		newLine
 
 		$value 				= 'Get-OVDataCenter | where name -match "{0}" ' 	-f $dcName
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'dc' 						-Value $value ))	
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'dc' 						-Value $value ))	
 		$value 				= 'Get-OVRack | where serialNumber -match "{0}" ' -f $rackSN
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'rack' 					-Value $value ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'rack' 					-Value $value ))
 		
 		newLine
 
 		ifBlock 	-condition 'if ( ($dc -ne $Null) -and ($rack -ne $Null) )' 
 		$value 				= '$rack.Uri'
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'rackUri' -Value $value -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'rackUri' -Value $value -indentlevel 1 ))
 
 		#$value 				=  '$dc.contents | where resourceUri -match $rackUri'
-		#[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'rack_in_dc' -Value $value -indentlevel 1 ))
+		#[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'rack_in_dc' -Value $value -indentlevel 1 ))
 
 		ifBlock 	-condition 'if ($null -eq ($dc.contents | where resourceUri -match $rackUri) )'  -indentlevel 1
 		# Code here
@@ -1429,19 +1655,19 @@ Function Import-rack([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 		$coordParam 		= ' -X {0} -Y {1} -Millimeters:${2}'		-f $x, $y, $millimeters
 		$prefix 			= 'Add-OVRackToDataCenter {0}{1}{2} ' 	-f $inputParam,$dcParam, $coordParam
 		
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentLevel 2)) 
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentLevel 2)) 
 		endIfBlock 	-indentlevel 1
 
 		# Rack already defined in dc
 		elseBlock 	-indentlevel 1
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $rackSN + ' already defined in data center.') -isVar $False -indentlevel 2 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $rackSN + ' already defined in data center.') -isVar $False -indentlevel 2 ))
 		endElseBlock -indentlevel 1
 
 		endIfBlock 	-condition '$dc -ne $Null and $rack $ne $Null' 
 
 		# Data center not existed
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "datacenter '{0}'" -f $dcName + " or rack '{0}'" -f $rackSN  + ' do not exist. Define datacenter first') -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "datacenter '{0}'" -f $dcName + " or rack '{0}'" -f $rackSN  + ' do not exist. Define datacenter first') -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 
@@ -1456,21 +1682,21 @@ Function Import-rack([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
 }
 
 
 # ---------- proxy
 Function Import-proxy([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -1483,7 +1709,7 @@ Function Import-proxy([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 		$username 			= $proxy.Username
 
 		
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Importing proxy "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Importing proxy "' -f $name) -isVar $False ))
 
 		$hostNameParam 		= ' -Hostname "{0}"' 	-f $name
 		$https 				= if ($protocol -eq 'https') {'$True'} else {'$False'}
@@ -1494,32 +1720,32 @@ Function Import-proxy([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 		if ($username)
 		{
 			$value 			= 'Read-Host "Proxy Setting: enter password for user {0}" -AsSecureString ' -f $username
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'securepass' -value  $value))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'securepass' -value  $value))
 			$userParam 		= ' -Username "{0}" -password $securepass ' -f $username
 		}
 		# Code
 		# ensure that there is no space after backstick(`)
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('Set-OVApplianceProxy {0}{1}{2}{3}' -f $hostNameParam,$portParam,$httpsParam,$userParam) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('Set-OVApplianceProxy {0}{1}{2}{3}' -f $hostNameParam,$portParam,$httpsParam,$userParam) -isVar $False ))
 		newLine
 
 	}
 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
 }
 
 
 # ---------- proxy
 Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -1544,32 +1770,32 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 		# Code
 		# ensure that there is no space after backstick(`)
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('Set-OVApplianceDateTime -locale "{0}" -ntpServers {1} {2} {3}' -f $locale,$ntpServers,$syncParam,$pollParam) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('Set-OVApplianceDateTime -locale "{0}" -ntpServers {1} {2} {3}' -f $locale,$ntpServers,$syncParam,$pollParam) -isVar $False ))
 		newLine
 
 	}
 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
 }
 
 
  Function Import-backup([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode            = [System.Collections.ArrayList]::new()
+	 $PSscriptCode            = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 	 }
 	 
 	   
@@ -1598,17 +1824,17 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 				{
 					$remoteParam  += ' -Directory "{0}" ' 	-f $dir
 				}
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'hostSSHKey' -value ("'{0}'" -f $publicKey) ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'hostSSHKey' -value ("'{0}'" -f $publicKey) ))
 
 				if ($NULL -eq $password)
 				{
 					$value 			= 'Read-Host "Backup Config Setting --> enter password for user {0}" -AsSecureString ' -f $username
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'securepass' -value  $value))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'securepass' -value  $value))
 				}
 				else
 				{
 					$value 			= "'$password' | ConvertTo-SecureString -AsPlainText -Force "
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'securepass' -value  $value))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'securepass' -value  $value))
 				}
 
 				$userParam 		= ' -Username "{0}" -password $securepass ' -f $username
@@ -1625,38 +1851,38 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 			# Code
 			# ensure that there is no space after backstick(`)
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('Set-OVAutomaticBackupConfig {0} `' -f $remoteParam) -isVar $False ))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} {1}' -f $userParam, $scheduleParam) -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('Set-OVAutomaticBackupConfig {0} `' -f $remoteParam) -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} {1}' -f $userParam, $scheduleParam) -isVar $False -indentlevel 1))
 			newLine
 		}
 		else # Disable backup
 		{
 			# Code
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'Set-OVAutomaticBackupConfig  -Disabled:$True '  -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'Set-OVAutomaticBackupConfig  -Disabled:$True '  -isVar $False ))
 		}
 
 	 }
 	 
 	 if ($List)
 	 {
-		 [void]$ScriptCode.Add('Disconnect-OVMgmt')
+		 [void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	 }
   # ---------- Generate script to file
-  writeToFile -code $ScriptCode -file $ps1Files
+  writeToFile -code $PSscriptCode -file $ps1Files
  }
 
 
  Function Import-repository([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode             = [System.Collections.ArrayList]::new()
+	 $PSscriptCode             = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 	 }
 	 
    
@@ -1677,15 +1903,15 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$certParam 				= if ($certificate)				{ ' -Certificate "{0}" ' -f $certificate}	else {''}
 		
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating external repository {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating external repository {0} "' -f $name) -isVar $False ))
 
 		if ($username)
 		{
-			generate-credentialCode -username $username -password $password -component 'REPOSITORY' -scriptCode $scriptCode
+			generate-credentialCode -username $username -password $password -component 'REPOSITORY' -PSscriptCode $PSscriptCode
 			$credParam 		= ' -Credential $cred'
 	 	}
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVExternalRepository -Name "{0}" {1}{2}{3}{4}{5}' -f $name, $hostParam, $httpParam, $dirParam, $credParam, $certParam) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVExternalRepository -Name "{0}" {1}{2}{3}{4}{5}' -f $name, $hostParam, $httpParam, $dirParam, $credParam, $certParam) -isVar $False ))
 	
 
 		# Code
@@ -1693,24 +1919,24 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 
 	 if ($List)
 	 {
-		 [void]$ScriptCode.Add('Disconnect-OVMgmt')
+		 [void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	 }
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
  }
 
  
  Function Import-scope([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode             = [System.Collections.ArrayList]::new()
+	 $PSscriptCode             = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 	 }
 	 
    
@@ -1725,11 +1951,11 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$descParam 			= if ($description) { ' -Description "{0}" ' -f $description} else {''}
 		
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating scopes {0} "' -f $name) -isVar $False ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix username -Value ("'{0}'" -f $name)  ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating scopes {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix username -Value ("'{0}'" -f $name)  ))
 
 		ifBlock 		-condition ('if ($null -eq (get-OVScope | where name -eq "{0}" ))' -f $name)
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVScope -name "{0}" {1} ' -f $name, $descParam) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVScope -name "{0}" {1} ' -f $name, $descParam) -isVar $False -indentlevel 1))
 		
 		newLine
 		
@@ -1737,7 +1963,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 			$resArray  		= $resource.Split($SepChar)
 			$index 			= 1
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix resources -value '@()' -indentLevel 1) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix resources -value '@()' -indentLevel 1) )
 			foreach ($res in $ResArray)
 			{
 				$resType, $resName 	= $res.Split(';')
@@ -1749,14 +1975,14 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 				$value 	= 'Get-OV{0} | where name -eq {1}' -f $resType, $resName
 				$prefix = "res$Index"
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $prefix -value $value -indentlevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $prefix -value $value -indentlevel 1 ))
 
 				ifBlock		-condition ('if (${0})' -f $prefix) -indentlevel 1
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix resources -value ('$resources + ${0}' -f $prefix) -indentlevel 2 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix resources -value ('$resources + ${0}' -f $prefix) -indentlevel 2 ))
 				endIfBlock -indentlevel 1 
 
 				ifBlock 	-condition 'if ($resources)'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('get-OVScope -name "{0}" | Add-OVResourceToScope -InputObject $resources ' -f $name) -isVar $False -indentlevel 2))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('get-OVScope -name "{0}" | Add-OVResourceToScope -InputObject $resources ' -f $name) -isVar $False -indentlevel 2))
 				endIfBlock -indentlevel 1
 				newLine
 			}
@@ -1769,7 +1995,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		# Skip creating because resource already exists
 
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 
@@ -1777,16 +2003,16 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
    # ---------- Generate script to file
-   writeToFile -code $ScriptCode -file $ps1Files
+   writeToFile -code $PSscriptCode -file $ps1Files
  }
 
 
  Function Import-snmpTrap([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode             = [System.Collections.ArrayList]::new()
+	 $PSscriptCode             = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
 	 
@@ -1795,13 +2021,13 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 if ($List)
 	 {
 		$List 				= $List | where source -eq 'Appliance' # Select Appliance snmp user only
-		connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+		connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 		create-snmpTrap -list $List -isSnmpAppliance $True
 		newLine
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	 }
    # ---------- Generate script to file
-   writeToFile -code $ScriptCode -file $ps1Files
+   writeToFile -code $PSscriptCode -file $ps1Files
  }		 
 
  Function create-snmpTrap($List, $isSnmpAppliance=$True, $indent=0 )
@@ -1845,13 +2071,13 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			if ($isSnmpAppliance)
 			{
 				# Use Get-OVsnmpV3user to get the user object
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'snmpV3user' 	-value ('Get-OVSnmpV3User | where UserName -eq "{0}" ' -f $snmpV3User) -indentlevel $indent))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'snmpV3user' 	-value ('Get-OVSnmpV3User | where UserName -eq "{0}" ' -f $snmpV3User) -indentlevel $indent))	
 			}
 			else 
 			{
 				# Use snmpV3Users / snmpV3UserNames variable in create_snmpV3user
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'this_index' -Value ('[array]::IndexOf($snmpV3Usernames, "{0}" )' -f $snmpV3User) -indentlevel $indent))	
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'snmpV3user' -Value '$snmpV3Users[$this_index]' -indentlevel $indent								  ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'this_index' -Value ('[array]::IndexOf($snmpV3Usernames, "{0}" )' -f $snmpV3User) -indentlevel $indent))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'snmpV3user' -Value '$snmpV3Users[$this_index]' -indentlevel $indent								  ))
 			}
 
 			$snmpV3userParam = ' -SnmpV3user $snmpV3user '
@@ -1860,8 +2086,8 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$new_trap		= '$trap{0}' -f $Index	
 		$trapCmd 		= if ($isSnmpAppliance) { 'New-OVApplianceTrapDestination '} else {'New-OVSnmpTrapDestination '}
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ("write-host -foreground CYAN '----- Creating snmp trap {0} '"  -f $new_trap)  -isVar $False -indentlevel $indent))
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('{0}' -f $new_trap) -value ('{0}{1}{2}{3}{4}{5}{6}{7}' -f $trapCmd, $formatParam,$destinationParam,$portParam,$trapTypeParam,$engineIdParam,$communityParam,$snmpV3userParam ) -isVar $false -indentlevel  $indent ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ("write-host -foreground CYAN '----- Creating snmp trap {0} '"  -f $new_trap)  -isVar $False -indentlevel $indent))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('{0}' -f $new_trap) -value ('{0}{1}{2}{3}{4}{5}{6}{7}' -f $trapCmd, $formatParam,$destinationParam,$portParam,$trapTypeParam,$engineIdParam,$communityParam,$snmpV3userParam ) -isVar $false -indentlevel  $indent ))
 		newLine
 		$snmpTraps		+= $new_trap		
 
@@ -1870,12 +2096,12 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 if ($isSnmpLig)
 	 {
 		 newLine
-		 [void]$scriptCode.Add(( Generate-CustomVarCode -Prefix 'snmpTraps' -value ('@({0})' -f ($snmpTraps  -join $COMMA) ) -indentlevel  $indent ))
+		 [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix 'snmpTraps' -value ('@({0})' -f ($snmpTraps  -join $COMMA) ) -indentlevel  $indent ))
 	 }	
 	 
 
    # ---------- Generate script to file
-   writeToFile -code $ScriptCode -file $ps1Files
+   writeToFile -code $PSscriptCode -file $ps1Files
  }	
 
 
@@ -1890,8 +2116,8 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 if ($List -and $isSnmpLig)
 	 {
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'snmpv3Users' 	-value	'[System.Collections.ArrayList]::new()' -indentlevel $indent ) )
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'snmpv3Usernames' -value	'[System.Collections.ArrayList]::new()' -indentlevel $indent ) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'snmpv3Users' 	-value	'[System.Collections.ArrayList]::new()' -indentlevel $indent ) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'snmpv3Usernames' -value	'[System.Collections.ArrayList]::new()' -indentlevel $indent ) )
 	 }
      foreach ($snmp in $List) 
 	 {
@@ -1908,14 +2134,14 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 			$index++ # Next user
 
-            [void]$scriptCode.Add($CR)
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating snmpV3 user {0} " ' -f $snmpV3User)  -isVar $False -indentlevel $indent))
+            [void]$PSscriptCode.Add($CR)
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating snmpV3 user {0} " ' -f $snmpV3User)  -isVar $False -indentlevel $indent))
 
 			if ($isSnmpAppliance)
             {
 				$condition              = 'if ($null -eq (Get-OVSnmpV3User | where name -eq "{0}"))' -f $snmpV3User
-            	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix  $condition 	-isVar $False -indentlevel $indent  ) )
-            	[void]$scriptCode.Add('{')
+            	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix  $condition 	-isVar $False -indentlevel $indent  ) )
+            	[void]$PSscriptCode.Add('{')
 
 				$applianceSnmpParam 	= ' -ApplianceSnmpUser '
 				$indent 				+= 1
@@ -1926,30 +2152,30 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 				'AuthOnly'		
 					{
 
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $authPassword) -indentLevel $indent))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $authPassword) -indentLevel $indent))
 						$secParam	= ' -SecurityLevel "{0}" -AuthProtocol "{1}" -AuthPassword $authPassword' -f $securityLevel, $authProtocol
 					}
 				'AuthAndPriv'
 					{
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $authPassword) -indentLevel  $indent ))
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'privPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $privPassword)  -indentLevel  $indent))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $authPassword) -indentLevel  $indent ))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'privPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $privPassword)  -indentLevel  $indent))
 						$secParam	= ' -SecurityLevel "{0}" -AuthProtocol "{1}" -AuthPassword $authPassword -PrivProtocol "{2}" -PrivPassword $privPassword' -f $securityLevel, $authProtocol, $privProtocol 
 					}										
 			}
 
 			$new_snmpv3User 		= '$snmpv3User{0}' -f $Index
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('{0}' -f $new_snmpv3user) -value ('new-OVSnmpV3User {0} -UserName "{1}" {2}' -f $applianceSnmpParam, $snmpV3User, $secParam ) -isVar $false -indentlevel  $indent ))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('{0}' -f $new_snmpv3user) -value ('new-OVSnmpV3User {0} -UserName "{1}" {2}' -f $applianceSnmpParam, $snmpV3User, $secParam ) -isVar $false -indentlevel  $indent ))
 			$snmpv3Users 		+= $new_snmpv3User
 			$snmpv3Usernames	+= $snmpv3User			# Collect user names
 
 			if ($isSnmpAppliance)
             {
-				[void]$scriptCode.Add('}')
+				[void]$PSscriptCode.Add('}')
 				# Skip creating because resource already exists
-            	[void]$scriptCode.Add('else')
-            	[void]$scriptCode.Add('{')
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $snmpV3User + ' already exists.') -isVar $False -indentlevel  $indent ))
-				[void]$scriptCode.Add('}')
+            	[void]$PSscriptCode.Add('else')
+            	[void]$PSscriptCode.Add('{')
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $snmpV3User + ' already exists.') -isVar $False -indentlevel  $indent ))
+				[void]$PSscriptCode.Add('}')
 			}
 
 
@@ -1962,11 +2188,11 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 if ($snmpv3Users -and $isSnmpLig)
 	 {
 		 newLine
-		 [void]$scriptCode.Add(( Generate-CustomVarCode -Prefix 'snmpv3Users' -value ('@({0})' -f ($snmpv3Users  -join $COMMA) ) -indentlevel  $indent ))
+		 [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix 'snmpv3Users' -value ('@({0})' -f ($snmpv3Users  -join $COMMA) ) -indentlevel  $indent ))
 		 
 		 # Set collection of snmp v3 user names
 		 $snmpv3UserNames 	= $snmpv3UserNames | % { "'{0}'" -f  $_ }  	# Add prefix $
-		 [void]$scriptCode.Add(( Generate-CustomVarCode -Prefix 'snmpv3Usernames' -value ("@({0})" -f ($snmpv3UserNames  -join $COMMA) ) -indentlevel  $indent ))
+		 [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix 'snmpv3Usernames' -value ("@({0})" -f ($snmpv3UserNames  -join $COMMA) ) -indentlevel  $indent ))
 	 }
 
 	 
@@ -1976,36 +2202,158 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
  Function Import-snmpV3User([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode            = [System.Collections.ArrayList]::new()
+	 $PSscriptCode            = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
 		 $List 				= $List | where source -eq 'Appliance' # Select Appliance snmp user only
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 		 create-snmpV3User -list $List -isSnmpAppliance $True
 		 newLine
-		 [void]$ScriptCode.Add('Disconnect-OVMgmt')
+		 [void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	 }
  
    # ---------- Generate script to file
-   writeToFile -code $ScriptCode -file $ps1Files
+   writeToFile -code $PSscriptCode -file $ps1Files
  }
+
+
+ Function Import-YMLSNMP([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
+{
+    $YMLscriptCode          										= [System.Collections.ArrayList]::new()
+	$cSheet, $snmpConfigSheet, $snmpV3UserSheet, $snmpTrapSheet 	= $sheetName.Split($SepChar)       # composer
+
+	[void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure SNMP for Appliance'))
+	
+	$snmpConfigList 		= get-datafromSheet -sheetName $snmpConfigSheet -workbook $WorkBook  	
+	$snmpConfigList			= $snmpConfigList | where source -eq 'Appliance'
+
+	$snmpV3UserList 		= get-datafromSheet -sheetName $snmpV3UserSheet -workbook $WorkBook  	
+	$snmpV3UserList			= $snmpV3UserList | where source -eq 'Appliance'
+
+	$snmpTrapList 			= get-datafromSheet -sheetName $snmpTrapSheet -workbook $WorkBook  	
+	$snmpTrapList			= $snmpTrapList | where source -eq 'Appliance'
+
+
+	foreach ( $_snmp in $snmpConfigList)
+	{	
+		# snmpV1 information
+		$consistencyChecking	= $_snmp.consistencyChecking
+		$communityString		= $_snmp.communityString
+
+	
+		if ($communityString)
+		{
+			$comment 			= '# ---------- Appliance snmp Configuration ' 				
+			$title 				= ' appliance read community string'
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -ovTask 'oneview_appliance_device_read_community'))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'communityString'		-Value $communityString  				-indentlevel $indentDataStart ))
+		}
+	
+
+		# ----  snmpV3Users 
+		foreach ($_user in $snmpV3UserList)
+		{
+			$userName 			= $_user.userName
+			$secLevel			= $_user.securityLevel
+			$authProtocol 		= $_user.authProtocol
+			$authPassword		= $_user.authPassword
+			$privacyProtocol 	= $_user.privacyProtocol
+			$privacyPassword 	= $_user.privacyPassword
+
+			$secLevel 			= $YMLsnmpSecurityLevelEnum.item($secLevel)
+
+			$comment 			= '# ---------- Appliance snmp V3 User {0} ' 	-f $userName			
+			$title 				= ' Create snmp v3 user {0}' 					-f $userName
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title -comment $comment -ovTask 'oneview_appliance_device_snmp_v3_users'))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	type 					-value Users				-indentlevel $indentDataStart))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	userName 				-value $userName			-indentlevel $indentDataStart))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	securityLevel 			-value $secLevel			-indentlevel $indentDataStart))
+			if ($secLevel -like '*Privacy*')
+			{
+				$_privacy 		= $YMLsnmpProtocolEnum.item($privacyProtocol.Trim())
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	authenticationProtocol	-value $authProtocol 		-indentlevel $indentDataStart))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	authenticationPassphrase -value "'$authPassword'"	-indentlevel $indentDataStart))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	privacyProtocol 		-value $_privacy			-indentlevel $indentDataStart))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	privacyPassphrase		-value "'$privacyPassword'"	-indentlevel $indentDataStart))	
+			}
+			if ($secLevel -eq 'Authentication')
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	authenticationProtocol	-value $authProtocol 		-indentlevel $indentDataStart))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	authenticationPassphrase -value "'$authPassword'"	-indentlevel $indentDataStart))
+			}	
+				
+				
+
+		}
+	
+		# ----- snmpTrap 
+		foreach ($_trap in $snmpTrapList)
+		{
+			$format 					= $_trap.format			#snmpv1 or snmpV3
+			$destinationAddress			= $_trap.destinationAddress
+			$port 						= $_trap.port              
+			$communityString 			= $_trap.communityString
+			$snmpV3User 				= $_trap.userName
+
+			$_format 					= $format.trim().ToLower().replace('snmp','')
+
+			if ($snmpV3User)
+			{
+				$var_user 					= "var_{0}" -f ($snmpV3User.Trim().replace($Space,'').replace('-', '_') )
+				$ovTask 					= 'oneview_appliance_device_snmp_{0}_users_facts' 		-f $_format
+				$comment 					= '# ---------- Appliance {0} traps ' 					-f $format								
+				$title 						= ' Get snmpV3 user {0} id' 							-f $snmpV3User
+				[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title -comment $comment -ovTask $ovTask -isData $False))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix username	-value $snmpV3User	-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 										-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $var_user	-value "'{{appliance_device_snmp_v3_users[0].id}}'"		-indentlevel 2 ))
+			}
+
+			$ovTask 					= 'oneview_appliance_device_snmp_{0}_trap_destinations' -f $_format								
+			$title 						= ' Create {0} trap' 									-f $format
+
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title  -ovTask $ovTask))
+			
+			if ($format -eq 'snmpV3')
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	destinationAddress 	-value "'$destinationAddress'"	-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	type 				-value Destination			-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	userId 				-value "'{{$var_user}}'"	-indentlevel $indentDataStart ))
+			}
+			else 
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	destination 		-value "'$destinationAddress'"	-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	communityString 	-value $communityString			-indentlevel $indentDataStart ))
+			}
+
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	port 				-value "'$port'"				-indentlevel $indentDataStart ))
+		}	
+	
+	}
+	
+		
+	 # ---------- Generate script to file
+	 writeToFile -code $YMLscriptCode -file $YMLfiles
+	
+}
+
 
  Function Import-remoteSupport([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode             = [System.Collections.ArrayList]::new()
+	 $PSscriptCode             = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 		 $enable 			= $List.enabled
 		 $companyName 		= $List.companyName
 		 $username 			= $List.insightOnlineUsername
@@ -2018,19 +2366,19 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			$optParam 			= if ($optimizeOptIn -eq 'True')	{ ' -OptimizeOptIn ${0}' -f $optimizeOptIn} else {''}
 				
 
-			generate-credentialCode -username $username -password $password -scriptCode $scriptCode
+			generate-credentialCode -username $username -password $password -PSscriptCode $PSscriptCode
 			$credParam 			= ' -InsightOnlineUsername "{0}" -InsightOnlinePassword $securepassword ' -f $username
-			[void]$ScriptCode.Add( (Generate-CustomVarCode -prefix ('Set-OVRemoteSupport -enable -CompanyName "{0}" {1} {2}' -f $companyName, $credParam, $optParam ) ))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -prefix ('Set-OVRemoteSupport -enable -CompanyName "{0}" {1} {2}' -f $companyName, $credParam, $optParam ) ))
 		 }
 		 else 
 		 {
-			[void]$ScriptCode.Add( (Generate-CustomVarCode -prefix 'Set-OVRemoteSupport -disable ' ))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -prefix 'Set-OVRemoteSupport -disable ' ))
 		 }
 
-	   [void]$ScriptCode.Add('Disconnect-OVMgmt')
+	   [void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	 }
   # ---------- Generate script to file
-  writeToFile -code $ScriptCode -file $ps1Files
+  writeToFile -code $PSscriptCode -file $ps1Files
 
  }
 
@@ -2038,15 +2386,15 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
  ####### TO BE COMPLETED
  Function Import-ligsnmp([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode             = [System.Collections.ArrayList]::new()
+	 $PSscriptCode             = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 	 }
 	 
    
@@ -2065,14 +2413,14 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'write-host -foreground CYAN "----- Configuring OV snmp {0} "' -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'write-host -foreground CYAN "----- Configuring OV snmp {0} "' -isVar $False ))
 		newLine
 
 		# ------------ snmp Read Community string
 		if ($communityString)
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'write-host -foreground CYAN "----- Importing snmp read Community string "'  -isVar $False ))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('Set-OVSnmpReadCommunity -name "{0} "' -f $readCommunity)  -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'write-host -foreground CYAN "----- Importing snmp read Community string "'  -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('Set-OVSnmpReadCommunity -name "{0} "' -f $readCommunity)  -isVar $False ))
 			newLine
 		}
 
@@ -2091,7 +2439,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		if ($trapDestination)
 		{
 			
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'write-host -foreground CYAN "----- Importing snmp trap destination"'  -isVar $False ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'write-host -foreground CYAN "----- Importing snmp trap destination"'  -isVar $False ))
 			for ($i=0; $i -lt $destArray.Count; $i++)
 			{
 				$destinationParam 	= ' '
@@ -2106,9 +2454,9 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 		endBlock
 		# Skip creating because resource already exists
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix 'else'-isVar $False))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix 'else'-isVar $False))
 		startBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
 		endBlock
 
 
@@ -2116,10 +2464,10 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
    # ---------- Generate script to file
-   writeToFile -code $ScriptCode -file $ps1Files
+   writeToFile -code $PSscriptCode -file $ps1Files
  }		 
 
  ####### TO BE COMPLETED
@@ -2127,15 +2475,15 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
  Function Import-user([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode             = [System.Collections.ArrayList]::new()
+	 $PSscriptCode             = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 	 }
 	 
 	 $ovList				= $List | where type -eq 'OV'
@@ -2161,15 +2509,15 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		 $nameParam 		= ' -Firstname "{0}" -Lastname "{1}" -email "{2}" -primary {3} ' -f $firstName, $lastName, $email, $primary
 
 		 newLine
-		 [void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Remote Support contacts {0} "' -f $firstName) -isVar $False ))
+		 [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Remote Support contacts {0} "' -f $firstName) -isVar $False ))
 
 		 ifBlock 		-condition ('if ($null -eq (Get-OVRemoteSupportContact | where email -eq "{0}" ))' -f $email)
-		 [void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVRemoteSupportContact {0}{1}{2}{3}' -f $defaultParam, $nameParam,$languageParam, $notesParam) -isVar $False -indentlevle 1))		 
+		 [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVRemoteSupportContact {0}{1}{2}{3}' -f $defaultParam, $nameParam,$languageParam, $notesParam) -isVar $False -indentlevle 1))		 
 		 endIfBlock
 
 		 #Skip creating because resource already exists
 		 elseBlock
-		 [void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $email + ' already exists.') -isVar $False -indentlevel 1 ))
+		 [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $email + ' already exists.') -isVar $False -indentlevel 1 ))
 		 endElseBlock
 
 	 }
@@ -2188,11 +2536,11 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$permissions 		 	= $user.permissions
 
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating local users {0} "' -f $name) -isVar $False ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix username -Value ("'{0}'" -f $name)  ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating local users {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix username -Value ("'{0}'" -f $name)  ))
 
 		ifBlock			-condition ('if ($null -eq (get-OVUser | where userName -eq "{0}" ))' -f $name) 
-		generate-credentialCode -component 'Users' -username $name -password $password -scriptCode $scriptCode  -indentlevel 1
+		generate-credentialCode -component 'Users' -username $name -password $password -PSscriptCode $PSscriptCode  -indentlevel 1
 
 		$fullNameParam 			= if ($fullName)		{ ' -FullName "{0}" ' 		-f $fullName }			else {''}
 		$emailParam 			= if ($emailAddress)	{ ' -EmailAddress "{0}" ' 	-f $emailAddress }		else {''}
@@ -2204,11 +2552,11 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 			$roles 					= "@('" + $roles.Replace($SepChar,"'$comma'") + "')"
 			$rolesParam 			= ' -Roles $roles'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'roles' 	-Value $roles -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'roles' 	-Value $roles -indentlevel 1))
 		}
 
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix scopePermissions -Value '@()' -indentlevel 1  ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix scopePermissions -Value '@()' -indentlevel 1  ))
 		if ($permissions)
 		{
 			# Extract the scope name to build a query
@@ -2222,13 +2570,13 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 				$scopeIndex = "scope$Index"
 				$value 		= 'Get-OVScope | where name -eq "{0}" ' -f $scopeName 
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $scopeIndex -value $value -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $scopeIndex -value $value -indentlevel 1))
 
 				ifBlock 	-condition ('if ($null -ne ${0})' -f $scopeIndex) 	-indentlevel 1
 				$spIndex 	= "sp$Index"
 				$value 		= '@{' + '{0};scope=${1}' -f $role,$scopeIndex + '}'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $spIndex -value $value -indentlevel 2))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix scopePermissions -Value ('$scopePermissions + ${0}' -f $spIndex) -indentlevel 2  ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $spIndex -value $value -indentlevel 2))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix scopePermissions -Value ('$scopePermissions + ${0}' -f $spIndex) -indentlevel 2  ))
 				endIfBlock -indentlevel 1
 
 				$Index++
@@ -2240,46 +2588,46 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		# Ensure there is no space after backtick (`)
 
 		ifBlock			-condition 'if ($scopePermissions)' -indentlevel 1
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVUser -username "{0}" -password "{1}" `' -f $name, $password) -isVar $False -indentlevel 2))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1}{2}{3}`' -f $fullNameParam, $emailParam ,$officeParam, $mobileParam) -isVar $False -indentlevel 4))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} -ScopePermissions $scopePermissions' -f $rolesParam) -isVar $False -indentlevel 4))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVUser -username "{0}" -password "{1}" `' -f $name, $password) -isVar $False -indentlevel 2))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1}{2}{3}`' -f $fullNameParam, $emailParam ,$officeParam, $mobileParam) -isVar $False -indentlevel 4))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} -ScopePermissions $scopePermissions' -f $rolesParam) -isVar $False -indentlevel 4))
 		endIfBlock		-indentlevel 1
 
 		elseBlock 		-indentlevel 1
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVUser -username "{0}" -password "{1}" `' -f $name, $password) -isVar $False -indentlevel 2))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1}{2}{3}`' -f $fullNameParam, $emailParam ,$officeParam, $mobileParam) -isVar $False -indentlevel 4))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}' -f $rolesParam) -isVar $False -indentlevel 4))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVUser -username "{0}" -password "{1}" `' -f $name, $password) -isVar $False -indentlevel 2))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1}{2}{3}`' -f $fullNameParam, $emailParam ,$officeParam, $mobileParam) -isVar $False -indentlevel 4))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}' -f $rolesParam) -isVar $False -indentlevel 4))		
 		endElseBlock 	-indentlevel 1
 
 		endIfBlock		-condition 'Get-OVUser...'
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 	 }
 	 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
    # ---------- Generate script to file
-   writeToFile -code $ScriptCode -file $ps1Files
+   writeToFile -code $PSscriptCode -file $ps1Files
  }
 
 
  Function Import-addressPool([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $scriptCode            = [System.Collections.ArrayList]::new()
+	 $PSscriptCode            = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName   	= $sheetName.Split($SepChar)       # composer
 
-	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	 
 	 $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 	 if ($List)
 	 {
-		 [void]$scriptCode.Add($codeComposer)
+		 [void]$PSscriptCode.Add($codeComposer)
 	 }
 
 
@@ -2297,38 +2645,38 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$dnsServers 			= $addr.dnsServers
 		$domain 				= $addr.domain
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating address pools {0} "' -f $name) -isVar $False ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for address Pools "{0}"' -f $name) -isVar $False -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'proceed' 		-Value '$False' ) )
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'poolType' 		-Value ('"{0}"' 	-f $poolType) ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'rangeType' 		-Value ('"{0}"' 	-f $rangeType) ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'startAddress' 	-Value ('"{0}"' 	-f $startAddress) ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'endAddress' 		-Value ('"{0}"' 	-f $endAddress) ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'deleteGenerated' -Value ('${0}' 		-f $deleteGenerated) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating address pools {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for address Pools "{0}"' -f $name) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'proceed' 		-Value '$False' ) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'poolType' 		-Value ('"{0}"' 	-f $poolType) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'rangeType' 		-Value ('"{0}"' 	-f $rangeType) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'startAddress' 	-Value ('"{0}"' 	-f $startAddress) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'endAddress' 		-Value ('"{0}"' 	-f $endAddress) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'deleteGenerated' -Value ('${0}' 		-f $deleteGenerated) ))
 
 		if ($poolType -like 'ip*')
 		{
 			
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' 		-Value ('"{0}"' 	-f $name) ))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'networkId' 	-Value ('"{0}"' 	-f $networkId) ))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'subnetmask' 	-Value ('"{0}"' 	-f $subnetmask) ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' 		-Value ('"{0}"' 	-f $name) ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'networkId' 	-Value ('"{0}"' 	-f $networkId) ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'subnetmask' 	-Value ('"{0}"' 	-f $subnetmask) ))
 			$gwParam 		= $null
 			if ($gateway)
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'gateway' 	-Value ('"{0}"' 	-f $gateway) ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'gateway' 	-Value ('"{0}"' 	-f $gateway) ))
 				$gwParam 	= '-Gateway $gateway '
 			}
 			$dnsParam 		= $null
 			if ($dnsServers)
 			{
 				$value 		= "@('" + $dnsServers.replace($SepChar, "'$Comma'") + "')" 
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'dnsServers' 	-Value $value ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'dnsServers' 	-Value $value ))
 				$dnsParam 	= ' -DNSServers $dnsServers '
 			}
 			$domainParam 	= $null
 			if ($domain)
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'domain' 	-Value ('"{0}"' 	-f $domain) ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'domain' 	-Value ('"{0}"' 	-f $domain) ))
 				$domainParam = ' -Domain $domain'
 			}
 
@@ -2337,31 +2685,31 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		if ($poolType -like "ip*")
 		{
 			ifBlock		-condition 'if ($poolType -like "ip*")' 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'subnet' -Value (" Get-OVAddressPoolSubnet | where networkId -eq '{0}'" -f $networkId ) -indentlevel 1) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'subnet' -Value (" Get-OVAddressPoolSubnet | where networkId -eq '{0}'" -f $networkId ) -indentlevel 1) )
 
 			ifBlock		-condition 'if ($subnet -ne $null) ' -indentlevel 1
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'addressPool' -Value 'Get-OVAddressPoolRange | where subnetUri -match ($subnet.uri)' -indentlevel 2) )
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'proceed' -value ('$null -eq ($addressPool.startStopFragments.startAddress -ne $startAddress)')  -indentlevel 2 ) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'addressPool' -Value 'Get-OVAddressPoolRange | where subnetUri -match ($subnet.uri)' -indentlevel 2) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'proceed' -value ('$null -eq ($addressPool.startStopFragments.startAddress -ne $startAddress)')  -indentlevel 2 ) )
 			endIfBlock  -condition '$subnet....'	-indentlevel 1
 			
 			elseBlock		-indentlevel 1 	# generate new subnet
 			$value 			= 'new-OVAddressPoolSubnet -NetworkId $networkId -SubnetMask $subnetMask ' + $gwParam + $dnsParam + $domainParam
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'subnet' -value  $value -indentlevel 2 ) )
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'proceed' -Value '$True' -indentlevel 2 ) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'subnet' -value  $value -indentlevel 2 ) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'proceed' -Value '$True' -indentlevel 2 ) )
 			endElseBlock	-indentlevel 1 
 			endIfBlock	-condition '$poolType....' 
 		}
 		else 
 		{
 			$value = 'Get-OVAddressPoolRange| where {($_.name -eq $poolType) -and ($_.rangeCategory -eq $rangeType)} '
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'addressPool' -Value $value ) )
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'proceed' -value ('$null -eq ($addressPool | where startAddress -eq $startAddress)')  ) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'addressPool' -Value $value ) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'proceed' -value ('$null -eq ($addressPool | where startAddress -eq $startAddress)')  ) )
 			
 			#### Delete Generated range if asked
 
 			$value = 'Get-OVAddressPoolRange| where {($_.name -eq $poolType) -and ($_.rangeCategory -eq "Generated")} '
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'poolToDelete' -Value $value ) )
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '$poolToDelete |  Remove-OVAddressPoolRange -confirm:$False' -isVar $False ) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'poolToDelete' -Value $value ) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '$poolToDelete |  Remove-OVAddressPoolRange -confirm:$False' -isVar $False ) )
 
 		}
 
@@ -2372,7 +2720,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 		if ($poolType -like "ip*")
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVAddressPoolRange -IPSubnet $subnet -name "{0}" {1}' -f $name,  $addressParam ) -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVAddressPoolRange -IPSubnet $subnet -name "{0}" {1}' -f $name,  $addressParam ) -isVar $False -indentlevel 1))
 		}
 		else 
 		{
@@ -2380,13 +2728,13 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			{
 				$addressParam 		= '' 
 			}
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVAddressPoolRange -PoolType $poolType -RangeType $rangeType {0} ' -f  $addressParam ) -isVar $False -indentlevel 1))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVAddressPoolRange -PoolType $poolType -RangeType $rangeType {0} ' -f  $addressParam ) -isVar $False -indentlevel 1))	
 		}
 		endIfBlock
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 2 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 2 ))
 		endElseBlock
 
 
@@ -2395,160 +2743,327 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 
 	 if ($List)
 	 {
-		 [void]$ScriptCode.Add('Disconnect-OVMgmt')
+		 [void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	 }
 
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
  }
 
+ Function Import-YMLaddressPool_ipv4([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
+{
+     $YMLscriptCode         = [System.Collections.ArrayList]::new()
+     $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
+ 
+     [void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure IP v4 address pools'))
+     
+     $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
+	 
+	 $List 					= $List | where poolType -eq 'ipV4'
+	 foreach ($addr in $List)
+	 {
+		$name 				  	= $addr.name
+		$poolType			  	= $addr.poolType
+		$rangeCategory			= $addr.rangeCategory
+		$deleteGenerated		= [Boolean]($addr.deleteGenerated)
+		$startAddress 			= $addr.startAddress
+		$endAddress 			= $addr.endAddress
+		$networkId	 			= $addr.networkId
+		$subnetmask 			= $addr.subnetmask
+		$gateway 				= $addr.gateway
+		$dnsServers 			= $addr.dnsServers
+		$domain 				= $addr.domain
+
+		$_subnetName 			="subnet_{0}" -f $networkId
+		$comment				= '# ---------- IP v4 address pool {0} on subnet {1}' 	-f $name, $networkId
+		$title 					= 'Ensure the ID Pools IPV4 Subnet exists'		
+		[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -ovTask 'oneview_id_pools_ipv4_subnet'))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $_subnetName				-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		networkId				-value $networkId				-indentlevel $indentDataStart ))		
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		subnetmask				-value $subnetmask				-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		gateway					-value $gateway					-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		domain 					-value $domain 					-indentlevel $indentDataStart ))
+
+		if ($dnsServers)
+		{
+			$dnsArr 			= $dnsServers.Split($SepChar)
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	dnsServers 												-indentlevel $indentDataStart ))
+			foreach ($_dns in $dnsArr)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $_dns		-IsVar $True -IsItem $True 					-indentlevel ($indentDataStart +2)  ))
+			}
+
+		}
+		
+		$var_subnet 		= "subnet_{0}_uri"		-f $name.Trim().Replace($Space, '')
+		$_uri 				= '"{{id_pools_ipv4_subnet' + "['uri'] }}`" "	# "{{id_pools_ipv4_subnet['uri'] }}"
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 									-indentlevel 1 ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $var_subnet 	-value $_uri									-indentlevel 2 ))		
+		
+		# ---- id pools
+		$title 					= 'Ensure the IPV4 Range {0} exists'	-f $name		
+		[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title  -ovTask 'oneview_id_pools_ipv4_range'))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		subnetUri				-value "'{{$var_subnet}}'"		-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type					-value Range					-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		rangeCategory			-value $rangeCategory			-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		startStopFragments										-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'{'			-isVar $True -isItem $True				-indentlevel ($indentDataStart+1)))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				startAddress 	-value "$startAddress ,"		-indentlevel ($indentDataStart+2)))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				endAddress 		-value "$endAddress ," 			-indentlevel ($indentDataStart+2)))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				fragmentType 	-value FREE 					-indentlevel ($indentDataStart+2)))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'}'						-isItem $True				-indentlevel ($indentDataStart+1)))
+		
+	 }
+
+
+	 # ---------- Generate script to file
+     writeToFile -code $YMLscriptCode -file $YMLFiles
+}
 
 
  # ---------- Ethernet networks
-Function Import-ethernetNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
+ Function Import-ethernetNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
+ {
+     $PSscriptCode             = [System.Collections.ArrayList]::new()
+     $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
+ 
+     connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
+     
+     $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
+     
+     foreach ($net in $List)
+     {
+         $name               = $net.name  
+         $type 				 = $net.type       
+         $vLANType           = $net.ethernetNetworkType
+         $vLANID             = $net.vLanId
+         $subnetID 			 = $net.subnetID
+         $ipV6subnetID 		 = $net.ipV6subnetID
+         $pBandwidth         = (1000 * $net.typicalBandwidth).ToString()
+         $mBandwidth         = (1000 * $net.maximumBandwidth).ToString()
+         $smartlink          = $net.SmartLink
+         $private            = $net.PrivateNetwork
+         $purpose            = $net.purpose
+         $scopes             = $net.scopes
+ 
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating ethernet networks {0} "' -f $name) -isVar $False ))
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetwork | where name -eq '{0}' " -f $name) ))
+ 
+         ifBlock 		-condition 'if ($Null -eq $net )' 
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for Ethernet network "{0}"' -f $name) -isVar $False -indentlevel 1))
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' -Value ('"{0}"' -f $name) -indentlevel 1))
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vLANType' -Value ('"{0}"' -f $vLANType) -indentlevel 1))
+ 
+         $vLANIDparam = $vLANIDcode = $null
+ 
+         # --- vLAN
+         if ($vLANType -eq 'Tagged')
+         { 
+ 
+             if (($vLANID) -and ($vLANID -gt 0)) 
+             {
+                 $vLANIDparam = ' -VlanID $VLANID'
+                 [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vLANid' -Value ('{0}' -f $vLANID) -indentlevel 1))
+ 
+             }
+ 
+         }                
+ 
+         # --- Bandwidth
+         $pBWparam = $pBWCode = $null
+         $mBWparam = $mBWCode = $null
+ 
+         if ($pBandwidth) 
+         {
+ 
+             $pBWparam = ' -TypicalBandwidth $pBandwidth'
+             [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'pBandwidth' -Value ('{0}' -f $pBandwidth) -indentlevel 1))
+ 
+         }
+ 
+         if ($mBandwidth) 
+         {
+ 
+             $mBWparam = ' -MaximumBandwidth $mBandwidth'
+             [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'mBandwidth' -Value ('{0}' -f $mBandwidth) -indentlevel 1))
+ 
+         }
+ 
+         # --- subnet
+         $subnetCode     = $null
+         $subnetIDparam  = ''
+         $IPv6subnetCode = $IPv6subnetIDparam = $null
+         $subnetArray 	= @()
+         
+         if ($subnetID)
+         {
+             
+             [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'ipV4subnet' -Value ("Get-OVAddressPoolSubnet -NetworkID `'{0}`'" -f $subnetID ) -indentlevel 1))
+             $subnetArray += '$ipV4subnet'
+         }
+ 
+         if ($ipV6subnetID)
+         {
+             
+             [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'ipV6subnet' -Value ("Get-OVAddressPoolSubnet -NetworkID `'{0}`'" -f $ipV6subnetID ) -indentlevel 1))
+             $subnetArray += '$ipV6subnet'
+         }
+ 
+         if ($subnetArray)
+         {
+                 $value 	= '@({0})' -f ($subnetArray -join $COMMA)
+                 [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'subnet' -Value $value -indentlevel 1) )
+                 $subnetIDparam 	= ' -subnet $subnet'
+         }
+ 
+ 
+ 
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'PLAN' -Value ('${0}' -f $private) -indentlevel 1))
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'smartLink' -Value ('${0}' -f $smartLink)-indentlevel 1))
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'purpose' -Value ('"{0}"' -f $purpose)-indentlevel 1))
+ 
+         [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix 'New-OVNetwork -Name $name  -PrivateNetwork $PLAN -SmartLink $smartLink -VLANType $VLANType  -purpose $purpose `' -isVar $False -indentLevel 1)) 
+         [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('{0}{1}{2}{3}' -f $vLANIDparam, $pBWparam, $mBWparam, $subnetIDparam) -isVar $False -indentLevel 4))
+         newLine # to end the command
+         # --- Scopes
+         if ($scopes)
+         {
+             newLine
+             [void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVNetwork | where name -eq $name' -indentlevel 1))
+             generate-scopeCode -scopes $scopes -indentlevel 1
+ 
+         }
+ 
+         endIfBlock 
+ 
+         # Skip creating because resource already exists
+         elseBlock
+         [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+         endElseBlock
+ 
+ 
+         newLine
+         
+ 
+     }
+ 
+     
+     if ($List)
+     {
+         [void]$PSscriptCode.Add('Disconnect-OVMgmt')
+     }
+ 
+     # ---------- Generate script to file
+     writeToFile -code $PSscriptCode -file $ps1Files
+     
+ }
+
+ Function Import-YMLethernetNetwork([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
-	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
+     $YMLscriptCode         = [System.Collections.ArrayList]::new()
+     $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
+ 
+     [void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure Ethernet networks'))
+     
+     $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
+     
+     foreach ($net in $List)
+     {
+         $name               = $net.name  
+         $type 				 = $net.type       
+         $vLANType           = $net.ethernetNetworkType
+         $vLANID             = $net.vLanId
+         $subnetID 			 = $net.subnetID
+         $ipV6subnetID 		 = $net.ipV6subnetID
+         $pBandwidth         = (1000 * $net.typicalBandwidth).ToString()
+         $mBandwidth         = (1000 * $net.maximumBandwidth).ToString()
+         $smartlink          = $net.SmartLink
+         $private            = $net.PrivateNetwork
+         $purpose            = $net.purpose
+		 $scopes             = if ($net.scopes) {$net.scopes.Split('|')} else {$Null}
+		 
+		 newLine	-code $YMLscriptCode
+		 $comment 			= '# ---------- Ethernet network  {0}' 	-f $name
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $comment  				-isItem $True  					-indentlevel 1 ))
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
-	
-	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
-	
-    foreach ($net in $List)
-    {
-		$name               = $net.name  
-		$type 				= $net.type       
-		$vLANType           = $net.ethernetNetworkType
-		$vLANID             = $net.vLanId
-		$subnetID 			= $net.subnetID
-		$ipV6subnetID 		= $net.ipV6subnetID
-		$pBandwidth         = (1000 * $net.typicalBandwidth).ToString()
-		$mBandwidth         = (1000 * $net.maximumBandwidth).ToString()
-		$smartlink          = $net.SmartLink
-		$private            = $net.PrivateNetwork
-		$purpose            = $net.purpose
-		$scopes             = $net.scopes
-
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating ethernet networks {0} "' -f $name) -isVar $False ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'net' -Value ("get-OVNetwork | where name -eq '{0}' " -f $name) ))
-
-		ifBlock 		-condition 'if ($Null -eq $net )' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for Ethernet network "{0}"' -f $name) -isVar $False -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' -Value ('"{0}"' -f $name) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'vLANType' -Value ('"{0}"' -f $vLANType) -indentlevel 1))
-
-		$vLANIDparam = $vLANIDcode = $null
-
-		# --- vLAN
-		if ($vLANType -eq 'Tagged')
-		{ 
-
-			if (($vLANID) -and ($vLANID -gt 0)) 
-			{
-				$vLANIDparam = ' -VlanID $VLANID'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'vLANid' -Value ('{0}' -f $vLANID) -indentlevel 1))
-
-			}
-
-		}                
-
-		# --- Bandwidth
-		$pBWparam = $pBWCode = $null
-		$mBWparam = $mBWCode = $null
-
-		if ($pBandwidth) 
-		{
-
-			$pBWparam = ' -TypicalBandwidth $pBandwidth'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'pBandwidth' -Value ('{0}' -f $pBandwidth) -indentlevel 1))
-
-		}
-
-		if ($mBandwidth) 
-		{
-
-			$mBWparam = ' -MaximumBandwidth $mBandwidth'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'mBandwidth' -Value ('{0}' -f $mBandwidth) -indentlevel 1))
-
-		}
-
-		# --- subnet
-		$subnetCode     = $null
-		$subnetIDparam  = ''
-		$IPv6subnetCode = $IPv6subnetIDparam = $null
-		$subnetArray 	= @()
-		
-		if ($subnetID)
-		{
-			
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ipV4subnet' -Value ("Get-OVAddressPoolSubnet -NetworkID `'{0}`'" -f $subnetID ) -indentlevel 1))
-			$subnetArray += '$ipV4subnet'
-		}
-
-		if ($ipV6subnetID)
-		{
-			
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ipV6subnet' -Value ("Get-OVAddressPoolSubnet -NetworkID `'{0}`'" -f $ipV6subnetID ) -indentlevel 1))
-			$subnetArray += '$ipV6subnet'
-		}
-
-		if ($subnetArray)
-		{
-				$value 	= '@({0})' -f ($subnetArray -join $COMMA)
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'subnet' -Value $value -indentlevel 1) )
-				$subnetIDparam 	= ' -subnet $subnet'
-		}
+		 if ($subnetID)
+		 {
+			$title 			= 'get uri for subnet {0}' 	-f $subnetID
+			$value 			= "'{0}'" 					-f $subnetID
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  		-value $title	-isVar $True 			-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_id_pools_ipv4_subnet_facts 					-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix config		-value "'{{config}}'"					-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 				-isVar $True 				-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix networkId	-value $value							-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix var_subnets	-value "'{{id_pools_ipv4_subnets}}'"	-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 				-isVar $True 				-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix var_uri		-value "'{{item.uri}}'"					-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix loop		-value "'{{var_subnets}}'"				-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix when		-value "item.networkId == networkId"	-indentlevel 1 ))
+		 }
 
 
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'PLAN' -Value ('${0}' -f $private) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'smartLink' -Value ('${0}' -f $smartLink)-indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'purpose' -Value ('"{0}"' -f $purpose)-indentlevel 1))
+		 $_category 		= $YMLtype540Enum.item('ethernet')
+		 $title 			= 'Create ethernet network {0}' 	-f $name		
+		 [void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title  -ovTask 'oneview_ethernet_network'))	
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type					-value $_category				-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		ethernetNetworkType		-value $vLANType				-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		purpose					-value $purpose					-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		smartLink				-value $smartLink				-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		privateNetwork			-value $private					-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		vlanId					-value $vlanID					-indentlevel $indentDataStart ))
+		 if ($subnetID)
+		 {
+		 	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	subnetUri			-value "'{{var_uri}}'"				-indentlevel $indentDataStart ))
+		 }
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		bandwidth												-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			typicalBandwidth		-value $pBandwidth			-indentlevel ($indentDataStart  + 2) ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			maximumBandwidth		-value $mBandwidth			-indentlevel ($indentDataStart  + 2) ))         
+ 
+		 foreach ($_scope in $scopes)
+		 {
+			newLine	-code $YMLscriptCode
+			$title 			= 'get ethernet network {0}' 	-f $name
+			$_varname 		= "var_{0}"	-f ($name -replace " ", '_')
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  					-value $title	-isVar $True 		-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_ethernet_network_facts 								-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config					-value "'{{config}}'"			-indentlevel 3 )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name					-value "'$name'"				-indentlevel 3 )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 				-isVar $True 						-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$_varname			-value "'{{ethernet_networks.uri}}'" -indentlevel 3 ))
 
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix 'New-OVNetwork -Name $name  -PrivateNetwork $PLAN -SmartLink $smartLink -VLANType $VLANType  -purpose $purpose `' -isVar $False -indentLevel 1)) 
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('{0}{1}{2}{3}' -f $vLANIDparam, $pBWparam, $mBWparam, $subnetIDparam) -isVar $False -indentLevel 4))
-		newLine # to end the command
-		# --- Scopes
-		if ($scopes)
-		{
-			newLine
-			[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value 'get-OVNetwork | where name -eq $name' -indentlevel 1))
-			generate-scopeCode -scopes $scopes -indentlevel 1
+			newLine	-code $YMLscriptCode
+			$title 			= 'Update the scope {0} with new resource {1}' 	-f $_scope, $_varname
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  					-value $title	-isVar $True 					-indentlevel 2 ))	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_scope 															-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config					-value "'{{config}}'"						-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	state					-value "resource_assignments_updated" 		-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'data'																-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $_scope							-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'resourceAssignments'											-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'addedResourceUris'											-indentlevel ($indentDataStart + 1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"'{{$_varname}}'"  		-isVar $True -isItem $True 		-indentlevel 6 ))	
 
-		}
+		 }
+	 }
+	 
 
-		endIfBlock 
-
-		# Skip creating because resource already exists
-		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
-		endElseBlock
-
-
-		newLine
-		
-
-    }
-
-	
-	if ($List)
-	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
-	}
-
-    # ---------- Generate script to file
-    writeToFile -code $ScriptCode -file $ps1Files
-    
+	 # ---------- Generate script to file
+     writeToFile -code $YMLscriptCode -file $YMLFiles
 }
+
 
 
 # ---------- networks
 Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook 
 
@@ -2570,13 +3085,13 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 			$type 	= 'FibreChannel'
 		}
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating FC/FCOE networks {0} "' -f $name) -isVar $False ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'net' -Value ("get-OVNetwork -type {1} | where name -eq '{0}'  " -f $name, $type) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating FC/FCOE networks {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetwork -type {1} | where name -eq '{0}'  " -f $name, $type) ))
 
 		ifBlock			-condition 'if ($Null -eq $net )' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for FC network "{0}"' -f $name) -isVar $False -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' -Value ('"{0}"' -f $name) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'type' -Value ('"{0}"' -f $type)-indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for FC network "{0}"' -f $name) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' -Value ('"{0}"' -f $name) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'type' -Value ('"{0}"' -f $type)-indentlevel 1))
 
 		# --- Bandwidth
 		$pBWparam = $pBWCode = $null
@@ -2586,7 +3101,7 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		{
 
 			$pBWparam = ' -typicalBandwidth $pBandwidth'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'pBandwidth' -Value ('{0}' -f $pBandwidth) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'pBandwidth' -Value ('{0}' -f $pBandwidth) -indentlevel 1))
 
 		}
 
@@ -2594,7 +3109,7 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		{
 
 			$mBWparam = ' -maximumBandwidth $mBandwidth'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'mBandwidth' -Value ('{0}' -f $mBandwidth) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'mBandwidth' -Value ('{0}' -f $mBandwidth) -indentlevel 1))
 
 		}
 
@@ -2604,8 +3119,8 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		{
 			$SANparam   = ' -ManagedSAN $managedSAN' 
 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'SANname' -Value ('"{0}"' -f $SANname) -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'managedSAN' -Value ('Get-OVManagedSAN -Name $SANname') -indentlevel 1))		
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'SANname' -Value ('"{0}"' -f $SANname) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'managedSAN' -Value ('Get-OVManagedSAN -Name $SANname') -indentlevel 1))		
 		}
 
 
@@ -2617,7 +3132,7 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 			{
 
 				$vLanIdParam  =   ' -vLanID $vLanId'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'vLanId' -Value ('{0}' -f $vLANID) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vLanId' -Value ('{0}' -f $vLANID) -indentlevel 1))
 			
 			}
 
@@ -2626,14 +3141,14 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		else # FC network
 		{
 			$FCparam          = ' -FabricType $fabricType'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fabricType' -Value ('"{0}"' -f $fabricType)  -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fabricType' -Value ('"{0}"' -f $fabricType)  -indentlevel 1))
 			if ($fabrictype -eq 'FabricAttach')
 			{
 
 				if ($autologinredistribution)
 				{
 
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'autologinredistribution' -Value ('${0}' -f $autologinredistribution)  -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'autologinredistribution' -Value ('${0}' -f $autologinredistribution)  -indentlevel 1))
 					$autologinParam     = ' -AutoLoginRedistribution $autologinredistribution'
 
 				}
@@ -2641,7 +3156,7 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 				if ($linkStabilityTime) 
 				{
 
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'LinkStabilityTime' -Value ('{0}' -f $LinkStabilityTime) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'LinkStabilityTime' -Value ('{0}' -f $LinkStabilityTime) -indentlevel 1))
 					$linkParam  = ' -LinkStabilityTime $LinkStabilityTime'
 
 				}
@@ -2652,15 +3167,15 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 
 		# Note : when using backstick (`) make sure that theree is no space after. Otherwise it is considered as escape teh space char and NOT line continuator
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVNetwork -Name $name -Type $Type `') -isVar $False -indentlevel 1) )
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1}{2}{3}{4}' -f $pBWparam, $mBWparam, $FCparam, $vLANIDparam, $SANparam) -isVar $False -indentlevel 4) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVNetwork -Name $name -Type $Type `') -isVar $False -indentlevel 1) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1}{2}{3}{4}' -f $pBWparam, $mBWparam, $FCparam, $vLANIDparam, $SANparam) -isVar $False -indentlevel 4) )
 		newLine # to end the command
 
 		# --- Scopes
 		if ($scopes)
 		{
 			newLine
-			[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value 'get-OVNetwork | where name -eq $name' -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVNetwork | where name -eq $name' -isVar $False -indentlevel 1))
 			generate-scopeCode -scopes $scopes -indentlevel 1
 
 		}
@@ -2669,7 +3184,7 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -2679,21 +3194,102 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
     # ---------- Generate script to file
-    writeToFile -code $ScriptCode -file $ps1Files
+    writeToFile -code $PSscriptCode -file $ps1Files
 
 }
+
+Function Import-YMLfcNetwork([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
+{
+     $YMLscriptCode         = [System.Collections.ArrayList]::new()
+     $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
+ 
+     [void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure Fibre Channel networks'))
+     
+     $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
+     
+     foreach ($net in $List)
+     {
+		$name                   = $net.name
+		$type                   = $net.type
+		$fabricType             = $net.fabricType
+		$managedSan 			= $net.managedSan	
+		$vlanId             	= $net.vLanId
+		$pBandwidth             = 1000 * $net.typicalBandwidth
+		$mBandwidth             = 1000 * $net.maximumBandwidth
+		$autoLoginRedistribution = $net.autoLoginRedistribution
+		$linkStabilityTime		 = $net.linkStabilityTime
+		$scopes             	 = if ($net.scopes) {$net.scopes.Split('|')} else {$Null}
+		
+		$comment 				= '# ---------- FC or FCOE network  {0}' 	-f $name
+
+
+		if ($vlanId) # fcoe network
+		{
+			$title 					= 'Create fcoe network {0}' 				-f $name		
+			[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -ovTask 'oneview_fcoe_network'))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		vlanId					-value $vlanId					-indentlevel $indentDataStart ))		
+		}
+		else # fc network
+		{					
+
+			$_category 				= $YMLtype540Enum.item('fcnetwork')
+			$title 					= 'Create fc network {0}' 				-f $name		
+			[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -ovTask 'oneview_fc_network'))				
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type					-value $_category				-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		fabricType				-value $fabricType				-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		linkStabilityTime		-value $linkStabilityTime		-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		autoLoginRedistribution	-value $autoLoginRedistribution	-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		bandwidth												-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			typicalBandwidth		-value $pBandwidth			-indentlevel ($indentDataStart  + 1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			maximumBandwidth		-value $mBandwidth			-indentlevel ($indentDataStart  + 1) ))         
+		}
+		 foreach ($_scope in $scopes)
+		 {
+			newLine	-code $YMLscriptCode
+			$title 			= 'get fc or fcoe network {0}' 	-f $name
+			$_oneview_facts = if ($vlanId) {'oneview_fcoe_network_facts'} else {'oneview_fc_network_facts'}
+			$_varname 		= "var_{0}"	-f ($name -replace " ", '_')
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  					-value $title	-isVar $True 		-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $_oneview_facts			 									-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config					-value "'{{config}}'"			-indentlevel 3 )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name					-value "'$name'"				-indentlevel 3 )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 				-isVar $True 						-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$_varname			-value "'{{ethernet_networks.uri}}'" -indentlevel 3 ))
+
+			newLine	-code $YMLscriptCode
+			$title 			= 'Update the scope {0} with new resource {1}' 	-f $_scope, $_varname
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  					-value $title	-isVar $True 					-indentlevel 2 ))	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_scope 															-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config					-value "'{{config}}'"						-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	state					-value "resource_assignments_updated" 		-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'data'																-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $_scope							-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'resourceAssignments'											-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'addedResourceUris'											-indentlevel ($indentDataStart + 1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"'{{$_varname}}'"  		-isVar $True -isItem $True 		-indentlevel 6 ))	
+
+		 }
+	 }
+	 
+
+	 # ---------- Generate script to file
+     writeToFile -code $YMLscriptCode -file $YMLFiles
+}
+
 
 
 # ---------- Network Sets
 Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-	$scriptCode             = [System.Collections.ArrayList]::new()
+	$PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -2709,13 +3305,13 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$nativeNetwork 		= $ns.nativeNetwork
 		$scopes 			= $ns.scopes
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating networkset {0} "' -f $name) -isVar $False ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'net' -Value ("get-OVNetworkSet | where name -eq '{0}' " -f $name) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating networkset {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetworkSet | where name -eq '{0}' " -f $name) ))
 
 		ifBlock			-condition 'if ($Null -eq $net )'  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for Network Set "{0}"' -f $name) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for Network Set "{0}"' -f $name) -isVar $False -indentlevel 1))
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' -Value ('"{0}"' -f $name) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' -Value ('"{0}"' -f $name) -indentlevel 1))
 			
 		$pBWparam = $pbWCode = $null
 		$mBWparam = $mBWCode = $null
@@ -2724,7 +3320,7 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 
 			$pBWparam = ' -TypicalBandwidth $pBandwidth'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'pBandwidth' -Value ('{0}' -f $pBandwidth) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'pBandwidth' -Value ('{0}' -f $pBandwidth) -indentlevel 1))
 
 		}
 		
@@ -2732,7 +3328,7 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 
 			$mBWparam = ' -MaximumBandwidth $mBandwidth'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'mBandwidth' -Value ('{0}' -f $mBandwidth) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'mBandwidth' -Value ('{0}' -f $mBandwidth) -indentlevel 1))
 
 		}
 
@@ -2747,7 +3343,7 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			$netList    = '@({0})' -f [string]::Join($Comma, $arr)
 			$value 		= ('{0}' -f $netList ) + ' | % { get-OVNetwork -name $_ }'
 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix networks -value $value -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix networks -value $value -indentlevel 1))
 		}
 
 		# --- native NEtwork
@@ -2757,27 +3353,17 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 			$untaggedParam 		= ' -UntaggedNetwork $nativeNetwork'
 			$value 				= '"{0}"' -f $nativeNetwork
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix untaggedNetwork -value $value -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix untaggedNetwork -value $value -indentlevel 1))
 		}
 
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVNetworkSet -Name $name{0}{1}{2}{3}' -f $pBWparam, $mBWparam, $netParam, $untaggedParam) -isVar $False -indentlevel 1))
-
-		# --- network Set Type
-		#[void]$scriptCode.Add((Generate-CustomVarCode -Prefix nsType  -value ('@{ networkSetType = ' + '"{0}"' -f $networkSetType + "}") -indentlevel 1))
-		
-		#[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ns' -value ("Get-OVNetworkSet -name {0}" -f $name) -indentlevel 1))
-		##[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ns.networkSetType' -value '$nsType' -indentlevel 1))
-		#[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '$ns.PSobject.Properties.Remove("typicalBandwidth")' -isVar $false -indentlevel 1))
-		#[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '$ns.PSobject.Properties.Remove("maximumBandwidth")' -isVar $false -indentlevel 1))
-		#[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'Set-OVResource -InputObject $ns | Wait-OVTaskComplete' -isVar $False  -indentlevel 1))
-		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVNetworkSet -Name $name{0}{1}{2}{3}' -f $pBWparam, $mBWparam, $netParam, $untaggedParam) -isVar $False -indentlevel 1))		
 
 		endIfBlock 
 
         # Skip creating because resource already exists
         elseBlock
-        [void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+        [void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
 		endElseBlock
 		
 		newLine
@@ -2785,26 +3371,101 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
     # ---------- Generate script to file
-    writeToFile -code $ScriptCode -file $ps1Files
+    writeToFile -code $PSscriptCode -file $ps1Files
 
+}
+
+Function Import-YMLnetworkSet([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
+{
+     $YMLscriptCode         = [System.Collections.ArrayList]::new()
+     $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
+ 
+     [void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure network sets'))
+     
+     $List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
+     
+     foreach ($ns in $List)
+     {
+		$name               = $ns.name
+		$pBandwidth         = 1000 * $ns.TypicalBandwidth 
+		$mBandwidth         = 1000 * $ns.MaximumBandwidth 
+		$networkSetType 	= $ns.networkSetType
+		$networks        	= if ($ns.networks) {$ns.networks.Split('|')} else {$Null}
+		$nativeNetwork 		= $ns.nativeNetwork
+		$scopes             = if ($ns.scopes) {$ns.scopes.Split('|')} else {$Null}
+		 
+		 $comment 			= '# ---------- Network set  {0}' 	-f $name
+		 $title 			= 'Create network set {0}' 			-f $name		
+		 [void]$YMLscriptCode.Add((Generate-ymlTask 		-title $title -comment $comment -ovTask 'oneview_network_set'))	
+
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		networkSetType			-value $networkSetType			-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		bandwidth												-indentlevel $indentDataStart ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			typicalBandwidth	-value $pBandwidth				-indentlevel ($indentDataStart  + 1) ))
+		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			maximumBandwidth	-value $mBandwidth				-indentlevel ($indentDataStart  + 1) ))         
+
+		 if ($nativeNetwork)
+		 {
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		nativeNetworkUri	-value $nativeNetwork			-indentlevel $indentDataStart ))
+		 }
+		 if ($networks)
+		 {
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		networkUris											-indentlevel $indentDataStart )) 
+			foreach ($_net in $networks)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		$_net		-isVar $True -isItem $True			-indentlevel ($indentDataStart+1) )) 
+			}
+		 }
+
+		 foreach ($_scope in $scopes)
+		 {
+			newLine	-code $YMLscriptCode
+			$title 			= 'get fc network {0}' 	-f $name
+			$_varname 		= "var_{0}"	-f ($name -replace " ", '_')
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  					-value $title	-isVar $True 		-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_network_set_facts 									-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config					-value "'{{config}}'"			-indentlevel 3 )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name					-value "'$name'"				-indentlevel 3 )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 				-isVar $True 						-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$_varname			-value "'{{ethernet_networks.uri}}'" -indentlevel 3 ))
+
+			newLine	-code $YMLscriptCode
+			$title 			= 'Update the scope {0} with new resource {1}' 	-f $_scope, $_varname
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  					-value $title	-isVar $True 					-indentlevel 2 ))	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_scope 															-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config					-value "'{{config}}'"						-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	state					-value "resource_assignments_updated" 		-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'data'																-indentlevel 3 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $_scope							-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'resourceAssignments'											-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'addedResourceUris'											-indentlevel ($indentDataStart + 1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"'{{$_varname}}'"  		-isVar $True -isItem $True 		-indentlevel 6 ))	
+
+		 }
+	 }
+	 
+
+	 # ---------- Generate script to file
+     writeToFile -code $YMLscriptCode -file $YMLFiles
 }
 
 # ---------- LIG
 Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-	$scriptCode             	= [System.Collections.ArrayList]::new()
+	$PSscriptCode             	= [System.Collections.ArrayList]::new()
 
-	$cSheet, $ligSheet, $snmpConfigSheet, $snmpV3UserSheet, $snmpTrapSheet 	= $sheetName.Split($SepChar)       # composer
+	$cSheet, $ligSheet, $uplSheet, $snmpConfigSheet, $snmpV3UserSheet, $snmpTrapSheet 	= $sheetName.Split($SepChar)       # composer
+	
 	$ligList 					= if ($ligSheet)	 		{get-datafromSheet -sheetName $ligSheet -workbook $WorkBook				} else {$null}
 	
 	#Note: snmp____List will be extracted in teh snmp subsection
 
 	
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$list 						= $ligList 
 	foreach ($L in $list)    
@@ -2848,14 +3509,14 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 		$scopes 					= $L.scopes
 
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating logical interconnect group {0} " ' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating logical interconnect group {0} " ' -f $name) -isVar $False ))
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup | where name -eq  '{0}' " -f $name) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup | where name -eq  '{0}' " -f $name) ))
 
 		ifBlock			-condition 'if ($lig -eq $Null)' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for LIG "{0}"' -f $name) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for LIG "{0}"' -f $name) -isVar $False -indentlevel 1))
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' 						-Value ('"{0}"'	-f $name) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' 						-Value ('"{0}"'	-f $name) -indentlevel 1))
 		
 		# --- Frame Count - InterconnectBay Set - Fabric Module Type
 		$FrameCountParam		= ' -frameCount $frameCount'
@@ -2863,15 +3524,15 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 		$fabricModuleParam 		= ' -fabricModuleType $fabricModuleType'
 		
 		
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'frameCount' 					-Value ('{0}' 	-f $frameCount) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'interconnectBaySet'			-Value ('{0}' 	-f $ICBaySet) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fabricModuleType' 			-Value ("'{0}'" -f  $fabricModuleType) -indentlevel 1 )) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'frameCount' 					-Value ('{0}' 	-f $frameCount) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'interconnectBaySet'			-Value ('{0}' 	-f $ICBaySet) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fabricModuleType' 			-Value ("'{0}'" -f  $fabricModuleType) -indentlevel 1 )) 
 
 		# redundancy Type
 		$redundancyParam 	= $null
 		if ($redundancyType)
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'redundancyType' 				-Value ('"{0}"'	-f $redundancyType) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'redundancyType' 				-Value ('"{0}"'	-f $redundancyType) -indentlevel 1))
 			$redundancyParam = ' -FabricRedundancy $redundancyType'
 		}
 		# Bay Config
@@ -2895,7 +3556,7 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 			$bayConfig 		= $bayConfig.replace('={', '=@{')							# for Bay Hash Table
 			$value			= '@{' + $bayConfig											# add hash 
 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'bayConfig' -Value  $value -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'bayConfig' -Value  $value -indentlevel 1 ))
 
 			$baysParam 		= ' -Bays $bayConfig'
 
@@ -2908,11 +3569,11 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 			$igmpParam = $igmpIdleTimeoutParam = $null
 			if ($enableIgmpSnooping -eq 'True')
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enableIgmpSnooping'			-Value ('${0}' 	-f $enableIgmpSnooping) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enableIgmpSnooping'			-Value ('${0}' 	-f $enableIgmpSnooping) -indentlevel 1))
 				if ($igmpIdleTimeoutInterval)
 				{
 					$igmpIdleTimeoutParam = ' -igmpIdleTimeOutInterval $igmpIdleTimeoutInterval'
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'igmpIdleTimeoutInterval'		-Value ('{0}' 	-f $igmpIdleTimeoutInterval) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'igmpIdleTimeoutInterval'		-Value ('{0}' 	-f $igmpIdleTimeoutInterval) -indentlevel 1))
 				}
 				$igmpParam                  = ' -enableIgmpSnooping $enableIgmpSnooping {0}' -f $igmpIdleTimeoutParam
 			}
@@ -2920,25 +3581,25 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 
 			
 			$networkLoopProtectionParam 	= ' -enablenetworkLoopProtection $enableNetworkLoopProtection'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enableNetworkLoopProtection'	-Value ('${0}' 	-f $enableNetworkLoopProtection) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enableNetworkLoopProtection'	-Value ('${0}' 	-f $enableNetworkLoopProtection) -indentlevel 1))
 			
 
 			$EnhancedLLDPTLVParam       	= ' -enableEnhancedLLDPTLV $enableRichTLV'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enableRichTLV'				-Value ('${0}' 	-f $enableRichTLV) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enableRichTLV'				-Value ('${0}' 	-f $enableRichTLV) -indentlevel 1))
 
 			$LLDPtaggingParam 		      	= ' -enableLLDPTagging $enableTaggedLldp'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enableTaggedLldp'			-Value ('${0}' 	-f $enableTaggedLldp) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enableTaggedLldp'			-Value ('${0}' 	-f $enableTaggedLldp) -indentlevel 1))
 
 			$LldpAddressingModeParam		= ' -lldpAddressingMode $lldpIpAddressMode'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'lldpIpAddressMode'			-Value ("'{0}'" -f $lldpIpAddressMode) -indentlevel 1))			
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lldpIpAddressMode'			-Value ("'{0}'" -f $lldpIpAddressMode) -indentlevel 1))			
 
 			#$stormControlParam 				= $null
 			#if ($enableStormControl -eq 'True')
 			#{
 			#	$stormControlParam 				= ' -enableStormControl $enableStormControl '
-			#	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enableStormControl'			-Value ('${0}' 	-f $enableStormControl) -indentlevel 1))
-			#	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'stormControlPollingInterval'	-Value ('{0}' 	-f $stormControlPollingInterval) -indentlevel 1))
-			#	[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'stormControlThreshold'		-Value ('{0}' 	-f $stormControlThreshold) -indentlevel 1))
+			#	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enableStormControl'			-Value ('${0}' 	-f $enableStormControl) -indentlevel 1))
+			#	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stormControlPollingInterval'	-Value ('{0}' 	-f $stormControlPollingInterval) -indentlevel 1))
+			#	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stormControlThreshold'		-Value ('{0}' 	-f $stormControlThreshold) -indentlevel 1))
 			#}
 
 			# --- Specific to C7000
@@ -2949,17 +3610,17 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 				if ($enableFastMacCacheFailover -eq 'True')
 				{
 					$macCacheParam 				= ' -enableFastMacCacheFailover $enableFastMacCacheFailover -MacRefreshInterval $macRefreshInterval'
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enableFastMacCacheFailover'	-Value ('${0}' 	-f $enableFastMacCacheFailover) -indentlevel 1))
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'macRefreshInterval'			-Value ('{0}' 	-f $macRefreshInterval) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enableFastMacCacheFailover'	-Value ('${0}' 	-f $enableFastMacCacheFailover) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'macRefreshInterval'			-Value ('{0}' 	-f $macRefreshInterval) -indentlevel 1))
 				}
 				$pauseFloodProtectionParam		= $null
 				$pauseFloodProtectionParam 		= ' -enablePauseFloodProtection $enablePauseFloodProtection'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enablePauseFloodProtection'	-Value ('${0}' 	-f $enablePauseFloodProtection) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enablePauseFloodProtection'	-Value ('${0}' 	-f $enablePauseFloodProtection) -indentlevel 1))
 
 			}
 
 			$InterconnectConsistencyCheckingParam = ' -interconnectConsistencyChecking $interconnectConsistency'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'interconnectConsistency'		-Value ("'{0}'" 	-f $interconnectConsistencyChecking) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'interconnectConsistency'		-Value ("'{0}'" 	-f $interconnectConsistencyChecking) -indentlevel 1))
 
 			# ------ Internal Networks
 			$intNetParam 	= $null
@@ -2968,8 +3629,8 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 
 				$networks 	= $internalNetworks.replace($sepChar, '";"')
 				$networks 	= $networks.Insert($networks.length,'")').Insert(0,'@("')
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'internalNetworks'			-Value ('{0}' -f $networks + ' | % {Get-OVNetwork -name $_}' 	) -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'internalNetworkConsistency'	-Value ("'{0}'" -f $internalNetworkConsistency ) -indentlevel 1))				
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'internalNetworks'			-Value ('{0}' -f $networks + ' | % {Get-OVNetwork -name $_}' 	) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'internalNetworkConsistency'	-Value ("'{0}'" -f $internalNetworkConsistency ) -indentlevel 1))				
 			
 				$intNetParam = ' -InternalNetworks $internalNetworks -internalNetworkConsistencyChecking $internalNetworkConsistency'  
 			}
@@ -2992,19 +3653,19 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 				newLine
 				if ($communityString)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'communityString'	-Value ("'{0}'" -f $communityString ) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'communityString'	-Value ("'{0}'" -f $communityString ) -indentlevel 1))
 					$communityStringParam 	= ' -snmpV1 $True -ReadCommunity $communityString '
 				}
 
 				if ($contact) 
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'contact'	-Value ("'{0}'" -f $contact ) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'contact'	-Value ("'{0}'" -f $contact ) -indentlevel 1))
 					$contactParam 	= ' -Contact $contact '					
 				}
 				if ($accList)
 				{
 					$accList 			= "@(" + ($accList -replace '|', ',') + ")"
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'accessList'	-Value ("{0}" -f $accList ) -indentlevel 1))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'accessList'	-Value ("{0}" -f $accList ) -indentlevel 1))	
 					$accessListParam 	= ' -accessList $accessList ' 
 				}
 
@@ -3032,7 +3693,7 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 				$isConfigEmpty = ($Null -eq $communityStringParam) -and ($Null -eq $contactParam) -and ($Null -eq $accessListParam) -and ($Null -eq $snmpV3userParam) -and ($Null -eq $snmpTrapDestinationParam)
 				if (-not $isConfigEmpty) 
 				{	
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'snmpConfiguration' -value ('New-OVSnmpConfiguration {0}{1}{2}{3}{4} ' -f $communityStringParam, $contactParam, $accessListParam, $snmpV3userParam, $snmpTrapDestinationParam)  -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'snmpConfiguration' -value ('New-OVSnmpConfiguration {0}{1}{2}{3}{4} ' -f $communityStringParam, $contactParam, $accessListParam, $snmpV3userParam, $snmpTrapDestinationParam)  -indentlevel 1))
 					newLine
 					$snmpConfigurationParam 	= ' -snmp $SnmpConfiguration '
 				}
@@ -3044,12 +3705,12 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 
 			$ligVariable    = '$lig'
 			newLine
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} = New-OVLogicalInterconnectGroup -Name $name {1}{2}{3} `' -f $LigVariable, $fabricModuleParam, $FrameCountParam , $ICBaySetParam) -isVar $false -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1} `' 		-f $baysParam, $redundancyParam ) -isVar $false -indentlevel 4))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1}{2}{3} `' -f $intNetParam,$igmpParam,$pauseFloodProtectionParam, $networkLoopProtectionParam) -isVar $false -indentlevel 4))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1} `' 		-f $macCacheParam,$EnhancedLLDPTLVParam ) -isVar $false -indentlevel 4))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1}{2} `' 	-f $LldpAddressingModeParam,$LLDPtaggingParam,$InterconnectConsistencyCheckingParam ) -isVar $false -indentlevel 4))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} '			-f $snmpConfigurationParam ) -isVar $false -indentlevel 4))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} = New-OVLogicalInterconnectGroup -Name $name {1}{2}{3} `' -f $LigVariable, $fabricModuleParam, $FrameCountParam , $ICBaySetParam) -isVar $false -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1} `' 		-f $baysParam, $redundancyParam ) -isVar $false -indentlevel 4))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1}{2}{3} `' -f $intNetParam,$igmpParam,$pauseFloodProtectionParam, $networkLoopProtectionParam) -isVar $false -indentlevel 4))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1} `' 		-f $macCacheParam,$EnhancedLLDPTLVParam ) -isVar $false -indentlevel 4))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1}{2} `' 	-f $LldpAddressingModeParam,$LLDPtaggingParam,$InterconnectConsistencyCheckingParam ) -isVar $false -indentlevel 4))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} '			-f $snmpConfigurationParam ) -isVar $false -indentlevel 4))
 			
 			newLine # to end the command
 
@@ -3059,7 +3720,7 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 		else  # SAS lig
 		{
 			$ligVariable    = '$lig'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} = New-OVLogicalInterconnectGroup -Name $name {1}{2}{3}{4}' -f $LigVariable, $fabricModuleParam, $FrameCountParam , $ICBaySetParam, $baysParam) -isVar $false -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} = New-OVLogicalInterconnectGroup -Name $name {1}{2}{3}{4}' -f $LigVariable, $fabricModuleParam, $FrameCountParam , $ICBaySetParam, $baysParam) -isVar $false -indentlevel 1))
 				
 		}
 
@@ -3067,7 +3728,7 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "'{0}'" -f $name + ' already exists.') -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -3076,20 +3737,20 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 }
 
 # ---------- Uplink Set
 Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  	
 	
@@ -3111,18 +3772,18 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		$consistency 				= if ($upl.consistencyChecking) {$consistencyCheckingEnum.Item($upl.consistencyChecking) } else {'None'}
 		
 		
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating uplinkset {0} on LIG {1}"' -f $uplName,$ligName) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating uplinkset {0} on LIG {1}"' -f $uplName,$ligName) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup | where name -eq  '{0}' " -f $ligName ) ))		
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'upl' 						-Value ('$lig.uplinksets | where name -eq  "{0}" ' -f $uplName) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup | where name -eq  '{0}' " -f $ligName ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'upl' 						-Value ('$lig.uplinksets | where name -eq  "{0}" ' -f $uplName) ))
 		newLine
 
 		ifBlock			-condition 'if ( ($lig -ne $Null) -and ($upl -eq $Null) )' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for uplinkset {0} on LIG {1}' -f $uplName,$ligName) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for uplinkset {0} on LIG {1}' -f $uplName,$ligName) -isVar $False -indentlevel 1))
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' 						-Value ('"{0}"'	-f $uplName) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'networkType' 				-Value ('"{0}"'	-f $networkType) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'uplConsistency' 				-Value ('"{0}"'	-f $consistency) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' 						-Value ('"{0}"'	-f $uplName) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'networkType' 				-Value ('"{0}"'	-f $networkType) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'uplConsistency' 				-Value ('"{0}"'	-f $consistency) -indentlevel 1))
 
 
 		# ---- Networks
@@ -3136,7 +3797,7 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 			$netList    = '@({0})' -f [string]::Join($Comma, $arr)
 			$value 		= ('{0}' -f $netList ) + ' | % { get-OVNetwork -name $_ }'
 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix networks -value $value -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix networks -value $value -indentlevel 1))
 		}
 
 
@@ -3152,7 +3813,7 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 				$value 		= ('{0}' -f $netList ) + ' | % { get-OVNetworkSet -name $_ }'
 
 				$netsetParam   = ' -NetworkSets $networkSets'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix networkSets -value $value -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix networkSets -value $value -indentlevel 1))
 			}
 
 			# ----- Nativenetwork
@@ -3160,23 +3821,23 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 			{
 				$nativeNetParam = ' -NativeEthNetwork $nativeNetwork'
 				$value 			= "get-OVNetwork -name '{0}' " -f $nativeNetwork
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix nativeNetwork -value $value -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix nativeNetwork -value $value -indentlevel 1))
 			}
 
 			# ---- lacpTimer and loadbalancing
 			$lacpParam 	= ' -LacpTimer $lacpTimer -LacpLoadbalancingMode $lacpLoadbalancingMode'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix lacpTimer -value ("'{0}'" -f $lacpTimer) -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix lacpLoadbalancingMode -value ("'{0}'" -f $loadbalancingMode) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix lacpTimer -value ("'{0}'" -f $lacpTimer) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix lacpLoadbalancingMode -value ("'{0}'" -f $loadbalancingMode) -indentlevel 1))
 		}
 		else # Fibre Channel specific
 		{
 			$trunkingParam 	= ' -enableTrunking $enableTrunking'
 			$value 			= '${0}' -f $enableTrunking
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix enableTrunking -value $value -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix enableTrunking -value $value -indentlevel 1))
 
 			$trunkingParam 	= ' -fcUplinkSpeed $fcUplinkSpeed'
 			$value 			= "'{0}'" -f ($fcSpeed -replace 'Gb','')
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix fcUplinkSpeed  -value $value -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix fcUplinkSpeed  -value $value -indentlevel 1))
 		}
 
 		# ---- Logical Ports config -- transform Enclosure1:Bay3:Q1|Enclosure1:Bay3:Q2|Enclosure1:Bay3:Q3 into table
@@ -3186,7 +3847,7 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 			$uplinkPortParam 	= ' -UplinkPorts $uplinkPorts'
 			$value 				= $logicalPortConfigInfos.replace($SepChar, '","') 	# Comma and quote
 			$value 				= "@(`"$value`")"
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix uplinkPorts -value $value -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix uplinkPorts -value $value -indentlevel 1))
 		}
 
 
@@ -3194,17 +3855,17 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 
 		# Make sure there is no space after backtick (`)
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -prefix ('New-OVUplinkSet -InputObject $lig -Name $name -Type $networkType `') -isVar $False -indentlevel 1)) 
-		[void]$scriptCode.Add((Generate-CustomVarCode -prefix ('{0}{1}{2}{3}{4} `' 	-f $netParam, $netsetParam, $nativeNetParam, $trunkingParam, $lacpParam) -isVar $False -indentlevel 4)) 
-		[void]$scriptCode.Add((Generate-CustomVarCode -prefix ('{0} `' 				-f $uplinkPortParam) -isVar $False -indentlevel 4)) 
-		[void]$scriptCode.Add((Generate-CustomVarCode -prefix (' -ConsistencyChecking $uplConsistency' ) -isVar $False -indentlevel 4))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -prefix ('New-OVUplinkSet -InputObject $lig -Name $name -Type $networkType `') -isVar $False -indentlevel 1)) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -prefix ('{0}{1}{2}{3}{4} `' 	-f $netParam, $netsetParam, $nativeNetParam, $trunkingParam, $lacpParam) -isVar $False -indentlevel 4)) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -prefix ('{0} `' 				-f $uplinkPortParam) -isVar $False -indentlevel 4)) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -prefix (' -ConsistencyChecking $uplConsistency' ) -isVar $False -indentlevel 4))
 		newLine # to end the command
 		
 		endIfBlock
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist or " -f $ligName   + "{0} already exists." -f $uplName ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist or " -f $ligName   + "{0} already exists." -f $uplName ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -3214,23 +3875,643 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 
 
 }
 
+Function Import-YMLUplinkSet([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
+{
+    $YMLscriptCode          = [System.Collections.ArrayList]::new()
+	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
+
+	[void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure uplink set'))
+	
+	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  	
+
+	$definedVarPort          = [System.Collections.ArrayList]::new()
+	$definedVarNet 	         = [System.Collections.ArrayList]::new()
+
+
+	foreach ( $upl in $List)
+	{
+		$ligName                    = $upl.ligName
+        $uplName           			= $upl.name
+		$networkType 	            = $upl.networkType
+		$networks 			        = $upl.Networks			#[]
+		$networkSets				= $upl.NetworkSets		#[]
+		$nativeNetwork 		    	= $upl.nativeNetwork
+		$enableTrunking 		    = $upl.enableTrunking
+		$fabricModuleName			= $upl.fabricModuleName
+		$logicalPortConfigInfos		= $upl.LogicalPortConfigInfos
+
+		$lacpTimer       			= if ($upl.lacpTimer) 			{  $upl.lacpTimer.Trim() } 			else { 'Short' }
+		$loadBalancingMode			= $upl.loadBalancingMode
+		$primaryPort     			= $upl.PrimaryPort
+		$fcSpeed         			= $upl.FCuplinkSpeed #[]
+		$consistency 				= if ($upl.consistencyChecking) {$YMLconsistencyCheckingLigEnum.Item($upl.consistencyChecking) } else {'None'}
+		
+		newLine	-code $YMLscriptCode
+		$comment 			= '# ---------- Uplink set {0} for LIG {1}' 	-f $uplName, $ligName
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $comment  				-isItem $True  					-indentlevel 1 ))
+
+		
+		#### --- Query section 
+		#### --------- Set variables for various attributes:
+		####   --- Port name on Interconnect Type
+		####   --- URi for FC network
+		####   --- URi for native network
+		####   --- URi for network set
+
+
+		#---- Port name for Interconnect
+		if ($logicalPortConfigInfos)
+		{
+			$ligNameStr 			= $ligName.replace(' ', '_').replace('-', '_')   	#build ligname for variable
+			$ICNameStr 				= $ICModuleTypes.item($fabricModuleName.replace($Space,'').Trim())
+
+			$portInfoArr 			= $logicalPortConfigInfos.Split($SepChar)
+			foreach ($_p in $portInfoArr)
+			{
+				if ($ligName -like '*FC*')						# If FibreChannel module
+				{
+					$bay,$port		= $_p.Trim().Split(':')    	# Bay5:7|Bay5:8
+					# Start with number
+					$port = if ($port -match "^[0-9]" ) {"Q$port"} else {$port} 						# Like Q1, Q2
+				}
+				else 
+				{
+					$encl,$bay,$port	= $_p.Trim().Split(':')	
+				}
+				$_frameNumber 		= $encl[-1]
+				$_bayNumber			= $bay[-1]
+				if ($port)		# works only with Synergy not C7000 syntax Bay 2:2
+				{
+					$_portName 		= $port.replace('.', ':') 	# normalize port naming convention
+					$portStr 		= $port.replace('.', '_')
+				}
+
+				$varPort 			= "var_{0}_{1}"		-f $ICNameStr , $portStr   # var_VC40F8_Q1_1
+				if ($definedVarPort -notcontains $varPort  )		# Check whether it's the same port name Qxxx 
+				{
+					# Now we get portName like Q7:1 and IC name - build Ansible task to collect port Number
+					newLine	-code $YMLscriptCode
+					$_task 				= ' Query OneView to get interconnect types and port number from lig {0} and port name {1} ' 		-f $ligName, $port			
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  				-value $_task	-isVar $True 			-indentlevel 1 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_interconnect_type_facts								-indentlevel 1 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config			-value "'{{config}}'"					-indentlevel 2 ))
+
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact			-isVar $True 							-indentlevel 1 ))	
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	list_portInfos	-value "'{{item.portInfos}}'"			-indentlevel 2 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix loop				-value "'{{interconnect_types}}'"		-indentlevel 1 ))	
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix when				-value "item.name =='$fabricModuleName'" -indentlevel 1 ))
+
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact			-isVar $True 							-indentlevel 1 ))	
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $varPort 			-value "'{{item.portNumber}}'" 			-indentlevel 2 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix loop				-value "'{{list_portInfos}}'"			-indentlevel 1 ))	
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix when				-value "item.portName =='$_portName'" 	-indentlevel 1 ))
+
+					[void]$definedVarPort.Add($varPort)
+				}
+			}
+
+		}
+
+		#---- URI for FC network
+		if ($networkType -eq 'Ethernet' )
+		{
+			if ($nativeNetwork)
+			{
+				$_netStr 		= $nativeNetwork.replace($Space,'_').replace('-', '_').Trim()
+				$var 			= "var_{0}"	-f $_netStr
+			
+				if ($definedVarNet -notcontains $var  )		# Check whether it's the same port name Qxxx 
+				{
+					newLine	-code $YMLscriptCode
+					$_task 			= ' get URI for network {0} ' -f $_net 				
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  				-value $_task	-isVar $True 			-indentlevel 1 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_ethernet_network_facts								-indentlevel 1 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config			-value "'{{config}}'"					-indentlevel 2 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name			-value $_net							-indentlevel 2 ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact							-isVar $True 			-indentlevel 1 ))	
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var			-value "'{{ethernet_networks[0].uri}}'"	-indentlevel 2 ))	
+					
+					[void]$definedVarPort.Add($var)
+				}	
+			}
+
+			if ($networkSets)
+			{
+				$netArr 			= $networkSets.Split($SepChar)
+				foreach ($_net in $netArr)
+				{
+					$_netStr 		= $_net.replace($Space,'_').replace('-', '_').Trim()
+					$var 			= "var_network_set_{0}"	-f $_netStr
+
+					if ($definedVarNet -notcontains $var  )		# Check whether it's the same port name Qxxx 
+					{
+						newLine	-code $YMLscriptCode
+						$_task 			= ' get URI for network set {0} ' -f $_net 				
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  				-value $_task	-isVar $True 			-indentlevel 1 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_network_set_facts									-indentlevel 1 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config			-value "'{{config}}'"					-indentlevel 2 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name			-value $_net							-indentlevel 2 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact							-isVar $True 			-indentlevel 1 ))	
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var			-value "'{{network_sets[0].uri}}'"		-indentlevel 2 ))	
+
+						[void]$definedVarPort.Add($var)
+					}
+				}
+			}
+		}
+		else # Fibre Channel
+		{
+			if ($networks)
+			{
+				$netArr 			= $networks.Split($SepChar)
+				foreach ($_net in $netArr)
+				{
+					$_netStr 		= $_net.replace($Space,'_').replace('-', '_').Trim()
+					$var 			= "var_{0}"	-f $_netStr
+				
+					if ($definedVarNet -notcontains $var  )		# Check whether it's the same port name Qxxx 
+					{
+						newLine	-code $YMLscriptCode
+						$_task 			= ' get URI for network {0} ' -f $_net 				
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  				-value $_task	-isVar $True 			-indentlevel 1 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_fc_network_facts									-indentlevel 1 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config			-value "'{{config}}'"					-indentlevel 2 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name			-value $_net							-indentlevel 2 ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact							-isVar $True 			-indentlevel 1 ))	
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var			-value "'{{fc_networks[0].uri}}'"			-indentlevel 2 ))	
+
+						[void]$definedVarPort.Add($var)
+					}
+				}
+
+			}
+		}
+
+		#### --- End Query section 
+
+		$title 			= ' Create uplink set {0} for LIG {1}' 			-f $uplName, $ligName	
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title -ovTask 'oneview_logical_interconnect_group'))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'name'				-value $ligName							-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'uplinkSets'												-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'name'			-value $uplName 		-isVar $True	-indentlevel ($indentDataStart+1) ))
+		
+		# ---- Networks
+		if ($networks)
+		{
+			if ($networkType  -eq 'Ethernet')
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'networkNames' 											-indentlevel ($indentDataStart+1) ))
+				$netArr					= $networks.Split($SepChar)
+				foreach ($net in $netArr)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"- $net"  				-isItem	 $True		-indentlevel ($indentDataStart+2) ))
+				}
+			}
+			else # Fiber Channel
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'networkUris' 											-indentlevel ($indentDataStart+1) ))
+				$netArr					= $networks.Split($SepChar)
+				foreach ($net in $netArr)
+				{
+					$_netStr 		= $net.replace($Space,'_').replace('-', '_').Trim()
+					$var 			= "var_{0}"	-f $_netStr
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		"- '{{$var}}'"  					-isItem	 $True		-indentlevel ($indentDataStart+2) ))
+				
+				}
+
+			}
+		}
+
+		# ---- logical ports
+		if ($logicalPortConfigInfos)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'logicalPortConfigInfos'									-indentlevel ($indentDataStart+1) ))
+			
+			$ICNameStr 				= $ICModuleTypes.item($fabricModuleName.replace($Space,'').Trim())
+			$portInfoArr 			= $logicalPortConfigInfos.Split($SepChar)
+			foreach ($_p in $portInfoArr)
+			{
+				if ($ligName -like '*FC*')						# If FibreChannel module
+				{
+					$bay,$port		= $_p.Trim().Split(':')    	# Bay5:7
+					# Start with number
+					$port = if ($port -match "^[0-9]" ) {"Q$port"} else {$port} 						# Like Q1, Q2
+
+				}
+				else 
+				{
+					$encl,$bay,$port	= $_p.Trim().Split(':')	
+				}
+				$_frameNumber 		= if ($ligName -like '*FC*') {-1} else {$encl[-1]}
+				$_bayNumber			= $bay[-1]
+				if ($port)		# works only with Synergy not C7000 syntax Bay 2:2
+				{
+					$_portName 		= $port.replace('.', ':') 	# normalize port naming convention
+					$portStr 		= $port.replace('.', '_')
+				}
+				$varPort 			= "var_{0}_{1}"		-f $ICNameStr , $portStr   # var_VC40F8_Q1_1
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix desiredSpeed 	-Value Auto	-isVar $True 						-indentlevel ($indentDataStart+3) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalLocation												-indentlevel ($indentDataStart+3) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		locationEntries											-indentlevel ($indentDataStart+4) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			type			-Value 'Enclosure' 	-isVar $True	-indentlevel ($indentDataStart+5) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			relativeValue	-Value $_frameNumber 				-indentlevel ($indentDataStart+5) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			type			-Value 'Bay' 		-isVar $True	-indentlevel ($indentDataStart+5) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			relativeValue	-Value $_bayNumber 					-indentlevel ($indentDataStart+5) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			type			-Value 'Port' 		-isVar $True	-indentlevel ($indentDataStart+5) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			relativeValue	-Value "'{{$varPort}}'"  			-indentlevel ($indentDataStart+5) ))
+			}
+
+		}
+
+
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'networkType'			-value $networkType 				-indentlevel ($indentDataStart+1) ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'mode'					-value Auto 						-indentlevel ($indentDataStart+1) ))
+		if ($networkType -eq 'Ethernet') 
+		{
+
+			# ---- lacpTimer and loadbalancing and connection Mode
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'lacpTimer'				-value $lacpTimer					-indentlevel ($indentDataStart+1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'loadBalancingMode'		-value $loadBalancingMode			-indentlevel ($indentDataStart+1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'consistencyChecking'	-value $consistency 				-indentlevel ($indentDataStart+1) ))
+
+			# ---- Network Sets ( No CopyNetworksFromNetworkSet)
+			if ($networkSets)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'networkSetUris' 											-indentlevel ($indentDataStart+1) ))
+				$netArr					= $networkSets.Split($SepChar)
+				foreach ($net in $netArr)
+				{
+					$_netStr 		= $net.replace($Space,'_').replace('-', '_').Trim()
+					$var 			= "var_{0}"	-f $_netStr
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		"- '{{$var}}'"  				-isItem	 $True		-indentlevel ($indentDataStart+2) ))
+				
+				}
+				
+			}
+
+			# ----- Nativenetwork
+			if ($nativeNetwork)
+			{
+				$_netStr 		= $nativeNetwork.replace($Space,'_').replace('-', '_').Trim()
+				$var 			= "var_{0}"	-f $_netStr			
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'nativeNetworkUri' 	-value "'{{$var}}'" 					-indentlevel ($indentDataStart+1) ))
+				
+			}
+
+		}
+		else # Fibre Channel specific
+		{
+			$trunkingParam 	= ' -enableTrunking $enableTrunking'
+			$value 			= '${0}' -f $enableTrunking
+			
+
+			$trunkingParam 	= ' -fcUplinkSpeed $fcUplinkSpeed'
+			$value 			= "'{0}'" -f ($fcSpeed -replace 'Gb','')
+			
+		}
+
+
+        
+        
+	}
+	
+
+	
+	 # ---------- Generate script to file
+	 writeToFile -code $YMLscriptCode -file $YMLfiles
+
+
+
+}
+
+Function Import-YMLligSNMP([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
+{
+    $YMLscriptCode          										= [System.Collections.ArrayList]::new()
+	$cSheet, $snmpConfigSheet, $snmpV3UserSheet, $snmpTrapSheet 	= $sheetName.Split($SepChar)       # composer
+
+	[void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure SNMP for LIG'))
+	
+	$snmpConfigList 		= get-datafromSheet -sheetName $snmpConfigSheet -workbook $WorkBook  	
+	$snmpConfigList			= $snmpConfigList | where source -ne 'Appliance'
+
+	$snmpV3UserList 		= get-datafromSheet -sheetName $snmpV3UserSheet -workbook $WorkBook  	
+	$snmpV3UserList			= $snmpV3UserList | where source -ne 'Appliance'
+
+	$snmpTrapList 			= get-datafromSheet -sheetName $snmpTrapSheet -workbook $WorkBook  	
+	$snmpTrapList			= $snmpTrapList | where source -ne 'Appliance'
+
+
+	foreach ( $_snmp in $snmpConfigList)
+	{	
+		# snmpV1 information
+		$ligName 				= $_snmp.source
+		$consistencyChecking	= $_snmp.consistencyChecking
+		$communityString		= $_snmp.communityString
+		$contact 				= $_snmp.contact
+		$accList 				= $_snmp.accessList
+
+		$comment 			= '# ---------- snmp Configuration for LIG {0}' 				-f $ligName
+		$title 				= ' Create snmp Configuration for LIG {0}' 						-f $ligName	
+
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title -comment $comment -ovTask 'oneview_logical_interconnect_group'))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'name'				-value $ligName					-indentlevel $indentDataStart ))
+	
+		if ($communityString)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	readCommunity		-Value $communityString  				-indentlevel $indentDataStart ))
+		}
+	
+		if ($contact) 
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	systemContact		-Value $contact  						-indentlevel $indentDataStart ))		
+		}
+
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	v3Enabled 					-value 'True'						-indentlevel $indentDataStart ))
+	
+		# ----  snmpV3Users for this lig
+		$_snmpV3UserList				= $snmpV3UserList | where source -eq $ligName
+		if ($_snmpV3UserList)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode	-Prefix 	'snmpUsers: [ ' 			-isItem $True					-indentlevel $indentDataStart ))
+			foreach ($_user in $_snmpV3UserList)
+			{
+				$userName 			= $_user.userName
+				$secLevel			= $_user.securityLevel
+				$authProtocol 		= $_user.authProtocol
+				$authPassword		= $_user.authPassword
+				$privacyProtocol 	= $_user.privacyProtocol
+				$privacyPassword 	= $_user.privacyPassword
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	'{' 					-isItem $True				-indentlevel ($indentDataStart +1)))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 		'snmpV3UserName' 	-value "$userName,"			-indentlevel ($indentDataStart +2)))
+				if ($privacyProtocol)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	'v3PrivacyProtocol' -value "$privacyProtocol,"	-indentlevel ($indentDataStart +2)))
+				}
+				if ($authProtocol)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	'v3AuthProtocol' 	-value "$authProtocol," 	-indentlevel ($indentDataStart +2)))
+				}	
+	
+				if ($authProtocol -or $privacyProtocol)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	'userCredentials' 								-indentlevel ($indentDataStart +2)))
+
+					if ($authProtocol)
+					{
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 		'{' 			-isVar $True -isItem $True		-indentlevel ($indentDataStart +3)))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	propertyName 	-value 'v3AuthPassword,'			-indentlevel ($indentDataStart +4)))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	value			-value "'$authPassword'"			-indentlevel ($indentDataStart +4)))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 		'}' 			-isItem $True					-indentlevel ($indentDataStart +3)))
+					}
+					if ($privacyProtocol)
+					{
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 		'{' 		-isVar $True -isItem $True		-indentlevel ($indentDataStart +3)))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	propertyName 	-value 'v3PrivacyPassword,'		-indentlevel ($indentDataStart +4)))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	value			-value "'$privacyPassword'"		-indentlevel ($indentDataStart +4)))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 		'}' 		-isItem $True					-indentlevel ($indentDataStart +3)))	
+					}
+					
+					
+				}
+				else 	# noAuth
+				{
+					$YMLscriptCode[-1]		= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+				}
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	'},' 					-isItem $True					-indentlevel ($indentDataStart +1)))
+			}
+
+			$YMLscriptCode[-1]		= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	'           ] ' 			-isItem $True						-indentlevel $indentDataStart ))
+
+			
+		}
+	
+		# ----- snmpTrap 
+		$_snmpTrapList				= $snmpTrapList | where source -eq $ligName
+		if ($_snmpTrapList)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	'trapDestinations: [ ' 			-isItem $True					-indentlevel $indentDataStart ))
+			foreach ($_trap in $_snmpTrapList)
+			{
+				$format 					= $_trap.format
+				$destinationAddress			= $_trap.destinationAddress
+				$port 						= $_trap.port              
+				$communityString 			= $_trap.communityString
+				$snmpV3User 				= $_trap.userName
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	'{' 					-isItem $True					-indentlevel ($indentDataStart +1)))
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 			'trapDestination' 	-value "$destinationAddress,"	-indentlevel ($indentDataStart +2) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 			'port' 				-value "$port,"					-indentlevel ($indentDataStart +2) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 			'trapformat' 		-value "$format,"				-indentlevel ($indentDataStart +2) ))
+				if ($communityString)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 		'communityString' 	-value "$communityString,"		-indentlevel ($indentDataStart +2) ))
+				}
+				if ($snmpV3User)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 		'userName' 			-value "$snmpV3user,"			-indentlevel ($indentDataStart +2) ))
+				}
+				$YMLscriptCode[-1]		= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	'},' 					-isItem $True					-indentlevel ($indentDataStart +1)))
+			}
+			
+			$YMLscriptCode[-1]		= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -Prefix 	'                  ]' 			-isItem $True					-indentlevel $indentDataStart ))
+
+		}	
+	
+	}
+	
+		
+	 # ---------- Generate script to file
+	 writeToFile -code $YMLscriptCode -file $YMLfiles
+	
+}
+
+Function Import-YMLLogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, [string]$YMLfiles )
+{
+	$YMLscriptCode             	= [System.Collections.ArrayList]::new()
+	$bayPortInfos 				= [System.Collections.ArrayList]::new()
+
+
+	$cSheet, $ligSheet, $uplSheet, $snmpConfigSheet, $snmpV3UserSheet, $snmpTrapSheet 	= $sheetName.Split($SepChar)       # composer
+	$ligList 					= if ($ligSheet)	 		{get-datafromSheet -sheetName $ligSheet -workbook $WorkBook				} else {$null}
+
+	$uplList 					= if ($uplSheet)	 		{get-datafromSheet -sheetName $uplSheet -workbook $WorkBook				} else {$null}
+	
+
+	[void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure logical Interconnect Group'))
+
+	$list 						= $ligList 
+	foreach ($L in $list)    
+	{
+		$name  	    				= $L.name
+		$FrameCount 		 		= $L.frameCount
+		$ICBaySet    				= $L.interConnectBaySet
+		$enclosureType				= $L.enclosureType
+		$fabricModuleType 			= $L.fabricModuleType
+		$bayConfig 					= $L.bayConfig
+		$redundancyType  			= $L.redundancyType
+		$internalNetworks			= $L.internalNetworks
+		$internalNetworkConsistency = if ($L.consistencyCheckingForInternalNetworks) 	{$YMLconsistencyCheckingLigEnum.Item($L.consistencyCheckingForInternalNetworks) } else {'None'}
+		$interconnectConsistencyChecking = if ($L.interconnectConsistencyChecking) 		{$YMLconsistencyCheckingLigEnum.Item($L.interconnectConsistencyChecking) } else {'None'}
+
+		$enableIgmpSnooping     	= $L.enableIgmpSnooping
+		
+		$igmpIdleTimeoutInterval	= $L.igmpIdleTimeoutInterval
+
+		$enableFastMacCacheFailover	= $L.enableFastMacCacheFailover
+		$macRefreshInterval			= $L.macRefreshInterval
+
+		$enableNetworkLoopProtection= $L.enableNetworkLoopProtection
+		
+		$enablePauseFloodProtection	= $L.enablePauseFloodProtection
+		$enableRichTLV				= $L.enableRichTLV
+
+		$enableTaggedLldp			= $L.enableTaggedLldp
+		$lldpIpAddressMode			= $L.lldpIpAddressMode
+		$lldpIpv4Address			= $L.lldpIpv4Address
+		$lldpIpv6Address			= $L.lldpIpv6Address
+
+		$enableStormControl			= $L.enableStormControl
+		$stormControlPollingInterval = $L.stormControlPollingInterval
+		$stormControlThreshold		= $L.stormControlThreshold
+
+		$qosconfigType				= $L.qosconfigType
+		$downlinkClassificationType = $L.downlinkClassificationType
+		$uplinkClassificationType 	= $L.uplinkClassificationType
+
+		$scopes 					= $L.scopes
+
+		$isNotSAS 					= $bayConfig -notlike '*SAS*'
+
+		$_ethernetType 				= $YMLtype540Enum.item('ethernetSettings')
+		
+
+
+		$comment 					= '# ---------- Logical Interconnect Group {0}' 	-f $ligName
+		$title 						= ' Create logical InterConnect Group {0}' 			-f $ligName	
+
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -ovTask 'oneview_logical_interconnect_group'))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name				-value $name							-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		enclosureType		-value $enclosureType					-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		interconnectBaySet	-value $ICBaySet						-indentlevel $indentDataStart ))	
+		if ($isNotSAS)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		redundancyType		-value $redundancyType				-indentlevel $indentDataStart ))
+		}
+
+		# ------ Enclosure Index
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		enclosureIndexes											-indentlevel $indentDataStart ))
+		if ($fabricModuleType -like '*FC*')
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	"- -1"				-isItem $True							-indentlevel ($indentDataStart+1) ))
+		}
+		else 
+		{
+			foreach ($_index in 1..$frameCount)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "- $_index"			-isItem $True							-indentlevel ($indentDataStart+1) ))
+			}			
+		}
+
+
+		# ------ Ethernet Settings
+		if ($isNotSAS)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		ethernetSettings														-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			type						-value $_ethernetType 					-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			enableIgmpSnooping			-value $enableIgmpSnooping 				-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			enableNetworkLoopProtection	-value $enableNetworkLoopProtection 	-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			enablePauseFloodProtection	-value $enablePauseFloodProtection		-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			enableRichTLV				-value $enableRichTLV 					-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			enableFastMacCacheFailover	-value $enableFastMacCacheFailover		-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			enableStormControl			-value $enableStormControl 				-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			stormControlPollingInterval	-value $stormControlPollingInterval 	-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			stormControlThreshold		-value $stormControlThreshold 			-indentlevel ($indentDataStart +1) ))		
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			enableTaggedLldp			-value $enableTaggedLldp				-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			lldpIpAddressMode			-value $lldpIpAddressMode				-indentlevel ($indentDataStart +1) ))
+			if ($lldpIpv4Address)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		lldpIpv4Address				-value $lldpIpv4Address					-indentlevel ($indentDataStart +1) ))
+			}
+			if ($lldpIpv4Address)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		lldpIpv6Address				-value $lldpIpv6Address 				-indentlevel ($indentDataStart +1) ))
+			}
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			consistencyChecking			-value $interconnectConsistencyChecking	-indentlevel ($indentDataStart +1) ))
+		}
+
+
+		# ------ Internal Networks
+		if ($internalNetworks)
+		{
+			 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "consistencyCheckingForInternalNetworks: $internalNetworkConsistency" -isItem $True	-indentlevel $indentDataStart ))
+			
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-prefix internalNetworkNames															-indentlevel $indentDataStart ))
+			$internalNetArr 		= $internalNetworks.Split($SepChar)
+			foreach ($_int in $internalNetArr)
+			{
+				$_item 				= '- {0}'	-f $_int
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		$_item					-isItem $True	-indentlevel ($indentDataStart +1) ))
+
+			}
+		}
+		
+		# ------ Bay Config
+		if ($bayConfig)
+		{
+			# Get logical PortInfos in uplink sets
+
+
+			$bayPortInfos =  build-portInfos -bayconfig $bayConfig 
+			if ($bayPortInfos)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		"interconnectMapTemplate"						-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			"interconnectMapEntryTemplates"				-indentlevel ($indentDataStart +1) ))
+			
+				foreach ($_b in $bayPortInfos)
+				{
+					$_frame 	= if ($_b.bayModule -like '*FC*') { -1} else {$_b.frame}
+
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	   ("- permittedInterconnectTypeName: " + $_b.bayModuleName) -isItem $True	-indentlevel ($indentDataStart + 2)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		"  enclosureIndex"					-value $_frame						-indentlevel ($indentDataStart + 2)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		"  logicalLocation"														-indentlevel ($indentDataStart + 2)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			"  locationEntries"													-indentlevel ($indentDataStart + 3)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"- type"					-value Bay							-indentlevel ($indentDataStart + 4)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"  relativeValue"			-value $_b.bay						-indentlevel ($indentDataStart + 4)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"- type"					-value Enclosure					-indentlevel ($indentDataStart + 4)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				"  relativeValue"			-value $_frame						-indentlevel ($indentDataStart + 4)  ))
+
+				}		
+			}
+		}
+
+	}
+	
+	 # ---------- Generate script to file
+	 writeToFile -code $YMLscriptCode -file $YMLFiles
+}
 
 Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 		
@@ -3241,19 +4522,19 @@ Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [strin
 		$switchType 			= $swg.switchType
 		$numberofSwitches 		= $swg.numberofSwitches
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical Switch Group {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical Switch Group {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'swg' 						-Value ("get-OVLogicalSwitchGroup | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'swg' 						-Value ("get-OVLogicalSwitchGroup | where name -eq  '{0}' " -f $name ) ))		
 
 		ifBlock			-condition 'if ($swg -eq $Null)' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'switchType' 					-Value ('Get-OVSwitchType -name "{0}"'	-f $switchType) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVLogicalSwitchGroup -name "{0}" -switchType $switchType -NumberOfSwitches {1}' -f $name,$numberofSwitches) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'switchType' 					-Value ('Get-OVSwitchType -name "{0}"'	-f $switchType) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVLogicalSwitchGroup -name "{0}" -switchType $switchType -NumberOfSwitches {1}' -f $name,$numberofSwitches) -isVar $False -indentlevel 1))
 	
 		endBlock
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist or " -f $name   ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist or " -f $name   ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -3261,7 +4542,7 @@ Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [strin
 		# --- Scopes
 		if ($scopes)
 		{
-			[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value ('Get-OVLogicalSwitchGroup -name -eq "{0}"' -f $name) -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('Get-OVLogicalSwitchGroup -name -eq "{0}"' -f $name) -indentlevel 1))
 			generate-scopeCode -scopes $scopes -indentlevel 1
 			newLine
 
@@ -3270,11 +4551,11 @@ Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [strin
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 
 }
@@ -3282,10 +4563,10 @@ Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [strin
 
 Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             	= [System.Collections.ArrayList]::new()
+    $PSscriptCode             	= [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -3318,12 +4599,12 @@ Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps
 
 			
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical Switch {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical Switch {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'lsw' 						-Value ("get-OVLogicalSwitch | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lsw' 						-Value ("get-OVLogicalSwitch | where name -eq  '{0}' " -f $name ) ))		
 
 		ifBlock			-condition 'if ($lsw -eq $Null)' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'logicalSwitchGroup' 			-Value ('Get-OVLogicalSwitchGroup -name "{0}"'	-f $logicalSwitchGroup) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'logicalSwitchGroup' 			-Value ('Get-OVLogicalSwitchGroup -name "{0}"'	-f $logicalSwitchGroup) -indentlevel 1))
 		
 		$namegroupParam = ' -name "{0}" -logicalSwitchGroup $logicalSwitchGroup ' -f $name
 		$managedParam 	= if ($isManaged) { ' -Managed'} else {' -Monitored'}
@@ -3332,7 +4613,7 @@ Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps
 		$s2 			= if ($switch2Address) { ' -Switch2Address {0} ' -f $switch2Address} else {''}
 		$addressParam 	= $s1 + $s2
 
-		generate-credentialCode -password $sshPassword -username $sshUserName -component 'LOGICAL SWITCH'-indentLevel 1 -scriptCode $scriptCode
+		generate-credentialCode -password $sshPassword -username $sshUserName -component 'LOGICAL SWITCH'-indentLevel 1 -PSscriptCode $PSscriptCode
 		$credParam 		= ' -sshUserName "{0}" -sshPassword $securePassword' -f $sshUserName # $securePassword is defined in  generate-credentialCode
 
 		 
@@ -3341,13 +4622,13 @@ Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps
 			$snmpParam 	= ' -snmpV3 $True -SnmpUserName "{0}" -SnmpAuthLevel "{1}" ' -f $snmpV3User, $snmpAuthLevel
 			if ($snmpAuthLevel -eq 'Auth')
 			{	
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
 				$snmpParam	+= ' -snmpAuthProtocol "{0}" -snmpAuthPassword $authPassword ' -f  $snmpAuthProtocol
 			}
 			else
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'privPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpPrivPassword)  -indentLevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'privPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpPrivPassword)  -indentLevel 1 ))
 				$snmpParam	+=  ' -snmpAuthProtocol "{1}" -snmpAuthPassword $authPassword -snmpPrivProtocol "{2}" -snmpPrivPassword $privPassword' -f $snmpAuthProtocol, $snmpPrivProtocol			
 			}
 		}
@@ -3357,16 +4638,16 @@ Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps
 		}
 		
 		
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVLogicalSwitch {0}{1} `' -f $namegroupParam, $managedParam) -isVar $False  -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1} `' 						-f $addressParam, $credParam) 	   -isVar $False  -indentlevel 4))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}' 							-f $snmpParam) 					   -isVar $False  -indentlevel 4))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVLogicalSwitch {0}{1} `' -f $namegroupParam, $managedParam) -isVar $False  -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1} `' 						-f $addressParam, $credParam) 	   -isVar $False  -indentlevel 4))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}' 							-f $snmpParam) 					   -isVar $False  -indentlevel 4))
 		newLine
 	
 		endBlock
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist or " -f $name   ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist or " -f $name   ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -3375,11 +4656,11 @@ Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 
 }
@@ -3387,10 +4668,10 @@ Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps
 
 Function Import-SANmanager([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 
@@ -3415,15 +4696,15 @@ Function Import-SANmanager([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 			
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating SAN Manager {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating SAN Manager {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'san' 						-Value ("get-OVSANManager | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'san' 						-Value ("get-OVSANManager | where name -eq  '{0}' " -f $name ) ))		
 		
 		ifBlock			-condition 'if ($san -eq $Null)' 		
 		$nameParam 		= ' -HostName "{0}" -type "{1}" ' -f $name, $type
 		if ( ($userName) -and ($password) )
 		{
-			generate-credentialCode -password $password -username $userName -component 'SAN MANAGER'-indentLevel 1 -scriptCode $scriptCode
+			generate-credentialCode -password $password -username $userName -component 'SAN MANAGER'-indentLevel 1 -PSscriptCode $PSscriptCode
 			$credParam 		= ' -Credential $cred'  		# $cred is defined in  generate-credentialCode
 			$useSSLParam 	= if ($useSSL) 	{ ' -useSSL'            } 	else {''}
 			$portParam 		= if ($port)	{' -Port {0} ' -f $port } 	else {''}
@@ -3436,13 +4717,13 @@ Function Import-SANmanager([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			{
 				'AuthOnly'
 					{	
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
 						$authParam	+= ' -snmpAuthProtocol "{0}" -snmpAuthPassword $authPassword ' -f  $snmpAuthProtocol
 					}
 				'AuthAndPriv'
 					{
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'privPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpPrivPassword)  -indentLevel 1 ))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'authPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpAuthPassword) -indentLevel 1 ))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'privPassword' -value ('"{0}" | ConvertTo-SecureString -AsPlainText -Force' -f $snmpPrivPassword)  -indentLevel 1 ))
 						$authParam	+=  ' -snmpAuthProtocol "{1}" -snmpAuthPassword $authPassword -snmpPrivProtocol "{2}" -snmpPrivPassword $privPassword' -f $snmpAuthProtocol, $snmpPrivProtocol			
 					}
 			}	
@@ -3450,15 +4731,15 @@ Function Import-SANmanager([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 		
 		
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVSANManager {0} `' 	-f $nameParam) -isVar $False  -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}' 						-f $authParam) -isVar $False  -indentlevel 3))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVSANManager {0} `' 	-f $nameParam) -isVar $False  -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}' 						-f $authParam) -isVar $False  -indentlevel 3))
 		newLine
 	
 		endBlock
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist." -f $name   ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist." -f $name   ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -3467,11 +4748,11 @@ Function Import-SANmanager([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 
 }
@@ -3480,10 +4761,10 @@ Function Import-SANmanager([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 		
@@ -3503,9 +4784,9 @@ Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps
 
 			
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage System {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage System {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $name ) ))		
 		ifBlock 'if ($sts -eq $Null)' 	
 		
 		$s 					= if ($showSystemDetails) { ' -ShowSystemDetails'} else {''}
@@ -3515,15 +4796,15 @@ Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps
 		$authParam 			= $null
 		if ( ($userName) -and ($password) )
 		{
-			generate-credentialCode -password $password -username $userName -component 'STORAGE SYSTEM'-indentLevel 1 -scriptCode $scriptCode
+			generate-credentialCode -password $password -username $userName -component 'STORAGE SYSTEM'-indentLevel 1 -PSscriptCode $PSscriptCode
 			$authParam 		= ' -Credential $cred'  		# $cred is defined in  generate-credentialCode
 		}
 
 		if ($vips)
 		{
 			$ip , $netName 	= $vips.Split($Equal)
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'net' 	-Value ("get-OVNetwork | where name -eq  '{0}' " -f $netName.trim() ) -indentlevel 1 ))	
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'vips' 	-Value ('@{' + ('"{0}" = $net' -f $ip.trim())  + '}') 							-indentlevel 1 )) 
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' 	-Value ("get-OVNetwork | where name -eq  '{0}' " -f $netName.trim() ) -indentlevel 1 ))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vips' 	-Value ('@{' + ('"{0}" = $net' -f $ip.trim())  + '}') 							-indentlevel 1 )) 
 			$vipsParam 			 = ' -VIPS $vips'
 		}
 		
@@ -3531,27 +4812,27 @@ Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps
 		$domainParam 		= if ($domain) { ' -Domain "{0}" ' -f $domain } else {''}
 		
 		
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVStorageSystem {0}{1} `' 	-f $nameParam, $authParam) 	-isVar $False  -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVStorageSystem {0}{1} `' 	-f $nameParam, $authParam) 	-isVar $False  -indentlevel 1))
 
 		if ($family -eq 'StoreServ')
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} | wait-OVTaskComplete' 	-f $domainParam) 			-isVar $False  -indentlevel 3))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} | wait-OVTaskComplete' 	-f $domainParam) 			-isVar $False  -indentlevel 3))
 
 		}
 		else
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} | wait-OVTaskComplete'	-f $vipsParam) 				-isVar $False  -indentlevel 3))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} | wait-OVTaskComplete'	-f $vipsParam) 				-isVar $False  -indentlevel 3))
 		}
 		newLine
 
 		if ($storagePool)
 		{
 			$pool 		= "@('" + $storagePool.replace($sepChar, "'$comma'") + "')"
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'pool' 						-Value ("{0}" -f $pool ) -indentlevel 1 ))	
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $name ) -indentlevel 1 ))	
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'new-OVStoragePool -pool $pool -StorageSystem $sts | wait-OVTaskComplete'  -isVar $False  -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'pool' 						-Value ("{0}" -f $pool ) -indentlevel 1 ))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $name ) -indentlevel 1 ))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'new-OVStoragePool -pool $pool -StorageSystem $sts | wait-OVTaskComplete'  -isVar $False  -indentlevel 1))
 			# Set pool to managed state
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '$pool | % {get-OVStoragePool -name $_ | set-OVStoragePool -Managed $true }'  -isVar $False  -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '$pool | % {get-OVStoragePool -name $_ | set-OVStoragePool -Managed $true }'  -isVar $False  -indentlevel 1))
 			
 			newLine
 		}
@@ -3559,7 +4840,7 @@ Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps
 		endIfBlock
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist." -f $name   ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW ' + "{0} does not exist." -f $name   ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -3568,11 +4849,11 @@ Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 
 }
@@ -3586,10 +4867,10 @@ Function set-Param([string]$var, [string]$value)
 }
 Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 		
@@ -3635,9 +4916,9 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 		$scopes 							= $svt.scopes
 			
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage Volume Template {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage Volume Template {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'svt' 						-Value ("get-OVStorageVolumeTemplate | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'svt' 						-Value ("get-OVStorageVolumeTemplate | where name -eq  '{0}' " -f $name ) ))		
 		
 		ifBlock			-condition 'if ($svt -eq $Null)' 		
 		$descParam 			= if ($description) { ' -Description "{0}" ' -f $description} else {''}
@@ -3645,23 +4926,23 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 
 		if ($storagePool)
 		{	
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $storagePool ) -indentlevel 1 ))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $storagePool ) -indentlevel 1 ))	
 			
 			ifBlock		-condition 'if ($stp -ne $Null)' 	-indentlevel 1
 			# ---- Storage Pool and SnapshotStoragePool
 			$storagePoolParam 			= ' -StoragePool $stp ' + $lockStoragePool
 			if ($snapshotStoragePool)
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $snapshotStoragePool ) -indentlevel 2 ))	
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sstp' -value 'if ($sstp -ne $Null) { $sstp } else {$stp}'  -indentlevel 2) )
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $snapshotStoragePool ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' -value 'if ($sstp -ne $Null) { $sstp } else {$stp}'  -indentlevel 2) )
 				$storagePoolParam 		+= ' -SnapshotStoragePool $sstp ' + $lockSnapshotStoragePool
 			}
 
 			# ---- Storage System
 			if ($storageSystem)		
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ' # ----- Get Storage System' -isVar $False -indentlevel 2 ))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $storageSystem ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ' # ----- Get Storage System' -isVar $False -indentlevel 2 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $storageSystem ) -indentlevel 2 ))	
 				$storagePoolParam 		+= ' -storageSystem $sts ' 
 			}
 
@@ -3690,30 +4971,30 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 			$a12 						= $null
 			if ($folder)
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'folder' 	-Value ("(get-OVStoragePool -name default).deviceSpecificAttributes.Folders | where name -eq  '{0}' " -f $folder ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'folder' 	-Value ("(get-OVStoragePool -name default).deviceSpecificAttributes.Folders | where name -eq  '{0}' " -f $folder ) -indentlevel 2 ))	
 				$a12 					= ' -Folder $folder' + $lockFolder													
 			}
 
 			$a13						= $null 
 			if ($performancePolicy)
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'performancePolicy' 	-Value ('Show-OVStorageSystemPerformancePolicy -InputObject $sts -name "{0}" ' -f $performancePolicy ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'performancePolicy' 	-Value ('Show-OVStorageSystemPerformancePolicy -InputObject $sts -name "{0}" ' -f $performancePolicy ) -indentlevel 2 ))	
 				$a13 					= ' -PerformancePolicy $performancePolicy' + $lockPerformancePolicy	
 			}
 			
 			$a14						= $null 
 			if ($volumeSet)
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet | where name -eq  '{0}' " -f $volumeSet ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet | where name -eq  '{0}' " -f $volumeSet ) -indentlevel 2 ))	
 				$a14 					= ' -VolumeSet $volumeSet' + $lockVolumeSet
 			}
 			$attributes4Param			= $a12 + $a13 + $a14
 
 			#---- code here
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVStorageVolumeTemplate {0}{1}{2} `'	-f $nameParam, $capacityParam, $storagePoolParam )	-isVar $False  -indentlevel 2))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1} `'									-f $attributes1Param, $attributes2Param) 			-isVar $False  -indentlevel 3))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `'										-f $attributes3Param) 								-isVar $False  -indentlevel 3))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}'										-f $attributes4Param) 								-isVar $False  -indentlevel 3))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVStorageVolumeTemplate {0}{1}{2} `'	-f $nameParam, $capacityParam, $storagePoolParam )	-isVar $False  -indentlevel 2))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1} `'									-f $attributes1Param, $attributes2Param) 			-isVar $False  -indentlevel 3))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `'										-f $attributes3Param) 								-isVar $False  -indentlevel 3))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}'										-f $attributes4Param) 								-isVar $False  -indentlevel 3))
 			
 			newLine
 
@@ -3721,7 +5002,7 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 			if ($scopes)
 			{
 				newLine
-				[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value ('getHPOVStorageVolumeTemplate | where name -eq "{0}"' -f $name) -indentlevel 1))
+				[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('getHPOVStorageVolumeTemplate | where name -eq "{0}"' -f $name) -indentlevel 1))
 				generate-scopeCode -scopes $scopes -indentlevel 1
 
 			}
@@ -3729,14 +5010,14 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 			endifBlock 		-condition 'if ($stp -ne $Null)'  -indentlevel 1
 
 			elseBlock 	-indentlevel 1
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "storage pool {0} does not exist. Cannot create volume template"' -f $storagepool) 		-isVar $False -indentlevel 2) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "storage pool {0} does not exist. Cannot create volume template"' -f $storagepool) 		-isVar $False -indentlevel 2) )
 			newLine
 			endElseBlock -indentlevel 1
 
 
 			endIfBlock  -condition 'if $svt -eq $Null'
 			elseBlock
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "volume template {0} already exists. skip creating volume template" ' -f $name) 	-isVar $False -indentlevel 1) )	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "volume template {0} already exists. skip creating volume template" ' -f $name) 	-isVar $False -indentlevel 1) )	
 			endElseBlock
 
 
@@ -3750,11 +5031,11 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 
 }
@@ -3762,10 +5043,10 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 
 Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 		
@@ -3797,9 +5078,9 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 		$scopes 							= $vol.scopes
 			
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage Volume {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage Volume {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'vol' 						-Value ("get-OVStorageVolume | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vol' 						-Value ("get-OVStorageVolume | where name -eq  '{0}' " -f $name ) ))		
 		
 		ifBlock 		-condition  'if ($Null -eq $vol)' 		
 		$descParam 				= if ($description) { ' -Description "{0}" ' -f $description} else {''}
@@ -3807,12 +5088,12 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 
 		if ($volumeTemplate)
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'svt' 					-Value ("get-OVStorageVolumeTemplate | where name -eq  '{0}' " -f $volumeTemplate ) -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'svt' 					-Value ("get-OVStorageVolumeTemplate | where name -eq  '{0}' " -f $volumeTemplate ) -indentlevel 1 ))
 			ifBlock -condition  'if ($Null -ne $svt)' -indentlevel 1
 			$volumeTemplateParam 	= ' -VolumeTemplate $svt'
 
 			#---- code here
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVStorageVolume {0}{1}'	-f $nameParam, $volumeTemplateParam )	-isVar $False  -indentlevel 2))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVStorageVolume {0}{1}'	-f $nameParam, $volumeTemplateParam )	-isVar $False  -indentlevel 2))
 			
 			newLine
 
@@ -3820,13 +5101,13 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 			if ($scopes)
 			{
 				newLine
-				[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume | where name -eq "{0}"' -f $name) -indentlevel 1))
+				[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume | where name -eq "{0}"' -f $name) -indentlevel 1))
 				generate-scopeCode -scopes $scopes -indentlevel 1
 
 			}
 			endIfBlock  -indentlevel 1
 			elseBlock   -indentlevel 1
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "volume template {0} not found. skip creating volume" ' -f $volumeTemplate) 	-isVar $False -indentlevel 2) )
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "volume template {0} not found. skip creating volume" ' -f $volumeTemplate) 	-isVar $False -indentlevel 2) )
 			endElseBlock -indentlevel 1
 			
 		}
@@ -3834,23 +5115,23 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 		{
 			if ($storagePool)
 			{	
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $storagePool ) -indentlevel 1 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $storagePool ) -indentlevel 1 ))	
 				ifBlock -condition 'if ( $Null -ne $stp)' 		-isVar $False -indentlevel 1
 
 				# ---- Storage Pool and SnapshotStoragePool
 				$storagePoolParam 			= ' -StoragePool $stp ' + $lockStoragePool
 				if ($snapshotStoragePool)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $snapshotStoragePool ) -indentlevel 2 ))	
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sstp' -value 'if ($sstp -ne $Null) { $sstp } else {$stp}'  -indentlevel 2) )
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $snapshotStoragePool ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' -value 'if ($sstp -ne $Null) { $sstp } else {$stp}'  -indentlevel 2) )
 					$storagePoolParam 		+= ' -SnapshotStoragePool $sstp ' + $lockSnapshotStoragePool
 				}
 
 				# ---- Storage System
 				if ($storageSystem)		
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ' # ----- Get Storage System' -isVar $False -indentlevel 2 ))
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $storageSystem ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ' # ----- Get Storage System' -isVar $False -indentlevel 2 ))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $storageSystem ) -indentlevel 2 ))	
 					$storagePoolParam 		+= ' -storageSystem $sts ' 
 				}
 
@@ -3879,30 +5160,30 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 				$a12 						= $null
 				if ($folder)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'folder' 	-Value ("(get-OVStoragePool -name default).deviceSpecificAttributes.Folders | where name -eq  '{0}' " -f $folder ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'folder' 	-Value ("(get-OVStoragePool -name default).deviceSpecificAttributes.Folders | where name -eq  '{0}' " -f $folder ) -indentlevel 2 ))	
 					$a12 					= ' -Folder $folder' + $lockFolder													
 				}
 
 				$a13						= $null 
 				if ($performancePolicy)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'performancePolicy' 	-Value ('Show-OVStorageSystemPerformancePolicy -InputObject $sts -name "{0}" ' -f $performancePolicy ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'performancePolicy' 	-Value ('Show-OVStorageSystemPerformancePolicy -InputObject $sts -name "{0}" ' -f $performancePolicy ) -indentlevel 2 ))	
 					$a13 					= ' -PerformancePolicy $performancePolicy' + $lockPerformancePolicy	
 				}
 				
 				$a14						= $null 
 				if ($volumeSet)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet | where name -eq  '{0}' " -f $volumeSet ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet | where name -eq  '{0}' " -f $volumeSet ) -indentlevel 2 ))	
 					$a14 					= ' -VolumeSet $volumeSet' + $lockVolumeSet
 				}
 				$attributes4Param			= $a12 + $a13 + $a14
 
 				#---- code here
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('new-OVStorageVolume {0}{1}{2} `'	-f $nameParam, $capacityParam, $storagePoolParam )	-isVar $False  -indentlevel 2))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}{1} `'									-f $attributes1Param, $attributes2Param) 			-isVar $False  -indentlevel 3))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `'										-f $attributes3Param) 								-isVar $False  -indentlevel 3))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0}'										-f $attributes4Param) 								-isVar $False  -indentlevel 3))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('new-OVStorageVolume {0}{1}{2} `'	-f $nameParam, $capacityParam, $storagePoolParam )	-isVar $False  -indentlevel 2))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}{1} `'									-f $attributes1Param, $attributes2Param) 			-isVar $False  -indentlevel 3))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `'										-f $attributes3Param) 								-isVar $False  -indentlevel 3))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0}'										-f $attributes4Param) 								-isVar $False  -indentlevel 3))
 				
 				newLine
 
@@ -3910,7 +5191,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 				if ($scopes)
 				{
 					newLine
-					[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume | where name -eq "{0}"' -f $name) -indentlevel 1))
+					[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume | where name -eq "{0}"' -f $name) -indentlevel 1))
 					generate-scopeCode -scopes $scopes -indentlevel 1
 
 				}
@@ -3918,7 +5199,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 				endBlock 	-indentlevel 1
 
 				elseBlock 	-indentlevel 1
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "storage pool {0} does not exist. Cannot create volume template"' -f $storagepool) 		-isVar $False -indentlevel 2) )
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "storage pool {0} does not exist. Cannot create volume template"' -f $storagepool) 		-isVar $False -indentlevel 2) )
 				newLine
 				endElseBlock -indentlevel 1
 
@@ -3929,7 +5210,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 		endIfBlock # end check on if $vol -eq $Null
 
 		elseBlock
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "volume {0} already exists. skip creating volume" ' -f $name) 	-isVar $False -indentlevel 1) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "volume {0} already exists. skip creating volume" ' -f $name) 	-isVar $False -indentlevel 1) )
 		endElseBlock
 
 
@@ -3939,11 +5220,11 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 
 }
@@ -3951,10 +5232,10 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 
 Function Import-LogicalJBOD([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 		
@@ -3974,33 +5255,33 @@ Function Import-LogicalJBOD([string]$sheetName, [string]$WorkBook, [string]$ps1F
 
 
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# ----------------------------------------------------------------'  -isVar $False ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical JBOD {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# ----------------------------------------------------------------'  -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical JBOD {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'jbod' 						-Value ("get-OVLogicalJBOD| where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'jbod' 						-Value ("get-OVLogicalJBOD| where name -eq  '{0}' " -f $name ) ))		
 		
 		ifBlock 		-condition	'if ($Null -eq $jbod )' 		
 		$descParam 				= if ($description) { ' -Description "{0}" ' -f $description} else {''}
 		$nameParam 				= (' -Name "{0}" {1} ' -f $name, $descParam) 
 		$eraseParam 			= if ($eraseDataOnDelete -eq 'True') { ' -eraseDataOnDelete $True'} else {''}
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'driveEnclosure' 				-Value ("Get-OVDriveEnclosure | where name -eq  '{0}' " -f $driveEnclosure) -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'driveEnclosure' 				-Value ("Get-OVDriveEnclosure | where name -eq  '{0}' " -f $driveEnclosure) -indentlevel 1 ))
 		
 		ifBlock 		-condition 'if ( $Null -ne $driveEnclosure )'  -indentlevel 1
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVLogicalJbod	{0} `' 									-f $nameParam) 										-isVar $False -indentlevel 2)) 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix  ' -InputObject $driveEnclosure `'  																				-isVar $False -indentlevel 7)) 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix (' -NumberofDrives {0} -MinDriveSize {1} -MaxDriveSize {2} `'	-f $numberofDrives, $minDriveSize , $MaxDriveSize)	-isVar $False -indentlevel 7)) 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix (' -DriveType {0} {1} '										-f $driveType, $eraseParam ) 						-isVar $False -indentlevel 7)) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVLogicalJbod	{0} `' 									-f $nameParam) 										-isVar $False -indentlevel 2)) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix  ' -InputObject $driveEnclosure `'  																				-isVar $False -indentlevel 7)) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix (' -NumberofDrives {0} -MinDriveSize {1} -MaxDriveSize {2} `'	-f $numberofDrives, $minDriveSize , $MaxDriveSize)	-isVar $False -indentlevel 7)) 
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix (' -DriveType {0} {1} '										-f $driveType, $eraseParam ) 						-isVar $False -indentlevel 7)) 
 			
 		endIfBlock   	-indentlevel 1 # end of check drive enclosure null
 
 		elseBlock 		-indentlevel 1
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "No such drive enclosure {0} to create JBOD."' -f $driveEnclosure)	-isVar $False -indentlevel 2) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "No such drive enclosure {0} to create JBOD."' -f $driveEnclosure)	-isVar $False -indentlevel 2) )
 		endElseBlock 	-indentlevel 1
 
 		endIfBlock 		-condition 'if $Null -eq $jbod '
 		elseBlock
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "logical JBOD {0} already exists. skip creating JBOD" ' -f $name) 	-isVar $False -indentlevel 1) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "logical JBOD {0} already exists. skip creating JBOD" ' -f $name) 	-isVar $False -indentlevel 1) )
 		endElseBlock
 
 
@@ -4012,11 +5293,11 @@ Function Import-LogicalJBOD([string]$sheetName, [string]$WorkBook, [string]$ps1F
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 
 	# ---------- Generate script to file
-	writeToFile -code $ScriptCode -file $ps1Files
+	writeToFile -code $PSscriptCode -file $ps1Files
 
 
 }
@@ -4025,10 +5306,10 @@ Function Import-LogicalJBOD([string]$sheetName, [string]$WorkBook, [string]$ps1F
 # ---------- Enclosure Group
 Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 {
-    $scriptCode             = [System.Collections.ArrayList]::new()
+    $PSscriptCode             = [System.Collections.ArrayList]::new()
 	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	
 	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
 		
@@ -4047,14 +5328,14 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		$deploymentNetwork		= $eg.deploymentNetwork
         $scopes              	= $eg.scopes
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating enclosure Group {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating enclosure Group {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'eg' 						-Value ("get-OVEnclosureGroup | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'eg' 						-Value ("get-OVEnclosureGroup | where name -eq  '{0}' " -f $name ) ))		
 
 		ifBlock			-condition 'if ($Null -eq $eg)' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for enclosure group {0} ' -f $name) -isVar $False -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'name' 						-Value ('"{0}"'	-f $name) -indentlevel 1))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'enclosureCount' 				-Value ('{0}'	-f $enclosureCount) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for enclosure group {0} ' -f $name) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'name' 						-Value ('"{0}"'	-f $name) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'enclosureCount' 				-Value ('{0}'	-f $enclosureCount) -indentlevel 1))
 
 		# --- IP v4 addressing Mode
 		$v4AddressPoolParam = $null
@@ -4064,14 +5345,14 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		}
 		$ipV4AddressingMode			= $ipV4AddressingMode.Trim()
 		$v4AddressPoolParam 		=   ' -IPv4AddressType $ipV4AddressType'
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ipV4AddressType' 			-Value ('"{0}"'	-f $ipV4AddressingMode) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'ipV4AddressType' 			-Value ('"{0}"'	-f $ipV4AddressingMode) -indentlevel 1))
 
 		
 		if ($ipV4AddressingMode -eq 'AddressPool')
 		{
 			$v4Range 				= 	"@('" + $ipV4Range.replace($SepChar, "','") + "')"
 			$value 					= $v4Range + ' | % {Get-OVAddressPoolRange | where name -eq $_ } '
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'IPv4AddressRange' 		-Value $value -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'IPv4AddressRange' 		-Value $value -indentlevel 1))
 
 			$v4AddressPoolParam 	+=   ' -IPv4AddressRange $IPv4AddressRange'
 		}
@@ -4082,14 +5363,14 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		{
 			$ipV6AddressingMode			= $ipV6AddressingMode.Trim()
 			$v6AddressPoolParam 		=   ' -IPv6AddressType $ipV6AddressType'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ipV6AddressType' 			-Value ('"{0}"'	-f $ipV6AddressingMode) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'ipV6AddressType' 			-Value ('"{0}"'	-f $ipV6AddressingMode) -indentlevel 1))
 
 			
 			if ($ipV6AddressingMode -eq 'AddressPool')
 			{
 				$v6Range 				= 	"@('" + $ipV6Range.replace($SepChar, "','") + "')"
 				$value 					= $v6Range + ' | % {Get-OVAddressPoolRange | where name -eq $_  } '
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'IPv6AddressRange' 		-Value $value -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'IPv6AddressRange' 		-Value $value -indentlevel 1))
 	
 				$v6AddressPoolParam 	+=   ' -IPv6AddressRange $IPv6AddressRange'
 			}
@@ -4098,7 +5379,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		# Power Mode
 		if ($powerMode)
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'powerMode' -Value ('"{0}"' -f $powerMode) -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'powerMode' -Value ('"{0}"' -f $powerMode) -indentlevel 1))
 			$powerModeParam         = ' -PowerRedundantMode $powerMode'
 		}
 
@@ -4117,7 +5398,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 			{
 				$value 			= "Get-OVLogicalInterconnectGroup -name '{0}'" -f $varName
 				$variable 		= "lig$i"
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $variable -Value $value -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $variable -Value $value -indentlevel 1))
 
 				$ligGroupMapping 	= $ligGroupMapping.replace($varName, $variable)
 				$i++
@@ -4126,7 +5407,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 			# 2- We build the hash table
 			
 			$ligGroupMapping	= '@{' + $ligGroupMapping.replace($sepChar,';') + '}'		# Hash Table
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ligGroupMapping' -Value $ligGroupMapping -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'ligGroupMapping' -Value $ligGroupMapping -indentlevel 1))
 
 			$ligMappingParam 	= ' -LogicalInterconnectGroupMapping $ligGroupMapping'
 
@@ -4138,7 +5419,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		{
 			'External' 
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'deployNetwork' -Value ('Get-OVNetwork -name "{0}"' -f $deploymentNetwork) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'deployNetwork' -Value ('Get-OVNetwork -name "{0}"' -f $deploymentNetwork) -indentlevel 1))
 					$deploymentTypeParam 	= ' -DeploymentNetworkType {0} -DeploymentNetwork $deployNetwork ' -f $deploymentMode
 				}
 			'Internal'
@@ -4151,11 +5432,11 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 
 		# Ensure there is No space afer backtick
 		newLine
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $( 'New-OVEnclosureGroup	-Name $name -enclosureCount $enclosureCount {0}{1} `' -f $v4AddressPoolParam, $v6AddressPoolParam) -isVar $False -indentlevel 1))
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('{0}{1} `' 	-f $ligMappingParam, $powerModeParam) -isVar $False -indentlevel 6))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $( 'New-OVEnclosureGroup	-Name $name -enclosureCount $enclosureCount {0}{1} `' -f $v4AddressPoolParam, $v6AddressPoolParam) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('{0}{1} `' 	-f $ligMappingParam, $powerModeParam) -isVar $False -indentlevel 6))
 		if ($deploymentTypeParam)
 		{
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('{0} `'	-f $deploymentTypeParam) -isVar $False -indentlevel 6))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('{0} `'	-f $deploymentTypeParam) -isVar $False -indentlevel 6))
 		}
 		newLine # to end the command
 		
@@ -4163,7 +5444,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		if ($scopes)
 		{
 			newLine
-			[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value 'get-OVEnclosureGroup | where name -eq $name' -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVEnclosureGroup | where name -eq $name' -indentlevel 1))
 			generate-scopeCode -scopes $scopes -indentlevel 1
 
 		}
@@ -4173,7 +5454,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW {0} already exists.' -f $name ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW {0} already exists.' -f $name ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -4183,15 +5464,161 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 	
 	if ($List)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 }
 
+Function Import-YMLEnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$YMLFiles )
+{
+    $YMLscriptCode          = [System.Collections.ArrayList]::new()
+	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer	
+	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
+	
+	[void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure Enclosure Group'))
+	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 										-indentlevel 1 ))
+	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	IC_OFFSET	-value 3											-indentlevel 2 ))
+			
 
+	foreach ( $eg in $List)
+	{
+		$name                   = $eg.name
+        $ligMapping             = $eg.logicalInterConnectGroupMapping
+		$enclosureCount         = $eg.enclosureCount
+		$ipV4AddressingMode		= $eg.ipV4AddressingMode
+		$ipV4Range 				= $eg.ipV4Range #[]
+		$ipV6AddressingMode		= $eg.ipV6AddressingMode
+		$ipV6Range 				= $eg.ipV6Range #[]
+		$powerMode              = $eg.powerMode
+		$deploymentMode			= $eg.deploymentMode
+		$deploymentNetwork		= $eg.deploymentNetwork
+		$scopes              	= $eg.scopes
+		
+		#---- Interconnect Bay mapping
+		if ($ligMapping)
+		{
+			$comment 					= '# ---------- Enclosure Group {0}' 			-f $name
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$comment	-isItem $True						-indentlevel 1 ))
+
+			# 1 - Build array of unique LIG
+			$vars 				= $ligMapping  -replace 'Frame\d+\s+=\s+' , ''			# Remove Framex=
+			$vars 				= $vars.replace($SepChar, $Comma)
+			$varArray			= $vars.Split($Comma)								# Build array of variable names
+			$varArray 			= $varArray | sort -Unique							# Get unique value
+
+
+			foreach ($_ligName in $varArray)
+			{
+				$title 						= ' Get lig {0} Information' 			-f $_ligName	
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 	-ovTask 'oneview_logical_interconnect_group_facts'))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name			-value $_ligName									-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 										-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	lig			-value "'{{logical_interconnect_groups}}' "			-indentlevel 2 ))
+				
+				$title 						= ' Try SAS lig {0} Information' 			-f $_ligName	
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 	-ovTask 'oneview_sas_logical_interconnect_group_facts'))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name			-value $_ligName									-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 										-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	lig			-value "'{{sas_logical_interconnect_groups}}' "		-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix when 			-value "(lig|length == 0)" 							-indentlevel 1 ))
+
+				$_name 			= $_ligName.trim().replace($Space, '_').replace('-','_')
+				$var_uri 		= "var_{0}_uri"				-f $_name
+				$var_primary 	= "var_{0}_bay_primary"		-f $_name
+				$var_secondary 	= "var_{0}_bay_secondary"	-f $_name
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 											-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var_uri		-value "'{{lig[0].uri}}' "								-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var_primary	-value "'{{lig[0].interconnectBaySet}}' "				-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var_secondary	-value "'{{lig[0].interconnectBaySet + IC_OFFSET}}' "	-indentlevel 2 ))
+				
+			}
+		}
+
+		#Subnet mapping
+		if ($ipV4Range)
+		{
+			$rangeArr 			= $ipV4Range.Split($SepChar)
+			foreach ($_range in $rangeArr)
+			{
+				$_range			= $_range.Trim() 	
+				$var_subnet_uri = "var_{0}_subnet_uri" 	-f $_range
+				$title			= ' Get subnet URI for subnet {0}' 			-f $_range	
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_id_pools_ipv4_range_facts'))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value $_range								-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 								-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var_subnet_uri	-value "'{{id_pools_ipv4_ranges[0].uri}}'"	-indentlevel 2 ))
+			}
+		}
+
+			
+
+		# Create enclosure group
+		$ligMappingArr 				= $ligMapping.split($sepChar)
+
+		$title 						= ' Create Enclosure group' 			-f $name	
+		[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title 	-ovTask 'oneview_enclosure_group'))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name						-value $name					-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureCount				-value $enclosureCount			-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	powerMode					-value $powerMode				-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	ipv6AddressingMode			-value $ipV6AddressingMode		-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBayMappings										-indentlevel $indentDataStart ))
+		foreach ($l in $ligMappingArr)
+		{
+			$frame,$lig_list	= $l.split($Equal)	# Frame1=LIG-ETH,LIG-SAS,LIG-FC
+			$frame 				= $frame.Trim().ToLower()
+			$_frame 			= $frame.Trim().replace('frame','')
+			$ligArr 			= $lig_list.Split($COMMA)
+			foreach ($_ligName in $ligArr)
+			{
+				$_name 			= $_ligName.trim().replace($Space, '_').replace('-','_')
+				$var_uri 		= "var_{0}_uri"				-f  $_name
+				$var_primary 	= "var_{0}_bay_primary"		-f  $_name
+				$var_secondary 	= "var_{0}_bay_secondary"	-f  $_name
+				newline -code $YMLscriptCode
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBay				-value "'{{$var_primary}}'" -isVar $True	-indentlevel ($indentDataStart+1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalInterconnectGroupUri	-value "'{{$var_uri}}'"						-indentlevel ($indentDataStart+1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureIndex				-value $_frame 								-indentlevel ($indentDataStart+1) ))
+				
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBay				-value "'{{$var_secondary}}'" -isVar $True	-indentlevel ($indentDataStart+1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalInterconnectGroupUri	-value "'{{$var_uri}}'"						-indentlevel ($indentDataStart+1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureIndex				-value $_frame								-indentlevel ($indentDataStart+1) ))
+		
+			}
+
+		}
+
+
+		# --- Subnet
+		$ipV4AddressingMode 		= $ipV4AddressingMode.replace('AddressPool', 'IpPool')
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	ipAddressingMode			-value $ipV4AddressingMode		-indentlevel $indentDataStart ))
+		
+		if ($ipV4Range)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix ipRangeUris													-indentlevel $indentDataStart ))
+			$rangeArr 			= $ipV4Range.Split($SepChar)
+			foreach ($_range in $rangeArr)
+			{
+				$_range			= $_range.Trim() 	
+				$var_subnet_uri = "var_{0}_subnet_uri" 	-f $_range
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "'{{$var_subnet_uri}}'"  -isVar $True 	-isItem $True	-indentlevel ($indentDataStart +2) ))
+
+			}
+
+		}
+
+		newLine -code $YMLscriptCode
+		
+
+	}
+
+	 # ---------- Generate script to file
+	 writeToFile -code $YMLscriptCode -file $YMLfiles
+
+}
 # ---------- Logical Enclosure 
 Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]$subdir)
 {
@@ -4215,15 +5642,15 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 		$filename 			= "$subdir\" + $name.Trim().Replace($Space, '') + '.ps1'
 		[void]$ListPS1files.Add($filename)
 
-		$scriptCode         = [System.Collections.ArrayList]::new()
-		connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+		$PSscriptCode         = [System.Collections.ArrayList]::new()
+		connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating logical enclosure {0} "' -f $name) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating logical enclosure {0} "' -f $name) -isVar $False ))
  
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'le' 						-Value ("get-OVLogicalEnclosure | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'le' 						-Value ("get-OVLogicalEnclosure | where name -eq  '{0}' " -f $name ) ))		
 		
 		ifBlock			-condition 'if ($le -eq $Null)' 	
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for logical enclosure {0} ' -f $name) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for logical enclosure {0} ' -f $name) -isVar $False -indentlevel 1))
 		
 
 		# rename enclosure
@@ -4233,26 +5660,26 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 			$nameArray 			= "@('" + $enclosureName.Replace($SepChar,"'$Comma'")   + "')"
 
 			newLine
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -- Renaming enclosures  ' -isVar $False -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix serialNumbers  	-value $SNArray -indentlevel 1))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix enclosureNames  	-value $nameArray -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -- Renaming enclosures  ' -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix serialNumbers  	-value $SNArray -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix enclosureNames  	-value $nameArray -indentlevel 1))
 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'for ($i=0; $i -lt $serialNumbers.Count; $i++)' -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'for ($i=0; $i -lt $serialNumbers.Count; $i++)' -isVar $False -indentlevel 1))
 			startBlock -indentlevel 1
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'this_enclosure' -Value 'Get-OVEnclosure | where serialNumber -Match $serialNumbers[$i]'  -indentlevel 2))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'this_enclosure' -Value 'Get-OVEnclosure | where serialNumber -Match $serialNumbers[$i]'  -indentlevel 2))
 			ifBlock -condition 'if ( ($this_enclosure) -and ($enclosureNames -notcontains ($this_enclosure.Name) ) ) ' -isVar $False -indentlevel 2
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'Set-OVEnclosure -inputObject $this_enclosure -Name $enclosureNames[$i]' -isVar $False -indentlevel 3))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'Set-OVEnclosure -inputObject $this_enclosure -Name $enclosureNames[$i]' -isVar $False -indentlevel 3))	
 			endIfBlock -indentlevel 2
 			endBlock -indentlevel 1
 		}
 
 		# --- Enclosure		
 		$enclosure 				= $enclosureSN.Split($SepChar)[0]
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix enclosure -value ("Get-OVEnclosure | where serialNumber -match '{0}' " -f $enclosure) -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix enclosure -value ("Get-OVEnclosure | where serialNumber -match '{0}' " -f $enclosure) -indentlevel 1 ))
 		$enclParam 				= ' -Enclosure $enclosure'
 
 		# --- EnclosureGroup
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix enclosureGroup -value ("Get-OVEnclosureGroup -name '{0}' " -f $enclosureGroup) -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix enclosureGroup -value ("Get-OVEnclosureGroup -name '{0}' " -f $enclosureGroup) -indentlevel 1 ))
 		$egParam 				= ' -EnclosureGroup $enclosureGroup'
 
 
@@ -4260,19 +5687,19 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 		$fwParam 				= $Null
 		if ($fwBaseline)
 		{
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix fwBaseline -value ("Get-OVBaseline -SPPname '{0}' " -f $fwBaseline) -indentlevel 1 ))
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix fwInstall -value ('${0}' -f $fwInstall) -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix fwBaseline -value ("Get-OVBaseline -SPPname '{0}' " -f $fwBaseline) -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix fwInstall -value ('${0}' -f $fwInstall) -indentlevel 1 ))
 			$fwParam = ' -FirmwareBaseline $fwBaseline -ForceFirmwareBaseline $fwInstall'
 		}
 
 		newLine
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('New-OVLogicalEnclosure -Name "{0}" {1}{2}{3}' -f $name, $enclParam, $egParam, $fwParam ) -isVar $false -indent 1) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVLogicalEnclosure -Name "{0}" {1}{2}{3}' -f $name, $enclParam, $egParam, $fwParam ) -isVar $false -indent 1) )
 
 		# --- Scopes
 		if ($scopes)
 		{
 			newLine
-			[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value 'get-OVLogicalEnclosure | where name -eq $name' -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVLogicalEnclosure | where name -eq $name' -indentlevel 1))
 			generate-scopeCode -scopes $scopes -indentlevel 1
 
 		}
@@ -4282,17 +5709,17 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 		endIfBlock
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW {0} already exists.' -f $name ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW {0} already exists.' -f $name ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
 	
 		# Add disconnect and close the file
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 
 
 		# ---------- Generate script to file
-		writeToFile -code $ScriptCode -file $filename
+		writeToFile -code $PSscriptCode -file $filename
 		
 	}
 	
@@ -4305,7 +5732,7 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 # ---------- Profile and Template are in one function 
 Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string]$ps1Files, [Boolean]$isSpt, [string]$subdir )
 {
-    $scriptCode             	= [System.Collections.ArrayList]::new()
+    $PSscriptCode             	= [System.Collections.ArrayList]::new()
 
 	$cSheet,$spSheet,$connSheet,$localStorageSheet,$SanStorageSheet,$iLOSheet 		= $sheetName.Split($SepChar)
 
@@ -4321,24 +5748,24 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 	if ($null -ne $localStorageList)
 	{
 		# Define class for sasJBOD
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'class sasJBOD' -isVar $False -indentlevel 0 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'class sasJBOD' -isVar $False -indentlevel 0 ))
 		startBlock
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[int]$id'                    -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[string]$deviceSlot'         -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[string]$name'               -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[string]$description'        -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[int]$numPhysicalDrives'     -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[string]$driveMinSizeGB'     -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[string]$driveMaxSizeGB'     -isVar $False -indentlevel 1 ))	
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[string]$driveTechnology'    -isVar $False -indentlevel 1 ))	
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[boolean]$eraseData'         -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[boolean]$persistent'        -isVar $False -indentlevel 1 ))
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[string]$sasLogicalJBODUri'  -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[int]$id'                    -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[string]$deviceSlot'         -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[string]$name'               -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[string]$description'        -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[int]$numPhysicalDrives'     -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[string]$driveMinSizeGB'     -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[string]$driveMaxSizeGB'     -isVar $False -indentlevel 1 ))	
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[string]$driveTechnology'    -isVar $False -indentlevel 1 ))	
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[boolean]$eraseData'         -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[boolean]$persistent'        -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[string]$sasLogicalJBODUri'  -isVar $False -indentlevel 1 ))
 		endBlock
 	}
 
 
-	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+	connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 	if ($isSP)
 	{
 		$count		 				= 1
@@ -4400,7 +5827,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating profile {0} "' -f $spName) -isVar $False ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating profile {0} "' -f $spName) -isVar $False ))
  
 		$getCmd		= $newCmd =  $saveCmd = $null
 		if ($isSpt)
@@ -4417,18 +5844,18 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		}
 
 		$value 					= $getCmd + " | where name -eq  '{0}' " -f $spName
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'profile' 						-Value $value ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'profile' 						-Value $value ))		
 		
 		ifBlock			-condition 'if ($Null -eq $profile )' 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('# -------------- Attributes for profile {0} ' -f $name) -isVar $False -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for profile {0} ' -f $name) -isVar $False -indentlevel 1))
 
-		[void]$scriptCode.Add((Generate-CustomVarCode -Prefix name -value ("'{0}'" -f $spName) -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix name -value ("'{0}'" -f $spName) -indentlevel 1 ))
 		
 		$descParam 					=  $null
 		if ($description) 
 		{
 			$descParam 				=  ' -description $description'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix description -value ("'{0}'" -f $description) -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix description -value ("'{0}'" -f $description) -indentlevel 1 ))
 		}
 
 		# ############### Server Profile Region
@@ -4436,7 +5863,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		if ( $isSpt -and $spDescription)
 		{
 			$spdescParam 			= ' -ServerProfileDescription $spDescription'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix spDescription -value ("'{0}'" -f $spDescription) -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix spDescription -value ("'{0}'" -f $spDescription) -indentlevel 1 ))
 		}
 
 		# --- server profile template
@@ -4446,7 +5873,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		{
 			$spTemplateParam = ' -ServerProfileTemplate $spTemplate'
 			$value 			 = "Get-OVServerProfileTemplate -name '{0}'" -f $template
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix spTemplate -value $value -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix spTemplate -value $value -indentlevel 1 ))
 		}
 		else # Standalone profile
 		{
@@ -4454,16 +5881,16 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			$shtParam 			= ' -ServerHardwareType $sht'
 			$value 				= "Get-OVserverHardwareType -name '{0}'" -f $sht
 
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix sht -value $value -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix sht -value $value -indentlevel 1 ))
 
 			# -- enclosure group
 			$egParam 			= ' -EnclosureGroup $eg'
 			$value 				= "Get-OVEnclosureGroup -name '{0}'" -f $eg
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix eg -value $value -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix eg -value $value -indentlevel 1 ))
 
 			# --- affinity
 			$affinityParam 		= ' -affinity $affinity'
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix affinity -value ("'{0}'" -f $affinity) -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix affinity -value ("'{0}'" -f $affinity) -indentlevel 1 ))
 
 		}
 
@@ -4473,10 +5900,10 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		{
 			$hwParam 		= ' -Server $server'
 			$value 			 = "Get-OVServer -name '{0}'" -f $serverHardware
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix server -value $value -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix server -value $value -indentlevel 1 ))
 			# -- Add code to power off server
 			$value 			= 'Stop-OVServer -inputObject $server -force -Confirm:$False| Wait-OVTaskComplete	'
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix status -value $value  -indentlevel 1))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix status -value $value  -indentlevel 1))
 				
 		}
 
@@ -4500,13 +5927,13 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					$fwInstallType		= 'FirmwareAndOSDrivers'
 				}
 				newLine
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -------------- Firmware Baseline section ' -isVar $False -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'manageFirmware' -Value ('${0}' -f $manageFirmware) -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sppName' -Value ('"{0}"' -f $fwBaseline) -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fwBaseline' -Value 'Get-OVbaseline -SPPname $sppName' -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fwInstallType' -Value ('"{0}"' -f $fwInstallType) -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fwForceInstall' -Value ('${0}' -f $fwforceInstall)-indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fwActivation' -Value ('"{0}"' -f $fwActivation) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- Firmware Baseline section ' -isVar $False -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'manageFirmware' -Value ('${0}' -f $manageFirmware) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sppName' -Value ('"{0}"' -f $fwBaseline) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fwBaseline' -Value 'Get-OVbaseline -SPPname $sppName' -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fwInstallType' -Value ('"{0}"' -f $fwInstallType) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fwForceInstall' -Value ('${0}' -f $fwforceInstall)-indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fwActivation' -Value ('"{0}"' -f $fwActivation) -indentlevel 1))
 				
 				$fwParam = ' -firmware -Baseline $fwBaseline -FirmwareInstallMode $fwInstallType -ForceInstallFirmware:$fwForceInstall -FirmwareActivationMode $fwActivation '
 
@@ -4517,14 +5944,14 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					{
 						$fwConsistency 	= 'None'
 					}
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fwConsistency' -Value ('"{0}"' -f $fwConsistency) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fwConsistency' -Value ('"{0}"' -f $fwConsistency) -indentlevel 1))
 					$fwConsistencyParam	= ' -FirmwareConsistencyChecking $fwConsistency'
 				}
 				else   # SP specific here
 				{
 					if ($fwSchedule)
 					{
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'fwSchedule' -Value ('[DateTime]{0}' -f $fwSchedule) -indentlevel 1))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'fwSchedule' -Value ('[DateTime]{0}' -f $fwSchedule) -indentlevel 1))
 						$fwScheduleParam = ' -FirmwareActivateDateTime $fwSchedule'
 					}
 				}
@@ -4535,17 +5962,17 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 			# ############### Connections
 			newLine
-			[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -------------- Connections section ' -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- Connections section ' -isVar $False -indentlevel 1))
 
 			$connectionsParam 			= $null
 			if ($manageConnections)
 			{
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'manageConnections' -Value ('${0}' -f $manageConnections) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'manageConnections' -Value ('${0}' -f $manageConnections) -indentlevel 1))
 				$connectionsParam  	 	= ' -manageConnections $manageConnections'
 			
 				if ($isSpt)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'connectionsConsistency' -Value ('"{0}"' -f $connConsistency) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'connectionsConsistency' -Value ('"{0}"' -f $connConsistency) -indentlevel 1))
 					$connectionsParam	+= ' -ConnectionsConsistencyChecking $connectionsConsistency'
 				}
 			}
@@ -4585,7 +6012,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 							$wwnn		= $Conn.wwnn
 							$_macParam 	= if ($mac)		{ ' -mac {0} '  -f $mac} 	else {''}
 							$_wwnnParam = if ($wwnn)	{ ' -wwnn {0} ' -f $wwnn}	else {''}
-							$_wwpnParam = if ($wwpn)	{ ' -wwpn {0} ' -f $wwnn}	else {''}
+							$_wwpnParam = if ($wwpn)	{ ' -wwpn {0} ' -f $wwpn}	else {''}
 
 							if ($_macParam  -or $_wwnnParam -or $_wwpnParam)
 							{
@@ -4597,10 +6024,10 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 
 					$value 			= "Get-OVnetwork | where name -eq '{0}' " -f $network		
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'network' 						-Value $value -indentlevel 1))		
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'network' 						-Value $value -indentlevel 1))		
 					ifBlock -condition 'if ($null -eq $network)'  -indentlevel 1
 					$value 			= "Get-OVnetworkSet | where name -eq '{0}' " -f $network		
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'network' 						-Value $value -indentlevel 2))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'network' 						-Value $value -indentlevel 2))
 					endIfBlock -indentLevel 1
 
 
@@ -4619,9 +6046,9 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 					# -- code
 					$_connection		= '$' + "conn$index"
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ( '{0}   = New-OVServerProfileConnection {1} -ConnectionID {2} `' 	-f $_connection,$nameParam, $id)  		-isVar $False  -indentlevel 1))
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ( '  -PortId "{0}" -RequestedBW {1} `' 								-f $portId , $requestedMbps) 		-isVar $False  -indentlevel 11))
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ( '  -network $network {0} {1} ' 										-f $bootParam, $userDefinedParam)	-isVar $False  -indentlevel 11))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '{0}   = New-OVServerProfileConnection {1} -ConnectionID {2} `' 	-f $_connection,$nameParam, $id)  		-isVar $False  -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '  -PortId "{0}" -RequestedBW {1} `' 								-f $portId , $requestedMbps) 		-isVar $False  -indentlevel 11))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '  -network $network {0} {1} ' 										-f $bootParam, $userDefinedParam)	-isVar $False  -indentlevel 11))
 					
 					newLine
 					[void]$connectionArray.Add($_connection)
@@ -4632,7 +6059,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				if ($connectionArray)
 				{
 					$value 					= '@(' + ($connectionArray -join $comma) + ')'
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'connectionList' -Value $value -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'connectionList' -Value $value -indentlevel 1))
 					$connectionsParam 		= ' -Connections $connectionList '
 					$connectionArray       	= [System.Collections.ArrayList]::new()
 				}
@@ -4647,36 +6074,36 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			if ($Null -ne $lsList)
 			{
 				newLine
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -------------- Local Storage section ' -isVar $False -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- Local Storage section ' -isVar $False -indentlevel 1))
 				if ($isSpt)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'lsConsistencyChecking' -Value ('"{0}"' -f $lsConsistency) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lsConsistencyChecking' -Value ('"{0}"' -f $lsConsistency) -indentlevel 1))
 					$localStorageParam		= ' -LocalStorageConsistencyChecking $lsConsistencyChecking'
 				}
 				newLine
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# --- Search for SAS-Logical-Interconnect for SASlogicalJBOD ' -isVar $False -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# --- Search for SAS-Logical-Interconnect for SASlogicalJBOD ' -isVar $False -indentlevel 1))
 				
 				# Find SAS-Logical-INTERCONNECT from logical enclosure
 				# Note: $eg is defined earlier in the generated script
 
 				# Step 1 - find SasLIG from EnclosureGroup
 				$value 				= 'Search-OVAssociations ENCLOSURE_GROUP_TO_LOGICAL_INTERCONNECT_GROUP -parent $eg' 
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ligAssociation -value $value -indentlevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ligAssociation -value $value -indentlevel 1 ))
 
 				$value 				= '($ligAssociation | where ChildUri -like "*sas*").ChildUri'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix sasLigUri -value $value -indentlevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix sasLigUri -value $value -indentlevel 1 ))
 
 				$value 				= 'if ($sasLigUri) { Send-OVRequest -uri $sasLigUri } else {$Null}'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix sasLig -value $value -indentlevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix sasLig -value $value -indentlevel 1 ))
 
 				# Step 2 - find Sas Interconnect from SAS Lig
 				$value 				= '(Search-OVAssociations LOGICAL_INTERCONNECT_GROUP_TO_LOGICAL_INTERCONNECT -Parent $sasLig).childUri[0]' 
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix sasUri -value $value -indentlevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix sasUri -value $value -indentlevel 1 ))
 
 				$value 				= 'if ($sasUri) { Send-OVRequest -uri $sasUri } else {$Null}'
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix sasLI -value $value -indentlevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix sasLI -value $value -indentlevel 1 ))
 
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix lsJBOD -value '[System.Collections.ArrayList]::new()' -indentlevel 1 ))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix lsJBOD -value '[System.Collections.ArrayList]::new()' -indentlevel 1 ))
 			
 				$controllerArray		= [System.Collections.ArrayList]::new()
 				$logicaldiskArray 		= [System.Collections.ArrayList]::new()
@@ -4736,45 +6163,45 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 								newLine
 								$prefix 		= '# --- Attributes for Logical Disk {0} ({1})' -f $_ld, $deviceSlot
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $prefix	-isVar $False 	-indentlevel 1))
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $prefix	-isVar $False 	-indentlevel 1))
 								
 								$value 			= "'{0}'" -f $_ld
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'ldName'			-value $value 	-indentlevel 1))
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'ldName'			-value $value 	-indentlevel 1))
 								$ldParam 		+= ' -Name $ldName'
 								
 								$this_index 	= [array]::IndexOf($logicalDrivesArray, $_ld )
 
 
 								$value 			= '${0}' -f $bootableArray[$this_index] 
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'bootable'		-value $value 	-indentlevel 1))
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'bootable'		-value $value 	-indentlevel 1))
 								$ldParam 		+= ' -Bootable $bootable'
 								
 								$value 			= "'{0}'" -f $raidLevelArray[$this_index]	
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'raidLevel'		-value $value 	-indentlevel 1))
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'raidLevel'		-value $value 	-indentlevel 1))
 								$ldParam 		+= ' -RAID $raidLevel'
 
 								$_driveType 	= $driveTypeArray[$this_index]
 								if ($_driveType)
 								{
 									$value 			= "'{0}'" -f $_driveType	
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'driveType'		-value $value 	-indentlevel 1))	
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'driveType'		-value $value 	-indentlevel 1))	
 									$ldParam 		+= ' -DriveType $driveType' 
 								}
 
 								$value 			= "{0}" -f $physDrivesArray[$this_index]
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'numberofDrives'	-value $value 	-indentlevel 1))	
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'numberofDrives'	-value $value 	-indentlevel 1))	
 								$ldParam 		+= ' -NumberofDrives $numberofDrives '
 
 
 								$value 			= "'{0}'" -f $acceleratorArray[$this_index]	
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'accelerator'		-value $value 	-indentlevel 1))
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'accelerator'		-value $value 	-indentlevel 1))
 								$ldParam 		+=' -Accelerator $accelerator'
 
 
 
 								# Make sure that there is no space after backstick (`)
 								$logicalDisk 	= '{0}' -f "LogicalDisk$diskIndex"
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $logicalDisk  -value ('New-OVServerProfileLogicalDisk {0} ' -f $ldParam)	-indentlevel 1))
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $logicalDisk  -value ('New-OVServerProfileLogicalDisk {0} ' -f $ldParam)	-indentlevel 1))
 
 								[void]$logicaldiskArray.Add('${0}' -f $logicalDisk)
 								$diskIndex++
@@ -4787,7 +6214,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						if ($logicaldiskArray)
 						{
 							$logicalDisks 		= '@(' + ($logicaldiskArray -join $comma) + ')'
-							[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'logicalDisks'  -value $logicalDisks -indentlevel 1))
+							[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'logicalDisks'  -value $logicalDisks -indentlevel 1))
 							$logicalDiskParam 	= ' -LogicalDisk $LogicalDisks '
 						}
 						else 
@@ -4800,7 +6227,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						$controller				= '{0}' -f "controller$contIndex"  
 
 						# ---- Generate new Disk Controller
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $controller  -value ('New-OVServerProfileLogicalDiskController {0}' -f $controllerParam) -indentlevel 1))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $controller  -value ('New-OVServerProfileLogicalDiskController {0}' -f $controllerParam) -indentlevel 1))
 						newLine
 
 						[void]$controllerArray.Add('${0}' -f $controller)
@@ -4814,7 +6241,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 						ifBlock 	-condition 'if ($sasLI)			# If SAS logical Interconnect exists' -indentlevel 1
 							$value 					= 'Get-OVAvailableDriveType -InputObject $sasLI | where { $_.Capacity -eq $MaxDriveSize -and $_.Type -eq $DriveTechnology -and $_.NumberAvailable -eq $numPhysicalDrives}'
-							[void]$scriptCode.Add((Generate-CustomVarCode -Prefix availableDrives  -value $value -indentlevel 2))
+							[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix availableDrives  -value $value -indentlevel 2))
 							ifBlock	-condition 'if ($availableDrives)		# if there are such drives in SAS' -indentlevel 2
 								$JBODParam 			= ' -name {0} -driveType {1} -MinDriveSize {2} -MaxDriveSize {3} -EraseDataOneDelete ${4} ' -f $logicalDrives, $driveTechnology, $driveMinSize, $driveMaxSize, $eraseData
 								
@@ -4827,26 +6254,26 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 									$value 				= 'new-OVLogicalJBOD -InputObject $sasLI {0} ' -f $JBODParam
 								}
 								$jbodDisk 			= '$' + "jbod$jbodIndex"
-								[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $jbodDisk  -value $value -isVar $False -indentlevel 3))
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $jbodDisk  -value $value -isVar $False -indentlevel 3))
 								$jbodIndex++
 								ifBlock -condition "if ($jbodDisk)"  -indentlevel 3
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod' 					-value 'new-object -type sasJBOD' 	-indentlevel 4))
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.id'                -value $driveID                     -indentlevel 4 ))
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.deviceSlot'        -value $deviceSlot                  -indentlevel 4 ))
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.name'              -value $logicalDrives               -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod' 					-value 'new-object -type sasJBOD' 	-indentlevel 4))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.id'                -value $driveID                     -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.deviceSlot'        -value $deviceSlot                  -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.name'              -value $logicalDrives               -indentlevel 4 ))
 									if ($driveDescription)
 									{
-										[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.description'   -value $driveDescription            -indentlevel 4 ))
+										[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.description'   -value $driveDescription            -indentlevel 4 ))
 									}
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.numPhysicalDrives' -value $numPhysicalDrives           -indentlevel 4 ))
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.driveMinSizeGB'    -value $driveMinSize                -indentlevel 4 ))
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.driveMaxSizeGB'    -value $driveMaxSize                -indentlevel 4 ))	
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.driveTechnology'   -value $driveTechnology             -indentlevel 4 ))	
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.eraseData'         -value $eraseData                   -indentlevel 4 ))
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.persistent'        -value $persistent                  -indentlevel 4 ))
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '_jbod.sasLogicalJBODUri' -value ('{0}.uri' -f $jbodDisk)     -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.numPhysicalDrives' -value $numPhysicalDrives           -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.driveMinSizeGB'    -value $driveMinSize                -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.driveMaxSizeGB'    -value $driveMaxSize                -indentlevel 4 ))	
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.driveTechnology'   -value $driveTechnology             -indentlevel 4 ))	
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.eraseData'         -value $eraseData                   -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.persistent'        -value $persistent                  -indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '_jbod.sasLogicalJBODUri' -value ('{0}.uri' -f $jbodDisk)     -indentlevel 4 ))
 
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '[void]$lsJBOD.Add($_jbod)'  -isVar $False 					-indentlevel 4 ))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '[void]$lsJBOD.Add($_jbod)'  -isVar $False 					-indentlevel 4 ))
 
 								endIfBlock -indentlevel 3							
 							endIfBlock -indentlevel 2
@@ -4860,7 +6287,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				{
 					# ----- Generate params for profiles
 					$controllers 	= '@(' + ($controllerArray -join $comma) + ')'
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'controllers'  -value $controllers  -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'controllers'  -value $controllers  -indentlevel 1))
 					$localStorageParam 	= ' -StorageController $controllers'
 					$controllerArray		= [System.Collections.ArrayList]::new()
 					$logicaldiskArray 		= [System.Collections.ArrayList]::new()
@@ -4877,10 +6304,10 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			if ($volList)
 			{
 				newLine
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -------------- SAN Storage section ' -isVar $False -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- SAN Storage section ' -isVar $False -indentlevel 1))
 				if ($isSpt)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'sanConsistencyChecking' -Value ('"{0}"' -f $sanConsistency) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sanConsistencyChecking' -Value ('"{0}"' -f $sanConsistency) -indentlevel 1))
 					$StorageVolumeConsistencyParam	= ' -sanStorageConsistencyChecking $sanConsistencyChecking'
 				}
 				newLine
@@ -4903,19 +6330,19 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					}
 
 					$_volVariable 				= '$volume{0}'  -f $volumeIndex++
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix "$_volVariable	=	@{" 	-isVar $False 	-indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "$_volVariable	=	@{" 	-isVar $False 	-indentlevel 1))
 					if ($_lunType -eq 'Manual')
 					{
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix "id						= $_lun $SepHash"  		-isVar $False 	-indentlevel 6))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "id						= $_lun $SepHash"  		-isVar $False 	-indentlevel 6))
 					}
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix "lunType					= '$_lunType' $SepHash"	-isVar $False 	-indentlevel 6))
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix "volumeUri				= $_volUri $SepHash" 	-isVar $False 	-indentlevel 6))
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix "volumeStorageSystemUri	= $_stsUri $SepHash" 	-isVar $False 	-indentlevel 6))			
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "lunType					= '$_lunType' $SepHash"	-isVar $False 	-indentlevel 6))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "volumeUri				= $_volUri $SepHash" 	-isVar $False 	-indentlevel 6))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "volumeStorageSystemUri	= $_stsUri $SepHash" 	-isVar $False 	-indentlevel 6))			
 					if ($_stPath)
 					{
-						[void]$scriptCode.Add((Generate-CustomVarCode -Prefix "storagePaths			= $_stPath " 			-isVar $False 	-indentlevel 6))
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "storagePaths			= $_stPath " 			-isVar $False 	-indentlevel 6))
 					}
-					[void]$scriptCode.Add((Generate-CustomVarCode 	-Prefix '}'												-isVar $False 	-indentlevel 6))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode 	-Prefix '}'												-isVar $False 	-indentlevel 6))
 
 					[void]$storageVolumeArray.add($_volVariable)
 
@@ -4923,7 +6350,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				if ($storageVolumeArray )
 				{
 					$value 						= "@( " + ($storageVolumeArray -join $Comma) + " )"
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix storageVolume  	-value $value	-indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix storageVolume  	-value $value	-indentlevel 1))
 					$StorageVolumeParam 		= ' -sanStorage -StorageVolume $storageVolume '
 					
 					if ($isSpt)
@@ -4942,8 +6369,8 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			if ($bm )
 			{
 				newLine
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -------------- Boot mode section ' -isVar $False -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'bootMode' 		-Value ('"{0}"' -f $bmMode) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- Boot mode section ' -isVar $False -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'bootMode' 		-Value ('"{0}"' -f $bmMode) -indentlevel 1))
 				
 
 				$bmParam 		= ' -bootMode $bootMode '
@@ -4954,14 +6381,14 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 				if ($bootMode -match 'UEFI Optimized*')
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'secureBoot' 		-Value ('"{0}"' -f $secureBoot) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'secureBoot' 		-Value ('"{0}"' -f $secureBoot) -indentlevel 1))
 					$bmParam 	+= ' -SecureBoot $secureBoot'
 				}
 
 				if ($order)
 				{
 					$bootOrder 	 = "@('" + $order.Replace($SepChar,"'$Comma'") + "')" 
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'bootOrder' 		-Value ('{0}' -f $bootOrder) -indentlevel 1)) 
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'bootOrder' 		-Value ('{0}' -f $bootOrder) -indentlevel 1)) 
 					$boParam     = ' -ManageBoot ${0} -BootOrder $bootOrder' -f $bo
 				}
 
@@ -4970,8 +6397,8 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 				if ($isSpt)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'bmConsistency' -Value ('"{0}"' -f $bmConsistency) -indentlevel 1))
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'boConsistency' -Value ('"{0}"' -f $boConsistency) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'bmConsistency' -Value ('"{0}"' -f $bmConsistency) -indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'boConsistency' -Value ('"{0}"' -f $boConsistency) -indentlevel 1))
 					
 					$bmConsistencyParam	= ' -BootModeConsistencyChecking $bmConsistency'
 					$boConsistencyParam	= ' -BootOrderConsistencyChecking $boConsistency'
@@ -4990,15 +6417,15 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				$settingsArr 	= $biosSettings.Split($SepChar)
 
 				newLine
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -------------- BIOS section ' -isVar $False -indentlevel 1))
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'biosSettings' 	-Value '@(' -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- BIOS section ' -isVar $False -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'biosSettings' 	-Value '@(' -indentlevel 1))
 
 				foreach ($setting in $settingsArr)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ("{0}$COMMA" -f $setting)	-isVar $false  -indentlevel 2))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ("{0}$COMMA" -f $setting)	-isVar $false  -indentlevel 2))
 				}
-				$scriptCode[-1] = $scriptCode[-1] -replace $COMMA , ''
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ')'	-isVar $false  -indentlevel 2))
+				$PSscriptCode[-1] = $PSscriptCode[-1] -replace $COMMA , ''
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ')'	-isVar $false  -indentlevel 2))
 
 
 
@@ -5006,7 +6433,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 				if ($isSpt)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'biosConsistency' -Value ('"{0}"' -f $biosConsistency) -indentlevel 1))				
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'biosConsistency' -Value ('"{0}"' -f $biosConsistency) -indentlevel 1))				
 					$biosParam 	+= ' -BiosConsistencyChecking $biosConsistency'	
 				}
 			}
@@ -5026,13 +6453,13 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				$iLOsettingList 		= $iLOList | where ProfileName -match $spName
 
 				newLine
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix '# -------------- iLO section ' -isVar $False -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- iLO section ' -isVar $False -indentlevel 1))
 
-				[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'manageIlo' -Value ('${0}' -f $manageIlo) -indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'manageIlo' -Value ('${0}' -f $manageIlo) -indentlevel 1))
 				$iloParam  	 			= ' -ManageIloSettings $manageIlo'
 				if ($isSpt)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix 'iloConsistency' -Value ('"{0}"' -f $iloConsistency) -indentlevel 1))				
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'iloConsistency' -Value ('"{0}"' -f $iloConsistency) -indentlevel 1))				
 					$iloParam 			+= ' -IloSettingsConsistencyChecking $iloConsistency'	
 				}
 
@@ -5068,18 +6495,18 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 										$privArr 		= $privileges.Split($SepChar) 
 										foreach ($priv in $privArr)
 										{
-											$_privParamArr	+= $iLOPrivilgeParamEnum.Item($priv)
+											$_privParamArr	+= $iLOPrivilegeParamEnum.Item($priv)
 										}
 									}
 
 								
 									$iloUser 			= '$iloUser{0}' -f $iloUserIndex++
 									$value 				= 'new-OVIloLocalUserAccount	{0}{1} `' 		-f $iloNameParam, $iloDisplayParam 
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $iloUser 	-value $value 			-isVar $False	-indentlevel 1)) 
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `'		-f $iloPasswordParam)	-isVar $False	-indentlevel 18))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $iloUser 	-value $value 			-isVar $False	-indentlevel 1)) 
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `'		-f $iloPasswordParam)	-isVar $False	-indentlevel 18))
 									foreach ($_param in $_privParamArr)
 									{
-										[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `'	-f $_param)		-isVar $False	-indentlevel 18))
+										[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `'	-f $_param)		-isVar $False	-indentlevel 18))
 									}
 									
 									newLine
@@ -5150,15 +6577,15 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 										$privArr 				= $privileges.Split($SepChar) 							
 										foreach ($priv in $privArr)
 										{
-											$_privParamArr			+= $iLOPrivilgeParamEnum.Item($priv)
+											$_privParamArr			+= $iLOPrivilegeParamEnum.Item($priv)
 										}
 									}
 
 									$iloDirectoryGroup 			= '$iloDG{0}' -f $ilodirectoryGroupIndex++
-									[void]$scriptCode.Add((Generate-CustomVarCode -Prefix $iloDirectoryGroup 	-value ('New-OVIloDirectoryGroup{0} `' -f $iloDirGroupParam1) -isVar $False -indentlevel 1))
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $iloDirectoryGroup 	-value ('New-OVIloDirectoryGroup{0} `' -f $iloDirGroupParam1) -isVar $False -indentlevel 1))
 									foreach ($_param in $_privParamArr)
 									{
-										[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `'	-f $_param)		-isVar $False	-indentlevel 18))
+										[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `'	-f $_param)		-isVar $False	-indentlevel 18))
 									}	
 									newLine
 									[void]$iloDirectoryGroups.add($iloDirectoryGroup)
@@ -5213,38 +6640,38 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				if ($iloLocalAccounts)
 				{
 					$iloLocalAccountsParam 		= ' -ManageLocalAccounts -LocalAccounts $iloLocalAccounts '
-					[void]$scriptCode.Add((Generate-CustomVarCode 	-Prefix 'iloLocalAccounts' -value ('@({0})' -f ($iloLocalAccounts -join $COMMA))	-indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode 	-Prefix 'iloLocalAccounts' -value ('@({0})' -f ($iloLocalAccounts -join $COMMA))	-indentlevel 1))
 				}
 				
 				if ($iloDirectoryGroups)
 				{
 					$iloDirectoryGroupsParam 	= ' -ManageDirectoryGroups -DirectoryGroups $iloDirectoryGroups '
-					[void]$scriptCode.Add((Generate-CustomVarCode 	-Prefix 'iloDirectoryGroups' -value ('@({0})' -f ($iloDirectoryGroups -join $COMMA))	-indentlevel 1))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode 	-Prefix 'iloDirectoryGroups' -value ('@({0})' -f ($iloDirectoryGroups -join $COMMA))	-indentlevel 1))
 				}
 
-				[void]$scriptCode.Add((Generate-CustomVarCode 	-Prefix 'iloPolicy' -value ('new-OVServerProfileIloPolicy	{0} `' -f $iloAdminParam)	-indentlevel 1))
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode 	-Prefix 'iloPolicy' -value ('new-OVServerProfileIloPolicy	{0} `' -f $iloAdminParam)	-indentlevel 1))
 
 				
 				if ($iloLocalAccountsParam)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `' -f $iloLocalAccountsParam) -isVar $False	-indentlevel 19))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `' -f $iloLocalAccountsParam) -isVar $False	-indentlevel 19))
 				}
 				if ($iloDirectoryGroupsParam)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `' -f $iloDirectoryGroupsParam) -isVar $False	-indentlevel 19))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `' -f $iloDirectoryGroupsParam) -isVar $False	-indentlevel 19))
 				}
 
 				if ($iloHostNameParam)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `' -f $iloHostNameParam) 	-isVar $False	-indentlevel 19))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `' -f $iloHostNameParam) 	-isVar $False	-indentlevel 19))
 				}
 				foreach ($_param in $_dirParamArr)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `' -f $_param) -isVar $False	-indentlevel 19))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `' -f $_param) -isVar $False	-indentlevel 19))
 				}
 				foreach ($_param in $_kmParamArr)
 				{
-					[void]$scriptCode.Add((Generate-CustomVarCode -Prefix ('{0} `' -f $_param) -isVar $False	-indentlevel 19))
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `' -f $_param) -isVar $False	-indentlevel 19))
 				}
 
 				newLine    # to end the command
@@ -5261,57 +6688,57 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		if ($spTemplateParam )  # SP with a template
 		{
 			$prefix 	= $newCmd + ' 		 -Name $name {0}{1}{2} `' -f $spTemplateParam, $hwParam, $descParam
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 1))
 			newLine   # to end the command
 		}
 		else # SPT or standalone profile
 		{
 			$prefix 	= $newCmd + '	 	 -Name $name {0}{1}{2}{3}{4} `' -f $descParam, $spDescParam, $shtParam, $egParam, $affinityParam
-			[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 1))
 
 			if ($fwParam)
 			{
 				$prefix		= '{0} `' -f $fwParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 			if ($bmParam)
 			{
 				$prefix		= '{0} `' 	-f $bmParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 			if ($boParam)
 			{
 				$prefix		= '{0} `' 	-f $boParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 			if ($biosParam)
 			{
 				$prefix		= '{0} `' 	-f $biosParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 
 			if ($connectionsParam)
 			{
 				$prefix		= '{0} `' 	-f $connectionsParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 
 			if ($localStorageParam)
 			{
 				$prefix		= '{0} `' 	-f $localStorageParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 
 			if ($StorageVolumeParam)
 			{
 				$prefix		= '{0} `' 	-f $StorageVolumeParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 
 			if ($iloParam)
 			{
 				$prefix		= '{0}' 	-f $iloParam
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 9))
 			}
 
 			newLine   # to end the command
@@ -5321,12 +6748,12 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			# sasLogicalJBOD
 
 			ifBlock -condition 'if ($lsJBOD)' -indentlevel 1
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix '# ------ Configure saslogicalJBOD for profile' -isVar $False 	-indentlevel 2 ))
-				[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'prf' 		-Value ($getCmd + ' | where name -eq $name')     -indentlevel 2))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix '# ------ Configure saslogicalJBOD for profile' -isVar $False 	-indentlevel 2 ))
+				[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'prf' 		-Value ($getCmd + ' | where name -eq $name')     -indentlevel 2))
 				ifBlock -condition 'if ($prf)' -indentlevel 2
-					[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix '$lsJBOD | % { $prf.localStorage.sasLogicalJBODs += $_ }' -isVar $False 	-indentlevel 3 ))		
+					[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix '$lsJBOD | % { $prf.localStorage.sasLogicalJBODs += $_ }' -isVar $False 	-indentlevel 3 ))		
 				endIfBlock -indentlevel 2
-				[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('{0} -InputObject $prf' -f $saveCmd) -isVar $False 	-indentlevel 2 ))
+				[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('{0} -InputObject $prf' -f $saveCmd) -isVar $False 	-indentlevel 2 ))
 			endIfBlock -indentlevel 1
 
 		}
@@ -5334,7 +6761,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		if ($scopes)
 		{
 			newLine
-			[void]$scriptCode.Add( (Generate-CustomVarCode -Prefix 'object' -Value ($getCmd + ' | where name -eq $name') -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ($getCmd + ' | where name -eq $name') -indentlevel 1))
 			generate-scopeCode -scopes $scopes -indentlevel 1
 
 		}
@@ -5343,7 +6770,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		endIfBlock
 		# Skip creating because resource already exists
 		elseBlock
-		[void]$scriptCode.Add(( Generate-CustomVarCode -Prefix ('write-host -foreground YELLOW "{0} already exists." ' -f $spName ) -isVar $False -indentlevel 1 ))
+		[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix ('write-host -foreground YELLOW "{0} already exists." ' -f $spName ) -isVar $False -indentlevel 1 ))
 		endElseBlock
 
 		newLine
@@ -5356,17 +6783,17 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				newLine
 	
 				# Add disconnect and close the file
-				[void]$ScriptCode.Add('Disconnect-OVMgmt')
+				[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 			
 				# ---------- Generate script to file
-				writeToFile -code $ScriptCode -file $spfilename
+				writeToFile -code $PSscriptCode -file $spfilename
 				[void]$ListPS1Files.Add($spfilename)
 	
 				# Build a new set
-				$scriptCode             	= [System.Collections.ArrayList]::new()
+				$PSscriptCode             	= [System.Collections.ArrayList]::new()
 				$count++
 				$spfilename 				= "$subdir\profileGroup$count" + ".PS1"
-				connect-Composer  -sheetName $cSheet    -workBook $WorkBook -scriptCode $scriptCode
+				connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
 
 				$i = 1
 			}
@@ -5377,7 +6804,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 	if ($spList)
 	{
-		[void]$ScriptCode.Add('Disconnect-OVMgmt')
+		[void]$PSscriptCode.Add('Disconnect-OVMgmt')
 	}
 
 
@@ -5391,12 +6818,605 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 
 	 # ---------- Generate script to file
-	 writeToFile -code $ScriptCode -file $ps1Files
+	 writeToFile -code $PSscriptCode -file $ps1Files
 
 	 return $ListPS1Files
 
 }
 
+Function Import-YMLProfileorTemplate([string]$sheetName, [string]$WorkBook, [string]$YMLFiles, [Boolean]$isSpt, [string]$subdir )
+{
+	$YMLscriptCode         = [System.Collections.ArrayList]::new()
+	
+
+	$cSheet,$spSheet,$connSheet,$localStorageSheet,$SanStorageSheet,$iLOSheet 		= $sheetName.Split($SepChar)
+
+	$spList 					= if ($spSheet)	 			{get-datafromSheet -sheetName $spSheet -workbook $WorkBook				} else {$null}
+	$connList 					= if ($connSheet) 			{get-datafromSheet -sheetName $connSheet -workbook $WorkBook 			} else {$null}
+	$localStorageList 			= if ($localStorageSheet)	{get-datafromSheet -sheetName $localStorageSheet -workbook $WorkBook 	} else {$null}	
+	$sanStorageList 			= if ($sanStorageSheet) 	{get-datafromSheet -sheetName $sanStorageSheet -workbook $WorkBook		} else {$null}
+	$iLOList 					= if ($iLOSheet) 			{get-datafromSheet -sheetName $iLOSheet -workbook $WorkBook				} else {$null}
+
+
+	$isSP 						= -not $isSpt
+
+
+
+	[void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure server profiles or templates'))
+
+
+
+	foreach ( $prof in $spList)
+	{
+
+		$spName 				= $prof.name
+		$description    		= $prof.Description 
+		$spDescription      	= $prof.serverprofileDescription 
+		$template	  			= $prof.serverProfileTemplate
+		$serverHardware			= $prof.serverHardware
+		$sht 					= $prof.serverHardwareType
+		$eg 					= $prof.enclosureGroupName
+		$affinity 				= $prof.affinity
+
+		$manageFirmware			= [Boolean]($prof.manageFirmware)
+		$fwBaseline				= $prof.firmwareBaselineName
+		$fwInstallType 			= $prof.firmwareInstallType
+		$fwForceInstall			= $prof.forceInstallFirmware
+		$fwActivation 			= $prof.firmwareActivationType
+		$fwSchedule 			= $prof.firmwareSchedule
+
+		$bm                 	= [Boolean]($prof.manageBootMode)
+		$bmMode 				= $prof.mode
+		$pxeBootPolicy			= $prof.pxeBootPolicy
+		$secureBoot 			= $prof.secureBoot
+		$bo                 	= [Boolean]($prof.manageBootOrder)
+		$order 					= $prof.order
+
+		$bios 					= [Boolean]($prof.manageBios)
+		$biosSettings	 		= $prof.overriddenSettings
+
+		$manageConnections		= [Boolean]($prof.manageConnections)
+		$manageSANStorage 		= [Boolean]($prof.manageSANStorage)
+
+		$manageIlo 				= [Boolean]($prof.manageIlo)
+
+		$macType 				= $prof.macType
+		$wwnType 				= $prof.wwnType
+		$snType 				= $prof.serialNumberType
+		$iscsiType				= $prof.iscsiInitiatorNameType	
+		$hideFlexNics 			= $prof.hideUnusedFlexNics
+
+
+		if ($isSpt)
+		{
+			$fwConsistency 		= if ($prof.firmwareConsistencyChecking)  	{$consistencyCheckingEnum.Item($prof.firmwareConsistencyChecking) } else {'None'}
+			$bmConsistency 		= if ($prof.bootModeConsistencyChecking) 	{$consistencyCheckingEnum.Item($prof.bootModeConsistencyChecking) } else {'None'}
+			$boConsistency 		= if ($prof.bootOrderConsistencyChecking)	{$consistencyCheckingEnum.Item($prof.bootOrderConsistencyChecking) } else {'None'}
+			$biosConsistency 	= if ($prof.biosConsistencyChecking) 		{$consistencyCheckingEnum.Item($prof.biosConsistencyChecking) } else {'None'}
+			$lsConsistency 		= if ($prof.localStorageConsistencyChecking)	{$consistencyCheckingEnum.Item($prof.localStorageConsistencyChecking) } else {'None'}
+			$sanConsistency 	= if ($prof.sanStorageConsistencyChecking) 	{$consistencyCheckingEnum.Item($prof.sanStorageConsistencyChecking) } else {'None'}
+			$connConsistency 	= if ($prof.connectionConsistencyChecking) 	{$consistencyCheckingEnum.Item($prof.connectionConsistencyChecking) } else {'None'}
+			$iloConsistency 	= if ($prof.iloConsistencyChecking)			{$consistencyCheckingEnum.Item($prof.iloConsistencyChecking) } else {'None'}
+		}
+
+		$getCmd		= $newCmd =  $saveCmd = $null
+		if ($isSpt)
+		{
+			$getFact 			= 'oneview_server_profile_template_facts'
+			$newFact 			= 'oneview_server_profile_template'
+			$saveFact 			= '*****oneview_server_profile_template_facts'
+			$_spType 			= $YMLtype540Enum.item('serverProfileTemplate')
+			$comment 			= '# ---------- Server Profile Template {0}' 	-f $spName
+			$_task 				= ' Create server profile template  {0}' 		-f $spName
+		}
+		else 
+		{
+			$getFact 			= 'oneview_server_profile_facts'
+			$newFact 			= 'oneview_server_profile'
+			$saveFact 			= '*****oneview_server_profile_template_facts'
+			$_spType 			= $YMLtype540Enum.item('serverProfile')
+			$comment 			= '# ---------- Server Profile {0}' 			-f $spName
+			$_task 				= ' Create server profile {0}' 					-f $spName
+		}
+
+		newLine	-code $YMLscriptCode
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $comment  				-isItem $True  								-indentlevel 2 ))
+
+		# --- Power Off server
+		if (($isSp) -and ($null -ne $serverHardware))
+		{
+			newLine	-code $YMLscriptCode
+			$title 			= ' Power off server {0}' 	-f $serverHardware
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title  -ovTask 'oneview_server_hardware'))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name				-value "'$serverHardware'"				-indentlevel $indentDataStart )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		powerStateData 												-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			powerState			-value "'Off'" 						-indentlevel ($indentDataStart +1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			powerControl		-value "'MomentaryPress'" 			-indentlevel ($indentDataStart +1) ))
+		}
+
+		# New Server profile or template
+
+		$title 						= $_task
+		if ($Template)
+		{
+			$title 			= ' Create server profile {0} from template  {1}' 		-f $spName, $template
+		}
+
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -ovTask $newFact))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name				-value $spName							-indentlevel $indentDataStart ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type				-value $_spType							-indentlevel $indentDataStart ))	
+
+		if ($description)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	description			-value $description						-indentlevel $indentDataStart ))	
+		}
+
+		if ($isSpt -and $spDescription)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	serverProfileDescription -value $spDescription				-indentlevel $indentDataStart ))	
+		}
+		
+		if ($template)
+		{
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	serverProfileTemplateName	-value $template				-indentlevel $indentDataStart ))	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	serverHardwareName			-value $serverHardware			-indentlevel $indentDataStart ))
+		}
+		else # either SPT or standalone SP
+		{
+			# -- server hardware type	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	serverHardwareTypeName		-value $sht						-indentlevel $indentDataStart ))
+
+			# -- enclosure group	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureGroupName			-value $eg						-indentlevel $indentDataStart ))
+
+			# -- affinity	
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	affinity					-value $affinity				-indentlevel $indentDataStart ))
+
+			# -- server hardware
+			if ($isSp)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix serverHardwareName			-value $serverHardware			-indentlevel $indentDataStart ))				
+			}
+
+			# ############### Firmware Region
+			if ($manageFirmware)
+			{
+				if ($null -eq $fwActivation)
+				{
+					$fwActivation 			= 'NotScheduled'
+				}
+
+				if ($null -eq $fwInstallType)
+				{
+					$fwInstallType		= 'FirmwareAndOSDrivers'
+				}
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix firmware														-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	manageFirmware			-value $manageFirmware				-indentlevel ($indentDataStart + 1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	firmwareBaselineName	-value $fwBaseline					-indentlevel ($indentDataStart + 1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	firmwareInstallType		-value $fwInstallType				-indentlevel ($indentDataStart + 1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	forceInstallFirmware	-value $fwforceInstall				-indentlevel ($indentDataStart + 1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	firmwareActivationType	-value $fwActivation				-indentlevel ($indentDataStart + 1) ))
+				if ($isSpt)
+				{
+					$_fwConsistency 		= $YMLconsistencyCheckingSptEnum.item($fwConsistency)
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix complianceControl		-value $_fwConsistency				-indentlevel ($indentDataStart + 1) ))
+				}
+				## HKD TO BE ADDED
+				# 	$fwSchedule
+			}
+
+			# ############### Boot Settings : BootMode / BootOrder
+			if ($bm )
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix bootMode														-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	manageMode			-value $bm								-indentlevel ($indentDataStart + 1) ))	
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	mode				-value $bmMode							-indentlevel ($indentDataStart + 1) ))
+				if ($isSpt)
+				{
+					$_bmConsistency 		= $YMLconsistencyCheckingSptEnum.item($bmConsistency)
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix complianceControl	-value $_bmConsistency					-indentlevel ($indentDataStart + 1) ))
+				}
+				
+				# For Ansible, 'Auto '= null
+
+				if (($pxeBootPolicy) -and ($pxeBootPolicy -notlike 'Auto'))
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix pxeBootPolicy		-value $pxeBootPolicy					-indentlevel ($indentDataStart + 1) ))		
+				}
+			}
+			if ($order )
+			{
+				$_orderArray = $order.split($SepChar) 
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix boot															-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	manageBoot			-value $bo								-indentlevel ($indentDataStart + 1) ))
+				if ($isSpt)
+				{
+					$_boConsistency 		= $YMLconsistencyCheckingSptEnum.item($boConsistency)
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix complianceControl	-value $_boConsistency					-indentlevel ($indentDataStart + 1) ))
+				}
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	order				-value '['								-indentlevel ($indentDataStart + 1) ))
+				foreach ($_order in $_orderArray)
+				{
+					$_item 					= '{0} ,' -f $_order
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$_item	 		-isItem $True							-indentlevel ($indentDataStart + 2) ))
+				}
+				$YMLscriptCode[-1] 			= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	' '					-value ' ]'		-isItem $True			-indentlevel ($indentDataStart + 1) ))
+				
+			}
+
+
+			# ############### BIOS Settings
+			if ($bios)
+			{
+				$biosSettingsArr 	= $biosSettings.Replace("@{ ","").Replace("}","").Split($SepChar)
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix bios															-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	manageBios			-value $bios							-indentlevel ($indentDataStart + 1) ))	
+				if ($isSpt)
+				{
+					$_biosConsistency 		= $YMLconsistencyCheckingSptEnum.item($biosConsistency)
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix complianceControl	-value $_biosConsistency				-indentlevel ($indentDataStart + 1) ))
+				}
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	overriddenSettings	-value '['								-indentlevel ($indentDataStart + 1) ))	
+				foreach ($_bios in $biosSettingsArr)
+				{
+					$_id, $_value 	= $_bios.Split(';').Trim()
+					$_id 			= $_id.Split('=').Trim()				# id = "Sriov"
+					$_value 		= $_value.Split('=').Trim()				# value = "Enabled"
+
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'{'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		"id"			-value ($_id[1] + $COMMA)			-indentlevel ($indentDataStart + 3)  ))	
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		"value"			-value $_value[1]					-indentlevel ($indentDataStart + 3)  ))	
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'},'									-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+				}
+				$YMLscriptCode[-1]	= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	' '					-value ' ]'		-isItem $True			-indentlevel ($indentDataStart + 1) ))
+
+
+			}
+
+			# ############### Connections
+			if ($manageConnections)
+			{
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix connectionSettings												-indentlevel $indentDataStart  ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	manageConnections			-value $manageConnections		-indentlevel ($indentDataStart + 1) ))	
+				if ($isSpt)
+				{
+					$_connConsistency 		= $YMLconsistencyCheckingSptEnum.item($connConsistency)
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix complianceControl	-value $_connConsistency					-indentlevel ($indentDataStart + 1) ))
+				}	
+
+				$connectionArray       	= [System.Collections.ArrayList]::new()
+				$connectionList 		= $connList | where ProfileName -eq $spName
+				$index					= 1
+
+				if ($connectionList)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix connections													-indentlevel ($indentDataStart + 1) ))
+				}
+				foreach ($conn in $connectionList)
+				{
+					$name 				= $conn.name
+					$id			        = $conn.id
+					$functionType 		= $conn.functionType
+					$network 			= $conn.network
+					$portId       		= $conn.portId
+					$requestedMbps		= $conn.requestedMbps
+					$requestedVFs 		= $Conn.requestedVFs
+
+					$lagName	 		= $conn.lagName
+
+
+					$bootable			= $conn.boot
+					$priority       	= $conn.priority
+					$bootVolumeSource 	= $conn.bootVolumeSource
+
+
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "- id"					-value $id						-indentlevel ($indentDataStart + 1)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  portId"				-value $portId					-indentlevel ($indentDataStart + 1)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  name"				-value $name					-indentlevel ($indentDataStart + 1)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  functionType"		-value $functionType			-indentlevel ($indentDataStart + 1)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  networkName"			-value $network					-indentlevel ($indentDataStart + 1)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  requestedMbps"		-value $requestedMbps			-indentlevel ($indentDataStart + 1)  ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  requestedVFs"		-value $requestedVFs			-indentlevel ($indentDataStart + 1)  ))
+					
+					if ($lagName)
+					{
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  lagName"			-value $lagName					-indentlevel ($indentDataStart + 1)  ))
+					}
+					
+					if ($bootable)
+					{
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  boot"												-indentlevel ($indentDataStart + 1)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	"  priority"			-value $priority			-indentlevel ($indentDataStart + 2)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	"  bootVolumeSource"	-value $bootVolumeSource	-indentlevel ($indentDataStart + 2)  ))
+					}
+
+					if ( ($isSp) -and ($conn.userDefined) )
+					{
+						$mac	 	= $Conn.mac
+						$wwpn		= $Conn.wwpn
+						$wwnn		= $Conn.wwnn
+
+						if ($mac)
+						{
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  mac"				-value $mac					-indentlevel ($indentDataStart + 1)  ))
+						}
+						if ($wwpn)
+						{
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  wwpn"			-value $wwpn					-indentlevel ($indentDataStart + 1)  ))
+						}			
+						if ($wwnn)
+						{
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "  wwnn"			-value $wwnn					-indentlevel ($indentDataStart + 1)  ))
+						}
+					}				
+				
+				}
+			}
+
+
+			# ############### iLO Settings
+			if ($manageIlo)
+			{
+				$iLOsettingList 		= $iLOList | where ProfileName -match $spName
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	managementProcessor											-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		manageMp			-value $manageIlo					-indentlevel ($indentDataStart + 1) ))	
+				if ($isSpt)
+				{
+					$_iloConsistency 		= $YMLconsistencyCheckingSptEnum.item($iloConsistency)
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	complianceControl	-value $_iloConsistency				-indentlevel ($indentDataStart + 1) ))
+
+				}
+
+				if ($iLOsettingList)
+				{
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	mpSettings												-indentlevel ($indentDataStart + 1) ))
+				
+
+					$_adminAccountArr 		= $iLOsettingList | where settingType -eq 'AdministratorAccount'
+					$_hostNameArr 			= $iLOsettingList | where settingType -eq 'HostName'
+					$_localAccountArr 		= $iLOsettingList | where settingType -eq 'LocalAccounts'
+					$_dirGroupsArr 			= $iLOsettingList | where settingType -eq 'DirectoryGroups'
+					$_KeyManagerArr 		= $iLOsettingList | where settingType -eq 'KeyManager'
+					$_directoryArr 			= $iLOsettingList | where settingType -eq 'Directory'
+
+					#------- AdministratorAccount
+					foreach ($s in $_adminAccountArr)
+					{
+
+						$_deleteAdmin 			= 'deleteAdministratorAccount : {0},'			-f $s.deleteAdministratorAccount 
+						$_password 				= "password:                   '{0}'"			-f $s.adminPassword
+
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'- {'										  	-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'settingType : AdministratorAccount,' 	-isItem $True	-indentlevel ($indentDataStart + 4)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'args        : { '					   	-isItem $True 	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				$_deleteAdmin					   	-isItem $True 	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				$_password							-isItem $True 	-indentlevel ($indentDataStart + 5) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'              } '						-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'  } '											-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+					}
+
+					#------- HostName
+					foreach ($s in $_hostNameArr)
+					{
+						$_hostName 				= "hostName: '{0}'"						-f $s.hostName 
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'- {'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'settingType : Hostname, '				-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'args        : { '						-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_hostName 							-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'              } '						-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'  } '										-isItem $True	-indentlevel ($indentDataStart + 2)  ))															
+					}
+
+					#------- local Accounts
+					if ($_localAccountArr)
+					{
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'- {'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'settingType : LocalAccounts, '			-isItem $True	-indentlevel ($indentDataStart + 4)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'args        : { '						-isItem $True	-indentlevel ($indentDataStart + 4)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'localAccounts : ['					-isItem $True	-indentlevel ($indentDataStart + 5)  ))									
+						
+						foreach ($s in $_localAccountArr)
+						{
+							$privArr 				= @()
+							$_uname 				= "userName                 : {0},"		-f $s.username
+							$_display				= "displayName              : {0},"		-f $s.displayName
+							$_password 				= "password                 : '{0}',"	-f $s.userPassword
+							if ($s.userPrivileges)
+							{
+								$privArr 			= $s.userPrivileges.Split($SepChar)
+							}
+			
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				'{'								-isItem $True	-indentlevel ($indentDataStart + 6)  ))
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 					$_uname						-isItem $True	-indentlevel ($indentDataStart + 8)  ))
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 					$_display					-isItem $True	-indentlevel ($indentDataStart + 8)  ))
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 					$_password					-isItem $True	-indentlevel ($indentDataStart + 8)  ))
+							if ($Null -ne $privArr)
+							{
+								foreach ($_priv in $privArr)
+								{
+									$_userPriv 			= $YMLiLOPrivilegeParamEnum.item($_priv) 
+									[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_userPriv					-isItem $True	-indentlevel ($indentDataStart + 8)  ))
+								}
+								$YMLscriptCode[-1] = $YMLscriptCode[-1].TrimEnd() -replace ".$"
+							}
+							else # No user privilege defined 
+							{
+								$YMLscriptCode[-1] = $YMLscriptCode[-1].TrimEnd() -replace ".$"				# Remove COMMA
+							}
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				'},'							-isItem $True	-indentlevel ($indentDataStart + 6)  ))
+						}
+						$YMLscriptCode[-1] 			= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'                ]'					-isItem $True	-indentlevel ($indentDataStart + 5)  ))									
+						
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'               } '						-isItem $True	-indentlevel ($indentDataStart + 4)  ))
+
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'  }'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+
+					}
+
+					#------- Directory Group
+					if ($_dirGroupsArr)
+					{
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'- {'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'settingType : DirectoryGroups , '		-isItem $True	-indentlevel ($indentDataStart + 4)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'args        : { '						-isItem $True	-indentlevel ($indentDataStart + 4)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'directoryGroupAccounts :   ['		-isItem $True	-indentlevel ($indentDataStart + 5)  ))									
+						
+						foreach ($s in $_dirGroupsArr)
+						{
+							$privArr 				= @()
+							$_groupDN  				= "groupDN                  : '{0}',"	-f $s.groupDN
+							$_groupSID 				= "groupSID                 : {0},"		-f $s.groupSID
+
+
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				'{'								-isItem $True	-indentlevel ($indentDataStart + 6)  ))
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 					$_groupDN					-isItem $True	-indentlevel ($indentDataStart + 8)  ))
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 					$_groupSID					-isItem $True	-indentlevel ($indentDataStart + 8)  ))
+
+							if ($s.groupPrivileges)
+							{
+								$privArr 			= $s.groupPrivileges.Split($SepChar)
+								foreach ($_priv in $privArr)
+								{
+									$_userPriv 			= $YMLiLOPrivilegeParamEnum.item($_priv) 
+									[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_userPriv					-isItem $True	-indentlevel ($indentDataStart + 8)  ))
+								}
+								$YMLscriptCode[-1] = $YMLscriptCode[-1].TrimEnd() -replace ".$"
+							}
+							else # No user privilege defined 
+							{
+								$YMLscriptCode[-1] = $YMLscriptCode[-1].TrimEnd() -replace ".$"				# Remove COMMA
+							}
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 				'},'							-isItem $True	-indentlevel ($indentDataStart + 6)  ))
+						}
+						$YMLscriptCode[-1] 			= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'                           ]'		-isItem $True	-indentlevel ($indentDataStart + 5)  ))									
+						
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'              } '						-isItem $True	-indentlevel ($indentDataStart + 4)  ))
+
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'  }'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+							
+					}
+
+					#------- KeyManager
+					foreach ($s in $_keyManagerArr)
+					{
+						$_primary 				= "primaryServerAddress:   {0} ,"						-f $s.primaryServerAddress
+						$_primaryPort 			= "primaryServerPort:      {0} ,"						-f $s.primaryServerPort 
+						if ($s.secondaryServerAddress)
+						{
+							$_secondary 			= "secondaryServerAddress: {0} ,"					-f $s.secondaryServerAddress
+							$_secondaryPort 		= "secondaryServerPort:    {0} ,"					-f $s.secondaryServerPort 
+						}
+						$_groupName 			= "groupName:              {0} ,"						-f $s.groupName
+						$_certificateName 		= "certificateName:        {0} ,"						-f $s.certificateName
+						$_loginName 			= "loginName:              {0} ,"						-f $s.loginName
+						$_password 				= "password:               '{0}'"						-f $s.keyManagerpassword 
+
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'- {'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'settingType : KeyManager, '			-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'args        : { '						-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_primary 							-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_primaryPort						-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						if ($s.secondaryServerAddress)
+						{
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		$_secondary 						-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		$_secondaryPort 					-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						}
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_groupName 						-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_certificateName					-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_loginName 						-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_password 							-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'              } '						-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'  } '										-isItem $True	-indentlevel ($indentDataStart + 2)  ))															
+					}
+
+					#------- Directory
+					foreach ($s in $_directoryArr)
+					{
+						$_authentication 		= "directoryAuthentication:    {0}  ,"						-f $YMLiLOdirAuthParamEnum.item($s.directoryAuthentication)
+						$_ldap 					= "directoryGenericLDAP:       {0}  ,"						-f $s.directoryGenericLDAP
+						$_iloDN 				= "iloObjectDistinguishedName: '{0}',"					    -f $s.iloObjectDistinguishedName
+						$_password 				= "password:                   '{0}',"						-f $s.directoryPassword
+						$_server 				= "directoryServerAddress:     {0}  ,"						-f $s.directoryServerAddress 
+						$_port 					= "directoryServerPort:        {0}  ,"						-f $s.directoryServerPort
+
+
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'- {'										-isItem $True	-indentlevel ($indentDataStart + 2)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'settingType : Directory, '				-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'args        : { '						-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_authentication 					-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_ldap								-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_iloDN 							-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_password 							-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_server 							-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			$_port								-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+						
+						if ($s.directoryUserContext)
+						{
+							$_userContextArr 	= $s.directoryUserContext.Split($SepChar)
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'directoryUserContext: ['  			-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+
+							foreach ($_u in $_userContextArr)
+							{
+								[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			("'{0}', " -f $_u) 			-isItem $True	-indentlevel ($indentDataStart + 6)  ))
+						
+							}
+
+							$YMLscriptCode[-1]	= $YMLscriptCode[-1].TrimEnd() -replace ".$"
+							[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'                      ]'  			-isItem $True	-indentlevel ($indentDataStart + 5)  ))
+							
+						}
+						
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'              } '						-isItem $True	-indentlevel ($indentDataStart + 4) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'  } '										-isItem $True	-indentlevel ($indentDataStart + 2)  ))															
+					}
+
+				}
+
+			}
+
+			# ############### SN-MAC-ISCSI
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	macType					-value $macType				-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	wwnType					-value $wwnType				-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	serialNumberType		-value $snType				-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	iscsiInitiatorNameType	-value $iscsiType			-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	hideUnusedFlexNics		-value $hideFlexNics		-indentlevel $indentDataStart ))
+
+		}
+
+		# --- Power On server after profile is created
+		if (($isSp) -and ($null -ne $serverHardware))
+		{
+			newLine	-code $YMLscriptCode
+			$title 			= ' Power on server {0}' 	-f $serverHardware
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name  				-value $title	-isVar $True 				-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix oneview_server_hardware 										-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	config				-value "'{{config}}'"					-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	state				-value "power_state_set"				-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'data'														-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name				-value "'$serverHardware'"			-indentlevel $indentDataStart )) 
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		powerStateData 											-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			powerState			-value "'On'" 					-indentlevel ($indentDataStart + 1) ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			powerControl		-value "'MomentaryPress'" 		-indentlevel ($indentDataStart + 1) ))
+		}
+
+	}
+
+	#newLine	-code $YMLscriptCode
+	#[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix delegate_to				-value localhost									-indentlevel 2 ))
+
+	 # ---------- Generate script to file
+	 writeToFile -code $YMLscriptCode -file $YMLfiles
+
+}
 
 
 # -------------------------------------------------------------------------------------------------------------
@@ -5411,7 +7431,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 #
 $startRow 				= 15
 
-$allScriptCode 			= [System.Collections.ArrayList]::new()
+$allPSscriptCode 			= [System.Collections.ArrayList]::new()
 
 if ($workbook)
 { 
@@ -5430,12 +7450,14 @@ if ($workbook)
 
 		foreach ($dir in $subdirList)
 		{
-			$dir    = "$currentDir\$dir"
+			$dir    	= "$currentDir\$dir"
+			$ansibledir = "ansible_playbook"
 			if (-not (test-path -path $dir) )
 			{
                 write-host -ForegroundColor Cyan "--------- Creating folder $dir"
                 write-host -ForegroundColor Cyan $CR
 				md $dir
+				md "$dir\$ansibledir"
 			}
 		}
 
@@ -5451,14 +7473,15 @@ if ($workbook)
 		#----------------------------------------------
 		#              OV Resources
 		#----------------------------------------------
-		[void]$allScriptCode.Add($CR)
-		[void]$allScriptCode.Add('#----------------------------------------------')
-		[void]$allScriptCode.Add('#              OV Resources 					 ')
-		[void]$allScriptCode.Add('#----------------------------------------------')
-		[void]$allScriptCode.Add($CR)
+		[void]$allPSscriptCode.Add($CR)
+		[void]$allPSscriptCode.Add('#-----------------------------------------------')
+		[void]$allPSscriptCode.Add('#              OV Resources     				')
+		[void]$allPSscriptCode.Add('#-----------------------------------------------')
+		[void]$allPSscriptCode.Add($CR)
 
 		# ================ Appliance folder
 		$subdir         = "$currentdir\Appliance"
+		$subAnsibledir	= "$subdir\$ansibledir"
 
 		# ---- Import Fw Baseline
 		$sheet 			= 'firmwareBundle'
@@ -5474,7 +7497,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-firmwareBaseline -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
 			}
@@ -5491,6 +7514,7 @@ if ($workbook)
 
 		# ================ Settings folder
 		$subdir         = "$currentdir\Settings"
+		$subAnsibledir	= "$subdir\$ansibledir"
 
 		# ---- Import address pool
 		$sheet 			= 'addressPool'
@@ -5506,9 +7530,15 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-addressPool -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$_sheet		= $sheet +"_ipV4"
+				$YMLfiles 	= "$subAnsibledir\$_sheet.yml"
+
+				Import-YMLaddressPool_ipv4 -sheetName $sheetName -workBook $workbook -YMLfiles $YMLFiles 
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5523,6 +7553,7 @@ if ($workbook)
 
 		# ================ Networking folder
 		$subdir         = "$currentdir\Networking"
+		$subAnsibledir	= "$subdir\$ansibledir"
 
 		# ---- Import Network
 		$sheet 			= 'ethernetNetwork'
@@ -5538,9 +7569,13 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-ethernetNetwork -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$YMLfiles 	= "$subAnsibledir\$sheet.yml"
+				Import-YMLethernetNetwork -sheetName $sheetName -workBook $workbook -YMLfiles $YMLfiles
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5567,9 +7602,13 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-fcNetwork -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$YMLfiles 	= "$subAnsibledir\$sheet.yml"
+				Import-YMLfcNetwork -sheetName $sheetName -workBook $workbook -YMLfiles $YMLfiles
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5596,9 +7635,13 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-NetworkSet -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$YMLfiles 	= "$subAnsibledir\$sheet.yml"
+				Import-YMLnetworkSet -sheetName $sheetName -workBook $workbook -YMLfiles $YMLfiles
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5621,7 +7664,7 @@ if ($workbook)
 			$data 		= import-Excel -workSheetName $sheet -path $workbook -StartRow ($startRow -1) -noHeader
 			if ($data.Count -gt 0)
 			{
-				$sheetArray 	= 'logicalInterconnectGroup|snmpConfiguration|snmpV3User|snmpTrap'.Split($SepChar)
+				$sheetArray 	= 'logicalInterconnectGroup|uplinkSet|snmpConfiguration|snmpV3User|snmpTrap'.Split($SepChar)
 				$sheetList 		= @()
 				foreach ($s in $sheetArray)
 				{
@@ -5639,9 +7682,14 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-LogicalInterconnectGroup -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$YMLfiles 	= "$subAnsibledir\$sheet.yml"
+				Import-YMLLogicalInterconnectGroup -sheetName $sheetName -workBook $workbook -YMLfiles $YMLfiles
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
+
 			}
 			else 
 			{
@@ -5668,9 +7716,13 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-UplinkSet -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$YMLfiles 	= "$subAnsibledir\$sheet.yml"
+				Import-YMLUplinkSet -sheetName $sheetName -workBook $workbook -YMLfiles $YMLfiles
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5683,8 +7735,52 @@ if ($workbook)
 			write-host -ForegroundColor Yellow "`n No data in Excel sheet '$sheet' to create script "
 		}
 
+		# ---- Import LIG snmp
+		$sheet 			= 'snmpConfiguration' 
+		$resource 		= 'logical interconnect group - snmp'
+		
+		if ($sheetNames -contains $sheet)
+		{
+			$data 		= import-Excel -workSheetName $sheet -path $workbook -StartRow ($startRow -1) -noHeader
+			if ($data.Count -gt 0)
+			{
+				$sheetArray 	= 'snmpConfiguration|snmpV3User|snmpTrap'.Split($SepChar)
+				$sheetList 		= @()
+				foreach ($s in $sheetArray)
+				{
+					if ($sheetNames -contains $s)
+					{
+						$sheetList += $s
+					}
+				}
+
+				$sheetName 	= $sheetList -join $SepChar
+
+				write-host -ForegroundColor Cyan $CR
+				write-host -ForegroundColor Cyan "--------- Script to import $resource"
+				$sheetName  	= "$composer|$sheetName"
+				$sequence++
+				$YMLfiles 	= "$subAnsibledir\lig-$sheet.yml"
+				Import-YMLligSNMP -sheetName $sheetName -workBook $workbook -YMLfiles $YMLfiles
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
+
+			}
+			else 
+			{
+				write-host -ForegroundColor Yellow "`n No data in Excel sheet '$sheet' to create script "
+			}
+		}
+
+		else 
+		{
+			write-host -ForegroundColor Yellow "`n No data in Excel sheet '$sheet' to create script "
+		}
+
+
 		# ================ Storage folder
 		$subdir         = "$currentdir\Storage"
+		$subAnsibledir	= "$subdir\$ansibledir"
+
 
 		# ---- Import SAN Manager
 		$sheet 			= 'sanManager'
@@ -5700,7 +7796,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-SANmanager -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
 			}
@@ -5730,7 +7826,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-storageSystem -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
 			}
@@ -5759,7 +7855,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-StorageVolumeTemplate -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
 			}
@@ -5788,7 +7884,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-StorageVolume -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
 			}
@@ -5818,7 +7914,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-logicalJBOD -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
 			}
@@ -5835,6 +7931,8 @@ if ($workbook)
 
 		# ================ Servers folder
 		$subdir         = "$currentdir\Servers"
+		$subAnsibledir	= "$subdir\$ansibledir"
+
 
 		# ---- Import enclosure Group
 		$sheet 			= 'enclosureGroup'
@@ -5850,9 +7948,13 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-EnclosureGroup -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$YMLfiles       = "$subAnsibledir\$sheet.yml"
+				Import-YMLEnclosureGroup -sheetName $sheetName -workBook $workbook -YMLfiles $YMLFiles 
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5882,7 +7984,7 @@ if ($workbook)
 
 				foreach ($ps1Files in $ListPS1Files)
 				{
-					write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+					write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 					add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				}
 				$sequence++
@@ -5927,9 +8029,13 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				$ListPS1Files =  Import-ProfileorTemplate -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files -isSpt $True -subdir $subdir
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				$sequence++
+
+				$YMLfiles       = "$subAnsibledir\$sheet.yml"
+				Import-YMLProfileorTemplate -sheetName $sheetName -workBook $workbook -YMLFiles $YMLfiles -isSpt $True -subdir $subdir
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5972,10 +8078,14 @@ if ($workbook)
 				$ListPS1Files 	= Import-ProfileorTemplate -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files -isSpt $False -subdir $subdir
 				foreach ($ps1Files in $ListPS1Files)
 				{
-					write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+					write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 					add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				}
 				$sequence++
+
+				$YMLfiles       = "$subAnsibledir\$sheet.yml"
+				Import-YMLProfileorTemplate -sheetName $sheetName -workBook $workbook -YMLFiles $YMLfiles -isSpt $False -subdir $subdir
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
 			}
 			else 
 			{
@@ -5990,6 +8100,7 @@ if ($workbook)
 
 		# ================ Networking folder
 		$subdir         = "$currentdir\Networking"
+		$subAnsibledir	= "$subdir\$ansibledir"
 
 		# ---- Import logical switch group 
 		$sheet 			= 'logicalSwitchGroup'
@@ -6007,7 +8118,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 						
 				Import-logicalSwitchGroup -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6037,7 +8148,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 						
 				Import-logicalSwitch -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6055,14 +8166,16 @@ if ($workbook)
 
 		
 
-		[void]$allScriptCode.Add($CR)
-		[void]$allScriptCode.Add('#----------------------------------------------')
-		[void]$allScriptCode.Add('#              OV Settings					 ')
-		[void]$allScriptCode.Add('#----------------------------------------------')
-		[void]$allScriptCode.Add($CR)
+		[void]$allPSscriptCode.Add($CR)
+		[void]$allPSscriptCode.Add('#----------------------------------------------')
+		[void]$allPSscriptCode.Add('#              OV Settings					 ')
+		[void]$allPSscriptCode.Add('#----------------------------------------------')
+		[void]$allPSscriptCode.Add($CR)
 
 		# ================ Appliance folder
 		$subdir         = "$currentdir\Appliance"
+		$subAnsibledir	= "$subdir\$ansibledir"
+
 		# ---- Import users
 		$sheet 			= 'user'
 		$resource 		= 'OneView users and Remote Support contacts'
@@ -6077,7 +8190,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-user -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6092,6 +8205,8 @@ if ($workbook)
 
 		# ================ Facilities folder
 		$subdir         = "$currentdir\Facilities"
+		$subAnsibledir	= "$subdir\$ansibledir"
+
 
 		# ---- Import Data center
 		$sheet 			= 'dataCenter'
@@ -6107,7 +8222,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-dataCenter -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6135,7 +8250,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-rack -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6153,6 +8268,8 @@ if ($workbook)
 
 		# ================ Settings folder
 		$subdir         = "$currentdir\Settings"	
+		$subAnsibledir	= "$subdir\$ansibledir"
+
 
 		# ---- Import Proxy
 		$sheet 			= 'proxy'
@@ -6169,7 +8286,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-proxy -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6197,7 +8314,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-TimeLocale -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6226,7 +8343,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-backup -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6254,7 +8371,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-repository -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6281,7 +8398,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-scope -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6309,7 +8426,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-snmpV3User -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6336,7 +8453,7 @@ if ($workbook)
 				$ps1Files       = "$subdir\$sheet.ps1"
 				
 				Import-snmpTrap -sheetName $sheetName -workBook $workbook -ps1Files $ps1Files 
-				write-host -ForegroundColor Cyan "Script is created ---> $ps1Files "
+				write-host -ForegroundColor Cyan "Script is created           ---> $ps1Files "
 				add_to_allScripts -ps1Files $ps1Files -text "# ------ Create $resource script"
 			}
 			else 
@@ -6349,11 +8466,51 @@ if ($workbook)
 			write-host -ForegroundColor Yellow "`n No data in Excel sheet '$sheet' to create script "
 		}
 
-		[void]$allScriptCode.Add($CR)
-		[void]$allScriptCode.Add('#----------------------------------------------')
-        [void]$allScriptCode.Add('#              TBD -OV Appliance configuration		 ')
-		[void]$allScriptCode.Add('#----------------------------------------------')
-		[void]$allScriptCode.Add($CR)
+		# ---- Import Appliance snmp
+		$sheet 			= 'snmpConfiguration' 
+		$resource 		= 'Appliance snmp'
+		
+		if ($sheetNames -contains $sheet)
+		{
+			$data 		= import-Excel -workSheetName $sheet -path $workbook -StartRow ($startRow -1) -noHeader
+			if ($data.Count -gt 0)
+			{
+				$sheetArray 	= 'snmpConfiguration|snmpV3User|snmpTrap'.Split($SepChar)
+				$sheetList 		= @()
+				foreach ($s in $sheetArray)
+				{
+					if ($sheetNames -contains $s)
+					{
+						$sheetList += $s
+					}
+				}
+
+				$sheetName 	= $sheetList -join $SepChar
+
+				write-host -ForegroundColor Cyan $CR
+				write-host -ForegroundColor Cyan "--------- Script to import $resource"
+				$sheetName  	= "$composer|$sheetName"
+				$sequence++
+				$YMLfiles 	= "$subAnsibledir\$sheet.yml"
+				Import-YMLSNMP -sheetName $sheetName -workBook $workbook -YMLfiles $YMLfiles
+				write-host -ForegroundColor Cyan "Ansible playbook is created ---> $YMLfiles "
+			}
+			else 
+			{
+				write-host -ForegroundColor Yellow "`n No data in Excel sheet '$sheet' to create script "
+			}
+		}
+
+		else 
+		{
+			write-host -ForegroundColor Yellow "`n No data in Excel sheet '$sheet' to create script "
+		}
+
+		[void]$allPSscriptCode.Add($CR)
+		[void]$allPSscriptCode.Add('#----------------------------------------------')
+        [void]$allPSscriptCode.Add('#              TBD -OV Appliance configuration		 ')
+		[void]$allPSscriptCode.Add('#----------------------------------------------')
+		[void]$allPSscriptCode.Add($CR)
 
 
 
@@ -6361,7 +8518,7 @@ if ($workbook)
 		# ----- Generate all Scripts file
 		write-host -ForegroundColor Cyan "`n`n--------- All-in-one script"
 		write-host -ForegroundColor CYan "`n$allScriptFile contains all individual scripts that can be run to configure your new environment.`n`n"
-		writeToFile -code $allScriptCode -file $allScriptFile
+		writeToFile -code $allPSscriptCode -file $allScriptFile
 	}
 	else 
 	{

@@ -633,6 +633,7 @@ class uplinkset
 	[string]$networkSets
 	[string]$nativeNetwork
 	[Boolean]$Trunking 
+	[string]$fabricModuleName
 	[string]$logicalPortConfigInfos
 	[string]$fcUplinkSpeed 
 	[string]$loadBalancingMode
@@ -2029,8 +2030,11 @@ function Export-LogicalInterConnectGroup ($connection,$sheetName, $destWorkbook)
 						} 
 
 
-						$PermittedInterConnectType = Send-OVRequest $permittedInterconnectTypeUri -Hostname $connection
-						
+						$PermittedInterConnectType 	= Send-OVRequest $permittedInterconnectTypeUri -Hostname $connection
+						#Find Module Name
+						$ICtypeName   				= $PermittedInterConnectType.Name
+						$_upl.fabricModuleName		= $ICtypeName
+
 						
 						# 1. Find port numbers and port names from permittedInterconnectType
 						$PortInfos     = $PermittedInterConnectType.PortInfos

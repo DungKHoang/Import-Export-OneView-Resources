@@ -80,7 +80,7 @@ where jsonfile uses the follwoing syntax:
          "password":    "<admin-password>",   
          "authDomain":  "<LDAP-domain> or <LOCAL>"       
       },                                  
-     "api_version" :     "1200"         
+     "api_version" :     "2000"         
 }
 ```
 The script will read the OV-Template located in the same folder and jsonfiles to connect to multiple Oneview instances, if needed.
@@ -150,6 +150,9 @@ The script will:
 * create sub-folders ( info existed): Appliance - Facilities - Hypervisors - Networking - Servers - Settings - Storage
 * read the corresponding sheeet in Excel file and genearet PowerShell script. The script will be located in the appropriate folder. For example fcnetwork.ps1 will be located under networking
 * create an AllScripts file that points to each individual script
+
+* **NEW** : The import script will generate both **PowerShell Scripts ** and **Ansible playbooks**
+The Ansible playbooks are stored under the sub-folder 'ansible_playbook' 
 
 ## Actions
 * You can review each script and modify values in parameters to match with your new environment
