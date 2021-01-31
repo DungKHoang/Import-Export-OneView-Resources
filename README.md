@@ -97,31 +97,7 @@ will generate Excel files named as : ExportFrom-192.168.1.51.xlsx and ExportFrom
 ## Import-OVResources.PS1 
 
 Import-OVResources.ps1 is a PowerShell script that configures OV resources based on Excel sheets including:
-   * Address Pool : PowerShell script **and** Ansible playbook
-   * Ethernet networks : PowerShell script **and** Ansible playbook
-   * Network set : PowerShell script **and** Ansible playbook
-   * FC / FCOE networks : PowerShell script **and** Ansible playbook
-   * Logical InterConnect Groups : PowerShell script **and** Ansible playbook
-   * Uplink Sets : PowerShell script **and** Ansible playbook
-   * Enclosure Groups : PowerShell script **and** Ansible playbook
-   * Enclosures
-   * Servers 
-   * Network connections : PowerShell script **and** Ansible playbook
-   * Local Storage connections
-   * iLO settings : PowerShell script **and** Ansible playbook
-   * Server Profile Templates with network connections/localStorage/iLO settings : PowerShell script **and** Ansible playbook
-   * Server Profiles  with network connections/localStorage/iLO settings
 
-   * Backup configuration
-   * Firmware bundles
-   * Time & Locale Settings
-   * Appliance SNMP Settings : PowerShell script **and** Ansible playbook
-   * Alert Settings
-   * Scope Settings
-   * Users 
-   * Firmware Bundles
-   * Backup Settings
-   * Proxy settings
 
    | OneView resource             | PowerShell script | Ansible playbook |
    | -----------------------------|:-----------------:|:----------------:|
@@ -132,12 +108,17 @@ Import-OVResources.ps1 is a PowerShell script that configures OV resources based
    |  Logical InterConnect Groups |       **X**       |     **X**        |
    |  Uplink sets                 |       **X**       |     **X**        |
    |  Enclosure group             |       **X**       |     **X**        |
-   |  Enclosure group             |       **X**       |     **X**        |
    |  Logical enclosure           |       **X**       |                  |
    |  Network connections         |       **X**       |     **X**        |
    |  Local Storage connections   |       **X**       |                  |
    |  iLO settings in profiles    |       **X**       |     **X**        |
    |  Server profile - Templates  |       **X**       |     **X**        |
+   |  Appliance SNMP Settings     |       **X**       |     **X**        |
+   |  Backup configuration        |       **X**       |                  |
+   |  Time & Locale Settings      |       **X**       |                  |
+   |  Proxy settings              |       **X**       |                  |
+   |  Backup Settings             |       **X**       |                  |
+   |  Firmware bundles            |       **X**       |                  |
 
 
 
