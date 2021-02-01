@@ -152,6 +152,11 @@ The script will:
 * **NEW** : The import script will generate both **PowerShell Scripts** and **Ansible playbooks**
 The Ansible playbooks are stored under the sub-folder 'ansible_playbook' 
 
+## Examples
+The ZIp file provides examples of PowerShell scrips and Ansible playbooks genefrated by the Import script.
+For addtional examples of Ansible playbooks, please visit this github site: 
+https://github.com/DungKHoang/Examples-OneView-Ansible-Playbook
+
 ## Actions
 * You can review each script and modify values in parameters to match with your new environment
 * You can execute each individual script to create corresponding OV resources
