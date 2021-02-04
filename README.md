@@ -9,7 +9,7 @@ Import-OVResources.ps1 reads Excel sheets for values of OV resources and generat
 
 ## Prerequisites
 Both scripts require:
-   * HPE OneView PowerShell library 5.40
+   * HPE OneView PowerShell library 5.xx
    * ImportExcel module
 
 Those modules can be pulled from the Microsoft PowerShell Gallery.
@@ -20,8 +20,8 @@ It must reside in the same folder as the scripts
 
 ## OneView environment
 The scripts have been tested on
-   * OneView appliances 5.2 -5.3 -5.4
-   * OneView composers 5.2 -5.3 -5.4
+   * OneView appliances / Composers 5.2 -5.3 -5.4
+   * OneView PowerShell library   v 5.2 -5.3 -5.4
 You need to download/use the corresponding OneView PowerShell library. You can search for the POSH version on www.PowerShellGallery.com using the keyword OneView. 
 
 Here is an example on how to install OneView 5.20
