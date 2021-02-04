@@ -22,7 +22,7 @@ It must reside in the same folder as the scripts
 The scripts have been tested on
    * OneView appliances 5.2 -5.3 -5.4
    * OneView composers 5.2 -5.3 -5.4
-You need to download/use the corresponding OneView PowerShell library. You can search for the POSH version on www.PowerShellGallery.com . 
+You need to download/use the corresponding OneView PowerShell library. You can search for the POSH version on www.PowerShellGallery.com using the keyword OneView. 
 
 Here is an example on how to install OneView 5.20
 ```
