@@ -24,7 +24,8 @@ The scripts have been tested on
    * OneView PowerShell library   v 5.2 -5.3 -5.4
 
 ## OneView scripts
-   * If your environmnet is OneView 5.20, you should use the Import-**HPOV**resources/Export-**HPOV**resources.ps1
+   * If your environmnet is OneView 5.20, you should use:
+         - Import-**HPOV**resources / Export-**HPOV**resources.ps1
    * If your environmnet is OneView 5.30 or greater, you will use the Import-**OV**resources/Export-**OV**resources.ps1
 
    
