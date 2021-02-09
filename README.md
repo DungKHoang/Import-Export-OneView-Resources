@@ -145,7 +145,7 @@ It assumes that you have an Excel sheet filled out with values of resources expo
 In this case, open the Excel file, and go to the sheet 'OV Destination'. Fill out with OV IP address and credentials for the OneView instance at destination.
 
    * Starting from scratch
- Copy the OV-Templates.xlsx to a new file.
+ Copy the OV-Template.xlsx to a new file.
  Open the Excel file, and go to the sheet 'OV Destination'. Fill out with OV IP address and credentials for the OneView instance at destination.
  Fill out other sheets with values for your new OneView resources.
 
