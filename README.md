@@ -123,7 +123,7 @@ Import-OVResources.ps1 is a PowerShell script that configures OV resources based
    |  Logical InterConnect Groups |       **X**       |     **X**        |
    |  Uplink sets                 |       **X**       |     **X**        |
    |  Enclosure group             |       **X**       |     **X**        |
-   |  Logical enclosure           |       **X**       |                  |
+   |  Logical enclosure with EBIPA|       **X**       |     **X**        |
    |  Network connections         |       **X**       |     **X**        |
    |  Local Storage connections   |       **X**       |                  |
    |  iLO settings in profiles    |       **X**       |     **X**        |

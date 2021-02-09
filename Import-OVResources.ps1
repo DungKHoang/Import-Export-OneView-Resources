@@ -761,9 +761,14 @@ class le
 	[string]$name
 	[string]$enclosureSerialNumber
 	[string]$enclosureName
+	[string]$enclosureNewName
 	[string]$enclosureGroup
-	[string]$fwBaseline	
-	[Boolean]$fwInstall
+	[string]$manualAddresses
+	[string]$firmwareBaseline	
+	[Boolean]$forceInstallFirmware	
+	[string]$logicalInterconnectUpdateMode	
+	[Boolean]$updateFirmwareOnUnmanagedInterconnect	
+	[Boolean]$validateIfLIFirmwareUpdateIsNonDisruptive
 	[string]$scopes									
 
 }
@@ -1200,6 +1205,14 @@ function writeToFile ([System.Collections.ArrayList]$code,[string]$file)
 	}
 }
 
+function YMLwriteToFile ([System.Collections.ArrayList]$code,[string]$file)
+{
+	if ($code.Count -gt 0)
+	{
+		$code | out-file $file
+	}
+}
+
 # ---------- Internal Helper funtion
 function generate-scopeCode( $scopes, $indentlevel = 0)
 {
@@ -1313,11 +1326,12 @@ function Generate-ymlheader ([string]$title, $code = $YMLscriptCode )
     [void]$code.Add((Generate-YMLCustomVarCode -prefix name      -value $title                   -isVar $True))
     [void]$code.Add((Generate-YMLCustomVarCode -prefix hosts     -value 'localhost' ))             
     [void]$code.Add((Generate-YMLCustomVarCode -prefix vars))                                  
-    [void]$code.Add((Generate-YMLCustomVarCode -prefix config    -value "'oneview_config.json'"  -indentlevel 1))
+	[void]$code.Add((Generate-YMLCustomVarCode -prefix config    -value "'oneview_config.json'"  -indentlevel 1))
+	[void]$code.Add((Generate-YMLCustomVarCode -prefix variant   -value Synergy  				 -indentlevel 1))
     [void]$code.Add((Generate-YMLCustomVarCode -prefix tasks  ))
 }
 
-function Generate-ymlTask ([string]$Title, [string]$comment,[string]$ovTask, [string]$state = 'present', $isData = $True, $code = $YMLscriptCode )
+function Generate-ymlTask ([string]$Title, [string]$comment,[string]$ovTask, [string]$state = 'present', $isData = $True, $iseTag = $False,  $code = $YMLscriptCode )
 {
 	newLine	-code $YMLscriptCode
 		 
@@ -1326,11 +1340,16 @@ function Generate-ymlTask ([string]$Title, [string]$comment,[string]$ovTask, [st
 	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 			-prefix name  				-value $title	-isVar $True 	-indentlevel 1 ))
 	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 			-prefix $ovTask		 										-indentlevel 1 ))
 	[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 			-prefix config				-value "'{{config}}'"			-indentlevel 2 ))
+	if ($iseTag)
+	{
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 		-prefix validate_etag		-value False					-indentlevel 2 ))
+	}
 	if ($isData)
 	{
-		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 		-prefix 	state			-value $state					-indentlevel 2 ))
-		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 		-prefix 	'data'											-indentlevel 2 ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 		-prefix state				-value $state					-indentlevel 2 ))
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 		-prefix 'data'												-indentlevel 2 ))
 	}
+
 	   
 }
 
@@ -2338,7 +2357,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	
 		
 	 # ---------- Generate script to file
-	 writeToFile -code $YMLscriptCode -file $YMLfiles
+	 YMLwriteToFile -code $YMLscriptCode -file $YMLfiles
 	
 }
 
@@ -2796,9 +2815,8 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		}
 		
 		$var_subnet 		= "subnet_{0}_uri"		-f $name.Trim().Replace($Space, '')
-		$_uri 				= '"{{id_pools_ipv4_subnet' + "['uri'] }}`" "	# "{{id_pools_ipv4_subnet['uri'] }}"
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 									-indentlevel 1 ))
-		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $var_subnet 	-value $_uri									-indentlevel 2 ))		
+		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $var_subnet 	-value "`"{{id_pools_ipv4_subnet['uri'] }}`" "	-indentlevel 2 ))		
 		
 		# ---- id pools
 		$title 					= 'Ensure the IPV4 Range {0} exists'	-f $name		
@@ -2818,7 +2836,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 
 	 # ---------- Generate script to file
-     writeToFile -code $YMLscriptCode -file $YMLFiles
+     YMLwriteToFile -code $YMLscriptCode -file $YMLFiles
 }
 
 
@@ -3052,7 +3070,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 	 
 
 	 # ---------- Generate script to file
-     writeToFile -code $YMLscriptCode -file $YMLFiles
+     YMLwriteToFile -code $YMLscriptCode -file $YMLFiles
 }
 
 
@@ -3278,7 +3296,7 @@ Function Import-YMLfcNetwork([string]$sheetName, [string]$WorkBook, [string]$YML
 	 
 
 	 # ---------- Generate script to file
-     writeToFile -code $YMLscriptCode -file $YMLFiles
+     YMLwriteToFile -code $YMLscriptCode -file $YMLFiles
 }
 
 
@@ -3449,7 +3467,7 @@ Function Import-YMLnetworkSet([string]$sheetName, [string]$WorkBook, [string]$YM
 	 
 
 	 # ---------- Generate script to file
-     writeToFile -code $YMLscriptCode -file $YMLFiles
+     YMLwriteToFile -code $YMLscriptCode -file $YMLFiles
 }
 
 # ---------- LIG
@@ -3938,7 +3956,7 @@ Function Import-YMLUplinkSet([string]$sheetName, [string]$WorkBook, [string]$YML
 			$portInfoArr 			= $logicalPortConfigInfos.Split($SepChar)
 			foreach ($_p in $portInfoArr)
 			{
-				if ($ligName -like '*FC*')						# If FibreChannel module
+				if ($fabricModuleName -like '*FC*')						# If FibreChannel module
 				{
 					$bay,$port		= $_p.Trim().Split(':')    	# Bay5:7|Bay5:8
 					# Start with number
@@ -3947,8 +3965,9 @@ Function Import-YMLUplinkSet([string]$sheetName, [string]$WorkBook, [string]$YML
 				else 
 				{
 					$encl,$bay,$port	= $_p.Trim().Split(':')	
+					$_frameNumber 		= $encl[-1]
 				}
-				$_frameNumber 		= $encl[-1]
+
 				$_bayNumber			= $bay[-1]
 				if ($port)		# works only with Synergy not C7000 syntax Bay 2:2
 				{
@@ -4188,7 +4207,7 @@ Function Import-YMLUplinkSet([string]$sheetName, [string]$WorkBook, [string]$YML
 
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $YMLscriptCode -file $YMLfiles
+	 YMLwriteToFile -code $YMLscriptCode -file $YMLfiles
 
 
 
@@ -4336,7 +4355,7 @@ Function Import-YMLligSNMP([string]$sheetName, [string]$WorkBook, [string]$YMLfi
 	
 		
 	 # ---------- Generate script to file
-	 writeToFile -code $YMLscriptCode -file $YMLfiles
+	 YMLwriteToFile -code $YMLscriptCode -file $YMLfiles
 	
 }
 
@@ -4503,7 +4522,7 @@ Function Import-YMLLogicalInterconnectGroup([string]$sheetName, [string]$WorkBoo
 	}
 	
 	 # ---------- Generate script to file
-	 writeToFile -code $YMLscriptCode -file $YMLFiles
+	 YMLwriteToFile -code $YMLscriptCode -file $YMLFiles
 }
 
 Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
@@ -5557,7 +5576,7 @@ Function Import-YMLEnclosureGroup([string]$sheetName, [string]$WorkBook, [string
 			
 
 		# Create enclosure group
-		$ligMappingArr 				= $ligMapping.split($sepChar)
+		
 
 		$title 						= ' Create Enclosure group' 			-f $name	
 		[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title 	-ovTask 'oneview_enclosure_group'))
@@ -5565,30 +5584,34 @@ Function Import-YMLEnclosureGroup([string]$sheetName, [string]$WorkBook, [string
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureCount				-value $enclosureCount			-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	powerMode					-value $powerMode				-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	ipv6AddressingMode			-value $ipV6AddressingMode		-indentlevel $indentDataStart ))
-		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBayMappings										-indentlevel $indentDataStart ))
-		foreach ($l in $ligMappingArr)
+		if ($ligMappingArr)
 		{
-			$frame,$lig_list	= $l.split($Equal)	# Frame1=LIG-ETH,LIG-SAS,LIG-FC
-			$frame 				= $frame.Trim().ToLower()
-			$_frame 			= $frame.Trim().replace('frame','')
-			$ligArr 			= $lig_list.Split($COMMA)
-			foreach ($_ligName in $ligArr)
+			$ligMappingArr 				= $ligMapping.split($sepChar)
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBayMappings										-indentlevel $indentDataStart ))
+			foreach ($l in $ligMappingArr)
 			{
-				$_name 			= $_ligName.trim().replace($Space, '_').replace('-','_')
-				$var_uri 		= "var_{0}_uri"				-f  $_name
-				$var_primary 	= "var_{0}_bay_primary"		-f  $_name
-				$var_secondary 	= "var_{0}_bay_secondary"	-f  $_name
-				newline -code $YMLscriptCode
-				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBay				-value "'{{$var_primary}}'" -isVar $True	-indentlevel ($indentDataStart+1) ))
-				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalInterconnectGroupUri	-value "'{{$var_uri}}'"						-indentlevel ($indentDataStart+1) ))
-				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureIndex				-value $_frame 								-indentlevel ($indentDataStart+1) ))
-				
-				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBay				-value "'{{$var_secondary}}'" -isVar $True	-indentlevel ($indentDataStart+1) ))
-				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalInterconnectGroupUri	-value "'{{$var_uri}}'"						-indentlevel ($indentDataStart+1) ))
-				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureIndex				-value $_frame								-indentlevel ($indentDataStart+1) ))
-		
-			}
+				$frame,$lig_list	= $l.split($Equal)	# Frame1=LIG-ETH,LIG-SAS,LIG-FC
+				$frame 				= $frame.Trim().ToLower()
+				$_frame 			= $frame.Trim().replace('frame','')
+				$ligArr 			= $lig_list.Split($COMMA)
+				foreach ($_ligName in $ligArr)
+				{
+					$_name 			= $_ligName.trim().replace($Space, '_').replace('-','_')
+					$var_uri 		= "var_{0}_uri"				-f  $_name
+					$var_primary 	= "var_{0}_bay_primary"		-f  $_name
+					$var_secondary 	= "var_{0}_bay_secondary"	-f  $_name
+					newline -code $YMLscriptCode
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBay				-value "'{{$var_primary}}'" -isVar $True	-indentlevel ($indentDataStart+1) ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalInterconnectGroupUri	-value "'{{$var_uri}}'"						-indentlevel ($indentDataStart+1) ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureIndex				-value $_frame 								-indentlevel ($indentDataStart+1) ))
+					
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	interconnectBay				-value "'{{$var_secondary}}'" -isVar $True	-indentlevel ($indentDataStart+1) ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalInterconnectGroupUri	-value "'{{$var_uri}}'"						-indentlevel ($indentDataStart+1) ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureIndex				-value $_frame								-indentlevel ($indentDataStart+1) ))
+			
+				}
 
+			}
 		}
 
 
@@ -5616,7 +5639,7 @@ Function Import-YMLEnclosureGroup([string]$sheetName, [string]$WorkBook, [string
 	}
 
 	 # ---------- Generate script to file
-	 writeToFile -code $YMLscriptCode -file $YMLfiles
+	 YMLwriteToFile -code $YMLscriptCode -file $YMLfiles
 
 }
 # ---------- Logical Enclosure 
@@ -5633,9 +5656,11 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 		$name          		= $le.name
 		$enclosureSN      	= $le.enclosureSerialNumber
 		$enclosureName   	= $le.enclosureName
+		$enclosureNewName 	= $le.enclosureNewName
 		$enclosureGroup		= $le.enclosureGroup
-		$fwBaseline 		= $le.fwBaseline
-		$fwInstall     		= $le.fwInstall
+		$manualAddresses 	= $le.manualAddresses
+		$fwBaseline 		= $le.firmwareBaseline
+		$fwInstall     		= $le.forceInstallFirmware
 		$scopes			    = $le.scopes
 
 		# Create logicalEnclosure filename here per LE
@@ -5654,21 +5679,22 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 		
 
 		# rename enclosure
-		if ($enclosureName)
+		if ( ($enclosureNewName) -and ($enclosureName -ne $enclosureNewName))		# If there are neww names
 		{
 			$SNArray 			= "@('" + $enclosureSN.Replace($SepChar,"'$Comma'") 	+ "')"
-			$nameArray 			= "@('" + $enclosureName.Replace($SepChar,"'$Comma'")   + "')"
+			#$nameArray 			= "@('" + $enclosureName.Replace($SepChar,"'$Comma'")   + "')"
+			$newNameArray 		= "@('" + $enclosureNewName.Replace($SepChar,"'$Comma'")   + "')"
 
 			newLine
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -- Renaming enclosures  ' -isVar $False -indentlevel 1))
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix serialNumbers  	-value $SNArray -indentlevel 1))
-			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix enclosureNames  	-value $nameArray -indentlevel 1))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix enclosureNewNames  -value $newNameArray -indentlevel 1))
 
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'for ($i=0; $i -lt $serialNumbers.Count; $i++)' -isVar $False -indentlevel 1))
 			startBlock -indentlevel 1
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'this_enclosure' -Value 'Get-OVEnclosure | where serialNumber -Match $serialNumbers[$i]'  -indentlevel 2))
-			ifBlock -condition 'if ( ($this_enclosure) -and ($enclosureNames -notcontains ($this_enclosure.Name) ) ) ' -isVar $False -indentlevel 2
-			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'Set-OVEnclosure -inputObject $this_enclosure -Name $enclosureNames[$i]' -isVar $False -indentlevel 3))	
+			ifBlock -condition 'if ($this_enclosure)   ' 		-isVar $False -indentlevel 2
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'Set-OVEnclosure -inputObject $this_enclosure -Name $enclosureNewNames[$i]' -isVar $False -indentlevel 3))	
 			endIfBlock -indentlevel 2
 			endBlock -indentlevel 1
 		}
@@ -5692,8 +5718,48 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 			$fwParam = ' -FirmwareBaseline $fwBaseline -ForceFirmwareBaseline $fwInstall'
 		}
 
+		#HKD
+		# manualAdddresses
+		if ($manualAddresses)
+		{
+			$ebipaParam = $Null
+			$frameArr			= $manualAddresses.Split($Delimiter)		# '\' 
+			$frameArr			= $frameArr -replace $CR, ''				# Remnove extra line
+
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'ebipa' 				-Value '@{' 					-indentlevel 1))
+
+			foreach ($_fr in $frameArr)
+			{
+				$_frame, $_bay 	= $_fr.Split('@')
+				$_frame 		= $_frame -replace '=', ''
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "$_frame = @{" 				-isVar $False		-indentlevel 2))
+				# Transform the device and Interconnect string
+				$_f 			= $_bay.IndexOf('{') + 1
+				$_l 			= $_bay.LastIndexof('}')
+				$_len 			= $_l - $_f
+				$_bay 			= $_bay.Substring($_f, $_len)  # Remove { }
+				$_bayArr		= $_bay.Split(';')
+				foreach ($_b in  $_bayArr)
+				{
+					$_b 		= $_b.Replace('={', '=@{')    # Device8 = @{IP=19.1.1.1}
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix "$_b;" 					-isVar $false  		-indentlevel 3))
+				}
+				$PSscriptCode[-1] = $PSscriptCode[-1].TrimEnd() -replace ".$"
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '         };' 				-isVar $false 		-indentlevel 2))
+			}
+			$PSscriptCode[-1] = $PSscriptCode[-1].TrimEnd() -replace ".$"
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '  }' 							-isVar $False  		-indentlevel 11))
+
+			$ebipaParam			= ' -ebipa $ebipa '
+
+		}
+
 		newLine
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVLogicalEnclosure -Name "{0}" {1}{2}{3}' -f $name, $enclParam, $egParam, $fwParam ) -isVar $false -indent 1) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVLogicalEnclosure -Name "{0}" {1}{2} `' 	-f $name, $enclParam, $egParam ) 	-isVar $false -indent 1) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `'  										-f  $fwParam ) 						-isVar $false -indent 7) )
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('{0} `'  										-f  $ebipaParam ) 					-isVar $false -indent 7) )
+		newLine
+
 
 		# --- Scopes
 		if ($scopes)
@@ -5725,8 +5791,244 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 	
 	return $ListPS1Files
 }
-	
 
+Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]$subdir)
+{
+
+	$cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer	
+	$List 					= get-datafromSheet -sheetName $sheetName -workbook $WorkBook  
+	$ListYMLfiles	 		= [System.Collections.ArrayList]::new()
+	
+	foreach ( $le in $List)
+	{
+		$name          		= $le.name
+		$enclosureSN      	= $le.enclosureSerialNumber  	#[]
+		$enclosureName   	= $le.enclosureName				#[]
+		$enclosureNewName 	= $le.enclosureNewName			#[]
+		$enclosureGroup		= $le.enclosureGroup
+		$manualAddresses 	= $le.manualAddresses
+		$fwBaseline 		= $le.firmwareBaseline
+		$fwInstall     		= $le.forceInstallFirmware							# true/false
+		$fwvalidateLI     	= $le.validateIfLIFirmwareUpdateIsNonDisruptive     # true/false
+		$fwLIupdateMode     = $le.logicalInterconnectUpdateMode					# Parallel/Orchestrated
+		$fwUpdateUnmanaged  = $le.updateFirmwareOnUnmanagedInterconnect			# true/false
+
+		# New attribute ?? firmwareUpdateOn: "EnclosureOnly"
+
+		$scopes			    = $le.scopes
+
+		if ($enclosureSN)
+		{
+			# Create logicalEnclosure filename here per LE
+			$filename 			= "$subdir\" + $name.Trim().Replace($Space, '') + '.yml'			
+			$YMLscriptCode      = [System.Collections.ArrayList]::new()
+
+			
+			[void]$YMLscriptCode.Add((Generate-ymlheader -title 'Configure logical enclosures '))	
+
+			$comment 			= '# ---------- Logical enclosures {0}'	-f $name
+
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $comment -isItem $True											-indentlevel 1 ))
+
+			# --- Get uri of enclosures 
+			$snArr 				= $enclosureSN.split($sepChar)
+			foreach ($_sn in $snArr)
+			{
+				$varUri 			= 'var_{0}_uri' 						-f $_sn
+				$varName 			= 'var_{0}_Name' 						-f $_sn
+				$_filter			= "item.serialNumber == '{0}'"			-f $_sn
+				$title 				= 'Get URI for enclosure with SN {0}' 	-f $_sn
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_enclosure_facts'))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 							-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$varUri			-value "'{{item.uri}}' "				-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$varName		-value "'{{item.name}}' "				-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix loop 				-value  "'{{enclosures}}'"				-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix when 				-value  $_filter						-indentlevel 1 ))
+			}
+
+			# --- Get uri of enclosure group
+			$title 				= 'Get URI for enclosure group {0}' 	-f $enclosureGroup
+			[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_enclosure_group_facts'))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name			-value $enclosureGroup						-indentlevel 2 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 								-indentlevel 1 ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	var_eg_uri		-value "`"{{enclosure_groups['uri']}}`" "	-indentlevel 2 ))
+
+			# --- Get uri of firmware 
+			if ($fwBaseline)
+			{
+				$title 				= 'Get URI for firmware {0}' 	-f $fwBaseline
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_firmware_driver_facts'))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name			-value $fwBaseline							-indentlevel 2 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 								-indentlevel 1 ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	var_fw_uri		-value "'{{firmware_drivers[0].uri}}' "		-indentlevel 2 ))			
+			}
+			
+
+
+
+			# --- Create logical enclosure 
+			$title 				= 'Configure logical enclosures {0}' 	-f $name
+			[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title 	-comment $comment		-ovTask 'oneview_logical_enclosure'))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value $name						-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix enclosureGroupUri	-value "'{{var_eg_uri}}'"			-indentlevel $indentDataStart ))
+			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix enclosureUris											-indentlevel $indentDataStart ))
+			foreach ($_sn in $snArr)
+			{
+				$varUri 			= 'var_{0}_uri' 		-f $_sn
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix "'{{$varUri}}'"	-isVar $True	-isItem $True		-indentlevel ($indentDataStart +1) ))
+			}
+
+			# --- Rename  enclosure
+			if ( ($enclosureNewName) -and ($enclosureName -ne $enclosureNewName) ) 
+			{
+				$snArr 				= $enclosureSN.split($sepChar)
+				$nameArr 			= $enclosureName.split($sepChar)
+				$newNameArr 		= $enclosureNewName.split($sepChar)
+
+				for ($i=0 ; $i -lt $snArr.Count ; $i++)
+				{
+					$varName 			= 'var_{0}_Name' 	-f $snArr[$i]
+					$newName 			= $newNameArr[$i]
+
+					$title 				= 'Rename enclosures'
+					[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -iseTag $True			-ovTask 'oneview_enclosure'))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value "'{{$varName}}'"			-indentlevel $indentDataStart ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix newName				-value $newName					-indentlevel $indentDataStart ))	
+				}
+
+			}
+
+			# ------ EBIPA 
+			if ($manualAddresses)
+			{
+				$title 				= 'Configure logical enclosures {0} with EBIPA' 	-f $name
+				[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title 				-state reconfigured		-ovTask 'oneview_logical_enclosure'))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value $name						-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix ipAddressingMode	-value 	Manual						-indentlevel $indentDataStart ))
+
+				$frameArr			= $manualAddresses # '\'  -replace $CR, ''				# Remnove extra line
+				$frameArr			= $frameArr.Split($Delimiter)		
+
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-prefix enclosures											-indentlevel $indentDataStart ))
+				for ($i=0; $i -lt $snArr.Count; $i++ )
+				{
+					$index 				= $i + 1 
+
+					$_fr				= $frameArr | where {$_ -like "*Frame$index=*"} 
+
+
+					$_frame, $_bay 		= $_fr.Split('@')
+
+					$_bay				= $_bay -replace '{','' -replace '}', ''	
+					$_bay 				= $_bay.Replace('Device','|d').replace('Interconnect', '|i')  # Use atrifact to create devivebay and interconnect		
+					$_bayArr			= $_bay.Split('|')
+					$_devArr 			= $_bayArr | where {$_ -like 'd*'}
+					$_icArr 			= $_bayArr | where {$_ -like 'i*'}
+
+
+
+					$_sn 				= $snArr[$i]
+					$varUri 			= 'var_{0}_uri' 		-f $_sn
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	"'{{$varUri}}'"										-indentlevel ($indentDataStart +1) ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		enclosureUri 		-value "'{{$varUri}}'"		-indentlevel ($indentDataStart +2) ))
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		deviceBays 										-indentlevel ($indentDataStart +2) ))
+
+					foreach ($_d in $_devArr)
+					{
+						$_f 			= $_d.Indexof('=') 		# Find first = to get bay number
+						$_bayNo			= $_d.Substring(1,($_f-1))	
+
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		bayNumber 		-value $_bayNo -isVar $True	-indentlevel ($indentDataStart +3) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		manualAddresses								-indentlevel ($indentDataStart +3) ))
+
+						$_addr 			= $_d.Substring(($_f + 1))	# Remaining after = --> IPv4Address=10.10.4.13;IPv6Address=0xAA;
+						$_addr 			= $_addr.replace($CR, '')
+						$_addr			= $_addr.Split(';')
+						foreach ($_a in $_addr)
+						{
+							$_type, $_ip = $_a.Split('=')
+							if ($_type)
+							{
+								$_type 	= $_type.replace('Address', '')
+								[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type		-value $_type 				-indentlevel ($indentDataStart +4) ))
+								[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		ipAddress	-value $_ip 				-indentlevel ($indentDataStart +4) ))
+							}
+						}
+
+
+					}
+					
+					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		interconnectBays 								-indentlevel ($indentDataStart +2) ))
+					foreach ($_d in $_icArr)
+					{
+						$_f 			= $_d.Indexof('=') 		# Find first = to get bay number
+						$_bayNo			= $_d.Substring(1,($_f-1))	
+
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		bayNumber 		-value $_bayNo -isVar $True	-indentlevel ($indentDataStart +3) ))
+						[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		manualAddresses								-indentlevel ($indentDataStart +3) ))
+
+						$_addr 			= $_d.Substring(($_f + 1))	# Remaining after = --> IPv4Address=10.10.4.13;IPv6Address=0xAA;
+						$_addr 			= $_addr.replace($CR, '')
+						$_addr			= $_addr.Split(';')
+						foreach ($_a in $_addr)
+						{
+							$_type, $_ip = $_a.Split('=')
+							if ($_type)
+							{
+								$_type 	= $_type.replace('Address', '')
+								[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type		-value $_type 				-indentlevel ($indentDataStart +4) ))
+								[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		ipAddress	-value $_ip 				-indentlevel ($indentDataStart +4) ))
+							}
+						}
+
+
+					}
+					
+				}
+
+
+
+
+
+
+
+			}
+
+			# ------ Firmware 
+			if ($fwBaseline)
+			{
+				$title 				= 'Update firmware on logical enclosures {0} ' 					-f $name
+				[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title 					-state firmware_updated		-ovTask 'oneview_logical_enclosure'))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name					-value $name						-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix firmware													-indentlevel $indentDataStart ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	firmwareBaselineUri 						-value 	"'{{var_fw_uri}}'" -indentlevel ($indentDataStart +1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	forceInstallFirmware						-value 	$fwInstall 		-indentlevel ($indentDataStart +1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	validateIfLIFirmwareUpdateIsNonDisruptive	-value 	$fwvalidateLI 	-indentlevel ($indentDataStart +1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	updateFirmwareOnUnmanagedInterconnect	-value 	$fwUpdateUnmanaged 	-indentlevel ($indentDataStart +1) ))
+				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	logicalInterconnectUpdateMode				-value 	$fwLIupdateMode	-indentlevel ($indentDataStart +1) ))
+
+
+			}
+
+						
+		}
+		else 
+		{
+			write-host -ForegroundColor YELLOW "No enclosure serial number. Skip creating logical enclosure...."	
+		}
+
+
+
+
+
+
+		# ---------- Generate script to file
+		YMLwriteToFile -code $YMLscriptCode -file $filename
+
+		[void]$ListYMLfiles.Add($filename)
+	}
+	return $ListYMLfiles
+}
 
 
 # ---------- Profile and Template are in one function 
@@ -7414,7 +7716,7 @@ Function Import-YMLProfileorTemplate([string]$sheetName, [string]$WorkBook, [str
 	#[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix delegate_to				-value localhost									-indentlevel 2 ))
 
 	 # ---------- Generate script to file
-	 writeToFile -code $YMLscriptCode -file $YMLfiles
+	 YMLwriteToFile -code $YMLscriptCode -file $YMLfiles
 
 }
 
@@ -7979,7 +8281,7 @@ if ($workbook)
 				write-host -ForegroundColor Cyan "--------- Script to import $resource"
 				$sheetName  	= "$composer|$sheet"
 				$ps1Files       = "$subdir\$sheet.ps1"
-				# Will spilit 1 PS1 per LE
+				# Will split 1 PS1 per LE
 				$ListPS1Files = Import-LogicalEnclosure -sheetName $sheetName -workBook $workbook -subdir $subdir
 
 				foreach ($ps1Files in $ListPS1Files)
@@ -7988,6 +8290,14 @@ if ($workbook)
 					add_to_allScripts -ps1Files $ps1Files -text "# ------ Step $sequence - Create $resource script"
 				}
 				$sequence++
+
+				
+				# Will split 1 YML per LE
+				$ListYMLfiles = Import-YMLlogicalEnclosure -sheetName $sheetName -workBook $workbook -subdir $subAnsibledir
+				foreach ($YMLfiles in $ListYMLfiles)
+				{
+					write-host -ForegroundColor Cyan "Script is created           ---> $YMLfiles "
+				}
 			}
 			else 
 			{

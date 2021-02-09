@@ -706,9 +706,14 @@ class le
 	[string]$name
 	[string]$enclosureSerialNumber
 	[string]$enclosureName
+	[string]$enclosureNewName
 	[string]$enclosureGroup
-	[string]$fwBaseline	
-	[Boolean]$fwInstall
+	[string]$manualAddresses
+	[string]$firmwareBaseline	
+	[Boolean]$forceInstallFirmware	
+	[string]$logicalInterconnectUpdateMode	
+	[Boolean]$updateFirmwareOnUnmanagedInterconnect	
+	[Boolean]$validateIfLIFirmwareUpdateIsNonDisruptive
 	[string]$scopes									
 
 }
@@ -2757,6 +2762,8 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 	$ValuesArray 					= [System.Collections.ArrayList]::new()
 	$enclNames 						= [System.Collections.ArrayList]::new()
 	$enclSerialNumbers 				= [System.Collections.ArrayList]::new()
+	$frameAddresses 				= [System.Collections.ArrayList]::new()
+
 	
 	$LElist 						= get-HPOVLogicalEnclosure -ApplianceConnection $connection
 
@@ -2768,7 +2775,7 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 		$enclUris      				= $LE.enclosureUris
 		$EncGroupUri   				= $LE.enclosuregroupUri
 		$FWbaselineUri 				= $LE.firmware.firmwareBaselineUri
-		$_le.fwinstall			    = $LE.firmware.forceInstallFirmware
+		$_le.forceInstallFirmware	= $LE.firmware.forceInstallFirmware
 		$scopesUri     				= $LE.scopesUri
 
 		$EGName        				= Get-NamefromUri -Uri $EncGroupUri -hostconnection $connection
@@ -2788,7 +2795,7 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 		if ($FWbaselineUri)
 		{
 			$fwName  				= Get-NamefromUri -Uri $FWbaselineUri -hostconnection $connectiom
-			$_le.fwBaseline 		= $fwName
+			$_le.firmwareBaseline 	= $fwName
 
 		}
 
@@ -2810,9 +2817,81 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 			$_le.scopes 	= $scopeNames -join $sepChar
 		}
 
+		# ------- EBPIA region 
+	    $manualAddresses	 			= [System.Collections.ArrayList]::new()
+		$enclosures 					= $LE.enclosures		#[]
+
+		for($i=0; $i -lt $enclUris.Count; $i++)
+		{
+			$_uri 					= $enclUris[$i] 		# get enclosure Uri
+            $_encl					= $enclosures.$_uri 
+
+			$deviceBays 			= $_encl.deviceBays
+			$interconnectBays 		= $_encl.interconnectBays
+
+			if ($deviceBays -or $interconnectBays)
+			{
+
+
+				# 1 - Get manual address in DeviceBays
+				foreach ($_bay in $deviceBays)
+				{
+					$_ipAddr		= [System.Collections.ArrayList]::new()	
+					$_deviceName 		= "Device{0}"	-f $_bay.bayNumber
+					$addressArr 	= $_bay.manualAddresses
+					foreach ($_addr in $addressArr)
+					{
+						$_ip 		= "{0}Address='{1}'" -f $_addr.type, $_addr.ipAddress 
+						[void]$_ipAddr.add($_ip)
+					    $_item 			= "$_deviceName={" + ($_ipAddr -join "$SepHash$CR") + "}"
+					    [void]$manualAddresses.add($_item)
+					}
+
+				}
+
+				# 2 - Get manual address in InterconnectBays
+				foreach ($_ic in $interconnectBays)
+				{
+                    $_ipAddr		= [System.Collections.ArrayList]::new()	
+					$_icName 		= "Interconnect{0}"	-f $_ic.bayNumber
+					$addressArr 	= $_ic.manualAddresses
+					foreach ($_addr in $addressArr)
+					{
+						$_ip 		= "{0}Address='{1}'" -f $_addr.type, $_addr.ipAddress 
+						[void]$_ipAddr.add($_ip)
+					    $_item 			= "$_icName={" + ($_ipAddr -join "$SepHash$CR") + "}"
+					    [void]$manualAddresses.add($_item)
+					}
+
+				}
+
+
+
+				# 3 - Build the ebpia
+				if ($manualAddresses)
+				{
+					$_frame 			= "Frame{0}" -f ($i +1)
+					$_addressString 	= ($manualAddresses | sort) -join "$SepHash$CR"
+					$_item 				= "$_frame=@{$_addressString}"
+					[void]$frameAddresses.Add($_item)
+
+                    
+	                $manualAddresses	 			= [System.Collections.ArrayList]::new()
+				}
+
+			}
+
+		}
+
+        $frameAddresses = $frameAddresses -join "$Delimiter$CR"
+
+
+		$_le.manualAddresses		= $frameAddresses
 
 		$valuesArray 		+= $_le
-    }
+
+	}
+
 
 	##
 	if ($ValuesArray)
