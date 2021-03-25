@@ -37,6 +37,8 @@ Here is an example on how to install OneView 5.20
 ```
 Install-Module -Name HPOneView.520 -RequiredVersion 5.20.2452.2750
 
+Install-Module -Name ImportExcel
+
 ```
 
 
