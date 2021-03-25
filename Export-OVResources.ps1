@@ -1,6 +1,6 @@
 ##############################################################################
 #
-#   Export-HPOVResources.ps1
+#   Export-OVResources.ps1
 #
 #   - Export resources from OneView instances or Synergy Composers to Excel file
 #
@@ -35,7 +35,7 @@ THE SOFTWARE.
   .EXAMPLE
 
 
-    .\ Export-HPOVResources.ps1 -jsonConfigFiles 192.168.1.51.json, 192.168.1.175.json
+    .\ Export-OVResources.ps1 -jsonConfigFiles 192.168.1.51.json, 192.168.1.175.json
    Export all OnevIew resources in Excel files:
    - ExportFrom-192.168.1.51.xlsx
    - ExportFrom-192.168.1.175.xlsx
@@ -980,7 +980,7 @@ function Get-NamefromUri([string]$uri, $hostconnection)
     {
         try
         {
-            $name   = (Send-HPOVRequest -uri $Uri  -hostName $hostconnection).name 
+            $name   = (Send-OVRequest -uri $Uri  -hostName $hostconnection).name 
         }
         catch
         {
@@ -1000,7 +1000,7 @@ function Get-TypefromUri([string]$uri, $hostconnection)
     {
         try
         {
-            $type   = (Send-HPOVRequest -uri $Uri -hostName $hostconnection).Type
+            $type   = (Send-OVRequest -uri $Uri -hostName $hostconnection).Type
         }
         catch
         {
@@ -1076,7 +1076,7 @@ Function get-scopes($scopesUri,$hostconnection)
 	$scopes 					= ""
 	if ($scopesUri)
 	{
-		$scopedResource 	= send-HPOVRequest -uri $scopesUri
+		$scopedResource 	= send-OVRequest -uri $scopesUri
 		$scopeUris 			= $scopedResource.scopeUris
 		if ($scopeUris)
 		{
@@ -1116,7 +1116,7 @@ function Connect-Composers([string[]]$jsonConfigs)
 
             if ($ip)
             {
-                $conn = Connect-HPOVMgmt -Hostname $ip -loginAcknowledge:$loginAck -AuthLoginDomain $authDomain -Credential $cred
+                $conn = Connect-OVMgmt -Hostname $ip -loginAcknowledge:$loginAck -AuthLoginDomain $authDomain -Credential $cred
 				$connectionList 	+= $conn
             }
         } 
@@ -1154,7 +1154,7 @@ function Export-Scopes($connection, $sheetName, $destWorkbook)
 	$ValuesArray 	 = [System.Collections.ArrayList]::new()
 	$namesArray 	 = $typesArray = [System.Collections.ArrayList]::new()
 
-	$inputObject 	= Get-HPOVScope -ApplianceConnection $connection
+	$inputObject 	= Get-OVScope -ApplianceConnection $connection
 	foreach ($_scope in $inputObject)
 	{
 		$scopeElement 				= New-Object -typeName Scope
@@ -1175,7 +1175,7 @@ function Export-TimeLocale ($connection,$sheetName, $destWorkbook)
 {
 	$ValuesArray        		= [System.Collections.ArrayList]::new()
 	
-    $TimeLocale					= Get-HPOVApplianceDateTime			
+    $TimeLocale					= Get-OVApplianceDateTime			
 
 	$_timelocale				= new-object -type ApplianceTimeLocale
 	$_timelocale.locale     	= $TimeLocale.Locale.Split(".")[0]
@@ -1197,10 +1197,10 @@ function Export-TimeLocale ($connection,$sheetName, $destWorkbook)
 # ---------------------------------------------------------
 
 # ---- OV network
-function export-HPOVnetwork ($connection, $sheetName, $destWorkbook)
+function export-OVnetwork ($connection, $sheetName, $destWorkbook)
 {
 	$ValuesArray        	= [System.Collections.ArrayList]::new()
-	$InputObject 			= (Get-HPOVApplianceNetworkConfig -ApplianceConnection $connection).appliancenetworks
+	$InputObject 			= (Get-OVApplianceNetworkConfig -ApplianceConnection $connection).appliancenetworks
 
 	$_net 					= new-object -typeName OVnetwork
 	$_net.hostName			= $InputObject.hostname
@@ -1224,10 +1224,10 @@ function export-HPOVnetwork ($connection, $sheetName, $destWorkbook)
 }
 
 # ---- OV security protocol
-function export-HPOVsecurityProtocol ($connection, $sheetName, $destWorkbook)
+function export-OVsecurityProtocol ($connection, $sheetName, $destWorkbook)
 {
 	$ValuesArray        	= [System.Collections.ArrayList]::new()
-	$secList	 			= Get-HPOVApplianceSecurityProtocol -ApplianceConnection $connection
+	$secList	 			= Get-OVApplianceSecurityProtocol -ApplianceConnection $connection
 
 	foreach ($InputObject in $secList)
 	{
@@ -1253,10 +1253,10 @@ function export-HPOVsecurityProtocol ($connection, $sheetName, $destWorkbook)
 }
 
 # ---- OV authentication
-function export-HPOVauthentication ($connection, $sheetName, $destWorkbook)
+function export-OVauthentication ($connection, $sheetName, $destWorkbook)
 {
 	$ValuesArray        		= [System.Collections.ArrayList]::new()
-	$twoFactorAuthentication	= Get-HPOVApplianceTwoFactorAuthentication -ApplianceConnection $connection					
+	$twoFactorAuthentication	= Get-OVApplianceTwoFactorAuthentication -ApplianceConnection $connection					
 
 	foreach ($InputObject in $twoFactorAuthentication)
 	{
@@ -1292,7 +1292,7 @@ function Export-SMTP ($connection, $sheetName, $destWorkbook)
 
 	$ValuesArray        	= [System.Collections.ArrayList]::new()
 
-	$Smtp					= Get-HPOVSMTPConfig -ApplianceConnection $connection
+	$Smtp					= Get-OVSMTPConfig -ApplianceConnection $connection
 	$s						= new-object -TypeName smtpConfig
 	$s.senderEmailAddress   = $Smtp.senderEmailAddress
 	$s.smtpServer	        = $Smtp.smtpServer
@@ -1310,7 +1310,7 @@ function Export-SMTP ($connection, $sheetName, $destWorkbook)
 Function Export-BackupConfig($connection, $sheetName, $destWorkbook)
 {
 	$valuesArray 		= [System.Collections.ArrayList]::new()
-	$InputObject		= Get-HPOVAutomaticBackupConfig -ApplianceConnection $connection
+	$InputObject		= Get-OVAutomaticBackupConfig -ApplianceConnection $connection
 	foreach ($bkp in $InputObject)
 	{
 		$remoteBackupEnabled		= $bkp.enabled
@@ -1342,7 +1342,7 @@ Function Export-BackupConfig($connection, $sheetName, $destWorkbook)
 Function Export-fwBaseline($connection, $sheetName, $destWorkbook)
 {
 	$valuesArray 		= [System.Collections.ArrayList]::new()
-	$InputObject		= get-HPOVbaseline -ApplianceConnection $connection
+	$InputObject		= get-OVbaseline -ApplianceConnection $connection
 
 	foreach ($fwBase in $InputObject)
 	{
@@ -1364,7 +1364,7 @@ Function Export-repository($connection, $sheetName, $destWorkbook)
 {
 	$valuesArray 	= [System.Collections.ArrayList]::new()
 
-	$inputObject 			= Get-HPOVBaselineRepository -ApplianceConnection $connection
+	$inputObject 			= Get-OVBaselineRepository -ApplianceConnection $connection
 	foreach ($repo in $inputObject)
 	{
 		$_repo          		= new-object -type repository
@@ -1394,7 +1394,7 @@ Function Export-proxy($connection, $sheetName, $destWorkbook)
 
 	$valuesArray 	= [System.Collections.ArrayList]::new()
 
-	$inputObject 	= Get-HPOVApplianceProxy -ApplianceConnection $connection
+	$inputObject 	= Get-OVApplianceProxy -ApplianceConnection $connection
 	$proxy          = new-object -type proxy
 	$server         = $InputObject.Server
 
@@ -1415,7 +1415,7 @@ function Export-AddressPoolRange($connection, $sheetName, $destWorkbook)
 {
 
 	$ValuesArray					= [System.Collections.ArrayList]::new()
-	$inputObject 					= Get-HPOVAddressPoolRange -ApplianceConnection $connection
+	$inputObject 					= Get-OVAddressPoolRange -ApplianceConnection $connection
 	foreach ($range in $inputObject)
 	{
 		$cat            			= $range.category
@@ -1428,7 +1428,7 @@ function Export-AddressPoolRange($connection, $sheetName, $destWorkbook)
 
 		if ($poolType -eq 'IPv4')
 		{
-			$subnet 				= send-HPOVRequest -uri $range.subnetUri
+			$subnet 				= send-OVRequest -uri $range.subnetUri
 			$_range.poolType	 	= $poolType
 			$_range.startAddress 	= $range.StartStopFragments.startAddress
 			$_range.endAddress 		= $range.StartStopFragments.endAddress
@@ -1467,13 +1467,13 @@ function Export-snmpConfiguration($connection, $sheetName, $destWorkbook)
 
 	# Appliance snmp 
 	$_c 							= new-object -TypeName snmpConfiguration
-	$_c.communityString 			= Get-HPOVSnmpReadCommunity 		-ApplianceConnection $connection
-	$_c.engineId 					= (Get-HPOVApplianceSnmpV3EngineId 	-ApplianceConnection $connection).EngineID
+	$_c.communityString 			= Get-OVSnmpReadCommunity 		-ApplianceConnection $connection
+	$_c.engineId 					= (Get-OVApplianceSnmpV3EngineId 	-ApplianceConnection $connection).EngineID
 
 	$ValuesArray					+= $_c
 
 	# --- Extract snmp settings from lig-snmp if existed
-	$ligs					= Get-HPOVLogicalInterconnectGroup 	-ApplianceConnection $connection
+	$ligs					= Get-OVLogicalInterconnectGroup 	-ApplianceConnection $connection
 	foreach ($l in $ligs)
 	{
 		$ligName 					= $l.name
@@ -1513,7 +1513,7 @@ function Export-snmpUsers($connection, $sheetName, $destWorkbook)
 
 
 	# --- Get appliance snmpv3 users
-	$usersList					= Get-HPOVsnmpV3User 				-ApplianceConnection $connection
+	$usersList					= Get-OVsnmpV3User 				-ApplianceConnection $connection
 	foreach ($InputObject in $usersList)
 	{
 		$_u 						= new-object -TypeName  snmpV3User
@@ -1526,7 +1526,7 @@ function Export-snmpUsers($connection, $sheetName, $destWorkbook)
 
 	}
 	# --- Extract snmp v3 users from lig-snmp if existed
-	$ligs					= Get-HPOVLogicalInterconnectGroup 	-ApplianceConnection $connection
+	$ligs					= Get-OVLogicalInterconnectGroup 	-ApplianceConnection $connection
 	foreach ($l in $ligs)
 	{
 		$ligName 					= $l.name
@@ -1563,7 +1563,7 @@ function Export-snmpTraps($connection, $sheetName, $destWorkbook)
 	$ValuesArray					= [System.Collections.ArrayList]::new()
 
 	# --- Get appliance snmpv3 traps
-	$trapsList						= Get-HPOVApplianceTrapDestination 	-ApplianceConnection $connection
+	$trapsList						= Get-OVApplianceTrapDestination 	-ApplianceConnection $connection
 	foreach ($InputObject in $trapsList)
 	{
 		$_t 						= new-object -TypeName  snmpTrap
@@ -1586,7 +1586,7 @@ function Export-snmpTraps($connection, $sheetName, $destWorkbook)
 
 	}
 	# --- Extract snmp traps from lig-snmp if existed
-	$ligs					= Get-HPOVLogicalInterconnectGroup 	-ApplianceConnection $connection
+	$ligs					= Get-OVLogicalInterconnectGroup 	-ApplianceConnection $connection
 	foreach ($l in $ligs)
 	{
 		$ligName 					= $l.name
@@ -1651,7 +1651,7 @@ function Export-Network ($connection,$sheetName, $destWorkbook)
 	$ethSheet 		  = $sheets[0]
 	$fcSheet 		  = $sheets[1]
 
-	$ListofNetworks   = Get-HPOVNetwork -ApplianceConnection $connection -ErrorAction Stop
+	$ListofNetworks   = Get-OVNetwork -ApplianceConnection $connection -ErrorAction Stop
 
 
     foreach ($net in $ListofNetworks )
@@ -1687,7 +1687,7 @@ function Export-Network ($connection,$sheetName, $destWorkbook)
 			$subnet 	  			= ""		
 			if ( $subnetUri -and ($connection.ApplianceType -eq 'Composer') )
 			{
-				$ThisSubnet 		= Get-HPOVAddressPoolSubnet | Where-Object URI -eq $subnetURI
+				$ThisSubnet 		= Get-OVAddressPoolSubnet | Where-Object URI -eq $subnetURI
 				if ($ThisSubnet)
 					{ $subnet 		= $ThisSubnet.NetworkID }
 			}
@@ -1696,7 +1696,7 @@ function Export-Network ($connection,$sheetName, $destWorkbook)
 			$subnet 	  			= ""
 			if ( $ipV6subnetUri -and ($connection.ApplianceType -eq 'Composer') )
 			{
-				$ThisSubnet 		= Get-HPOVAddressPoolSubnet | Where-Object URI -eq $ipV6subnetURI
+				$ThisSubnet 		= Get-OVAddressPoolSubnet | Where-Object URI -eq $ipV6subnetURI
 				if ($ThisSubnet)
 					{ $subnet 		= $ThisSubnet.NetworkID }
 			}
@@ -1752,7 +1752,7 @@ function Export-Network ($connection,$sheetName, $destWorkbook)
 function Export-NetworkSet ($connection,$sheetName, $destWorkbook)
 {
 	$valuesArray 							= [System.Collections.ArrayList]::new()
-	$ListofNetworkSet 						= Get-HPOVNetworkSet -ApplianceConnection $connection| Sort-Object Name
+	$ListofNetworkSet 						= Get-OVNetworkSet -ApplianceConnection $connection| Sort-Object Name
     # ---------------------- Construct Network Set Names
 	foreach ($netset in $ListofNetworkSet)
 	{
@@ -1844,7 +1844,7 @@ function Export-LogicalInterConnectGroup ($connection,$sheetName, $destWorkbook)
 	$UnsupportedLigTypes 		= 'FEX', 'SAS'
 	$LigType					= '' 
 
-	$LIGs  						= Get-HPOVLogicalInterconnectGroup -ApplianceConnection $connection 
+	$LIGs  						= Get-OVLogicalInterconnectGroup -ApplianceConnection $connection 
 
 	foreach ($lig in $LIGs)
 	{
@@ -2035,7 +2035,7 @@ function Export-LogicalInterConnectGroup ($connection,$sheetName, $destWorkbook)
 						} 
 
 
-						$PermittedInterConnectType 	= Send-HPOVRequest $permittedInterconnectTypeUri -Hostname $connection
+						$PermittedInterConnectType 	= Send-OVRequest $permittedInterconnectTypeUri -Hostname $connection
 						#Find Module Name
 						$ICtypeName   				= $PermittedInterConnectType.Name
 						$_upl.fabricModuleName		= $ICtypeName
@@ -2168,7 +2168,7 @@ function Export-LogicalInterConnectGroup ($connection,$sheetName, $destWorkbook)
 
 			else # C7K
 			{
-				$PartNumber   = (Send-HPOVRequest -Uri $ICTypeuri -Hostname $Connection).partNumber
+				$PartNumber   = (Send-OVRequest -Uri $ICTypeuri -Hostname $Connection).partNumber
 
 				
 
@@ -2296,7 +2296,7 @@ function Export-StorageSystem ($connection,$sheetName, $destWorkbook)
 {
 	$ValuesArray 					= [System.Collections.ArrayList]::new()
 
-	$storageSystemList 				= get-HPOVStorageSystem -ApplianceConnection $connection
+	$storageSystemList 				= get-OVStorageSystem -ApplianceConnection $connection
    
 	foreach ($InputObject in $storageSystemList)
 	{
@@ -2342,7 +2342,7 @@ function Export-StoragePool ($connection,$sheetName, $destWorkbook)
 {
 	$ValuesArray 					= [System.Collections.ArrayList]::new()
 
-	$storagePoolList 				= get-HPOVStoragePool -ApplianceConnection $connection
+	$storagePoolList 				= get-OVStoragePool -ApplianceConnection $connection
    
 	foreach ($InputObject in $storagePoolList)
 	{
@@ -2386,7 +2386,7 @@ function Export-StorageVolumeTemplate ($connection,$sheetName, $destWorkbook)
 {
 	$ValuesArray 					= [System.Collections.ArrayList]::new()
 
-	$storageVolumeTemplateList 		= get-HPOVStorageVolumeTemplate -ApplianceConnection $connection
+	$storageVolumeTemplateList 		= get-OVStorageVolumeTemplate -ApplianceConnection $connection
    
 	foreach ($InputObject in $storageVolumeTemplateList)
 	{
@@ -2403,7 +2403,7 @@ function Export-StorageVolumeTemplate ($connection,$sheetName, $destWorkbook)
 			
 			
 			$_sPoolUri, $_svt.lockStoragePool						= get-ValueandLockProperty -property $_prop.storagePool
-			$_sPool 												= send-HPOVrequest -uri $_sPoolUri -hostName $connection
+			$_sPool 												= send-OVrequest -uri $_sPoolUri -hostName $connection
 
 			$_svt.storagePool										= Get-NamefromUri -uri $_sPoolUri  -hostConnection $connection
 			$_svt.storageSystem 									= Get-NamefromUri -uri $_sPool.storageSystemUri  -hostConnection $connection
@@ -2441,7 +2441,7 @@ function Export-StorageVolumeTemplate ($connection,$sheetName, $destWorkbook)
 function Export-StorageVolume ($connection,$sheetName, $destWorkbook)
 {
 	$ValuesArray 			= [System.Collections.ArrayList]::new()
-	$storageVolumeList 		= get-HPOVStorageVolume -ApplianceConnection $connection
+	$storageVolumeList 		= get-OVStorageVolume -ApplianceConnection $connection
 
    
 	foreach ($InputObject in $storageVolumeList)
@@ -2454,7 +2454,7 @@ function Export-StorageVolume ($connection,$sheetName, $destWorkbook)
 			$_sv.volumeTemplate				= if ($_voltemplate -notlike '*root*template*') {$_voltemplate} else {''}
 
 			$_sPoolUri 						= $InputObject.storagePoolUri 
-			$_sPool 						= send-HPOVrequest -uri $_sPoolUri -hostName $connection
+			$_sPool 						= send-OVrequest -uri $_sPoolUri -hostName $connection
 			$_sv.storagePool				= Get-NamefromUri -uri $_sPoolUri  -hostConnection $connection
 			$_sv.storageSystem 				= Get-NamefromUri -uri $_sPool.storageSystemUri  -hostConnection $connection
 
@@ -2472,7 +2472,7 @@ function Export-StorageVolume ($connection,$sheetName, $destWorkbook)
 			$_volArray						= [System.Collections.ArrayList]::new() 
 
 			$uri 							= "/rest/index/associations?childUri={0}&name=server_profiles_to_storage_volumes" -f $_volUri
-			$_members 						= (Send-HPOVRequest -uri $uri -hostName $connection).members
+			$_members 						= (Send-OVRequest -uri $uri -hostName $connection).members
 			foreach ($_m in $_members)
 			{
 				$_volArray 					+= Get-NamefromUri -uri $_m.parentUri -hostconnection $connection		
@@ -2499,7 +2499,7 @@ function Export-logicalJBOD ($connection,$sheetName, $destWorkbook)
 {
 	$ValuesArray 					= [System.Collections.ArrayList]::new()
 
-	$JBODList 						= get-HPOVlogicalJBOD -ApplianceConnection $connection
+	$JBODList 						= get-OVlogicalJBOD -ApplianceConnection $connection
 
    
 	foreach ($InputObject in $JBODList)
@@ -2540,7 +2540,7 @@ function Export-EnclosureGroup ($connection,$sheetName, $destWorkbook)
 {
 	$ValuesArray 					= [System.Collections.ArrayList]::new()
 
-	$EGlist 						= get-HPOVEnclosureGroup -ApplianceConnection $connection
+	$EGlist 						= get-OVEnclosureGroup -ApplianceConnection $connection
    
 	foreach ($EG in $EGlist)
 	{
@@ -2718,13 +2718,13 @@ function Export-EnclosureGroup ($connection,$sheetName, $destWorkbook)
 
             # EG script
             #$uri = $EG.uri + '/script'
-            #$egScript = Send-HPOVRequest -Uri $uri -Hostname $connection
+            #$egScript = Send-OVRequest -Uri $uri -Hostname $connection
 
 
             # Scopes
 
             
-            $ResourceScope = Send-HPOVRequest -Uri $scopesUri -Hostname $Connection
+            $ResourceScope = Send-OVRequest -Uri $scopesUri -Hostname $Connection
 
 
             $n = 1
@@ -2765,7 +2765,7 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 	$frameAddresses 				= [System.Collections.ArrayList]::new()
 
 	
-	$LElist 						= get-HPOVLogicalEnclosure -ApplianceConnection $connection
+	$LElist 						= get-OVLogicalEnclosure -ApplianceConnection $connection
 
 	
 	foreach ($LE in $LElist)
@@ -2781,7 +2781,7 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 		$EGName        				= Get-NamefromUri -Uri $EncGroupUri -hostconnection $connection
 		foreach ($uri in $enclUris)
 		{
-			$obj 					= Send-HPOVRequest -Hostname $connection -uri $uri 
+			$obj 					= Send-OVRequest -Hostname $connection -uri $uri 
 			[void]$enclNames.Add($obj.name)
 			[void]$enclSerialNumbers.Add($obj.serialNumber) 				
 		}
@@ -2800,7 +2800,7 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 		}
 
 		# Scopes
-		$ResourceScope = Send-HPOVRequest -Uri $scopesUri -Hostname $connection
+		$ResourceScope = Send-OVRequest -Uri $scopesUri -Hostname $connection
 
 		if (-not [String]::IsNullOrEmpty($ResourceScope.scopeUris))
 		{
@@ -2904,7 +2904,7 @@ function Export-LogicalEnclosure ($connection,$sheetName, $destWorkbook)
 
 Function Export-Server($connection,$sheetName, $destWorkbook)
 {
-	$InputObject 					= Get-HPOVServer -ApplianceConnection $connection
+	$InputObject 					= Get-OVServer -ApplianceConnection $connection
 	$valuesArray 					= [System.Collections.ArrayList]::new()
 	foreach ( $s in $InputObject)
 	{
@@ -2940,7 +2940,7 @@ Function Export-Server($connection,$sheetName, $destWorkbook)
 Function Export-Profile($connection,$sheetName, $destWorkbook)
 {
 
-	$sptList 						= Get-HPOVServerProfile -ApplianceConnection $connection
+	$sptList 						= Get-OVServerProfile -ApplianceConnection $connection
 
 	if ($sptList)
 	{
@@ -2951,7 +2951,7 @@ Function Export-Profile($connection,$sheetName, $destWorkbook)
 Function Export-profileTemplate($connection,$sheetName, $destWorkbook)
 {
 
-	$sptList 						= Get-HPOVServerProfileTemplate -ApplianceConnection $connection
+	$sptList 						= Get-OVServerProfileTemplate -ApplianceConnection $connection
 
 	if ($sptList)
 	{
@@ -3064,7 +3064,7 @@ function Export-ProfileorTemplate($connection,$sheetName, $destWorkbook,$profLis
 
 		if (-not [String]::IsNullOrEmpty($scopesUri) )
 		{
-			$ResourceScope 	= Send-HPOVRequest -Uri $scopesUri -Hostname $connection
+			$ResourceScope 	= Send-OVRequest -Uri $scopesUri -Hostname $connection
 		}
 		if (-not [String]::IsNullOrEmpty($ResourceScope.scopeUris))
 		{
@@ -3560,17 +3560,17 @@ if (test-path $ExcelTemplate)
 		# ---- Export OV network
 		write-host -ForegroundColor Cyan "--------- Exporting OneView networking"
 		$sheetName  	 = 'OVnetwork'
-		export-HPOVnetwork -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
+		export-OVnetwork -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
 
 		# ---- Export OV security protocol
 		write-host -ForegroundColor Cyan "--------- Exporting OneView security protocol"
 		$sheetName  	 = 'OVsecurityProtocol'
-		export-HPOVsecurityProtocol -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
+		export-OVsecurityProtocol -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
 
 		# ---- Export OV security authentication
 		write-host -ForegroundColor Cyan "--------- Exporting OneView security authentication"
 		$sheetName  	 = 'OVauthentication'
-		export-HPOVauthentication  -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
+		export-OVauthentication  -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
 		
 		#----------------------------------------------
 		#              OV Settings
@@ -3700,7 +3700,7 @@ if (test-path $ExcelTemplate)
 		$sheetName  	= 'profile|profileConnection|profilelocalStorage|profileSANStorage|profileILO'
 		Export-profile -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
 
-		Disconnect-HPOVMgmt -ApplianceConnection $connection
+		Disconnect-OVMgmt -ApplianceConnection $connection
 	}
 }
 else
