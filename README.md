@@ -1,7 +1,9 @@
 ## Import and Export OneView resources
 
-Import-OVResources.ps1 and Export-OVResources.ps1 are PowerShell scripts that leverage HPE OneView PowerShell library and Excel to automate configuration of OneView OVResources
+Import-OVResources.ps1 and Export-OVResources.ps1 are PowerShell scripts that leverage HPE OneView PowerShell library and Excel to automate configuration of OneView resources
+
 Export-OVresources.ps1 queries OneView to collect OV resources settings and save them in Excel spreadsheets.
+
 Import-OVResources.ps1 reads Excel sheets for values of OV resources and generate PowerShell scripts to create OV resources in OneView destination. 
 
 
@@ -31,7 +33,7 @@ The scripts have been tested on
       - Import-**OV**resources / Export-**OV**resources.ps1 
 
    
-You need to download/use the corresponding OneView PowerShell library. You can search for the POSH version on www.PowerShellGallery.com using the keyword OneView. 
+You need to download/use the corresponding OneView PowerShell library. You can search for the POSH version on powerShellGallery using the keyword OneView. 
 
 Here is an example on how to install OneView 5.20
 ```
@@ -101,7 +103,9 @@ where jsonfile uses the follwoing syntax:
 }
 ```
 The script will read the OV-Template located in the same folder and jsonfiles to connect to multiple Oneview instances, if needed.
-It will then write down vlaues to Excel spreadsheets with names ExportFrom-<OV-IP>.xlsx
+
+It will then write down values to Excel spreadsheets with names ExportFrom-<OV-IP>.xlsx
+
 For example:
 .\Export-OVResources.ps1 -jsonConfigFiles 192.168.1.51.json, 192.168.1.175.json 
 will generate Excel files named as : ExportFrom-192.168.1.51.xlsx and ExportFrom-192.168.1.175.xlsx
