@@ -735,6 +735,13 @@ class server
 	[string]$scopes	
 }
 
+class sht
+{
+	[string]$name	
+	[string]$formFactor	
+	[string]$model
+}
+
 
 class spt
 {
@@ -2937,6 +2944,31 @@ Function Export-Server($connection,$sheetName, $destWorkbook)
 
 	}
 }
+
+Function Export-ServerHardwareType($connection,$sheetName, $destWorkbook)
+{
+	$InputObject 					= Get-OVServerHardwareType -ApplianceConnection $connection
+	$valuesArray 					= [System.Collections.ArrayList]::new()
+	foreach ( $s in $InputObject)
+	{
+		$_sht 						= New-Object -TypeName sht
+		$_sht.name					= $s.name
+		$_sht.formFactor			= $s.formFactor
+		$_sht.model					= $s.model
+	
+		$valuesArray				+= $_sht
+
+	}
+
+	##
+	if ($ValuesArray)
+	{
+		writeto-Excel -data $ValuesArray -sheetName $SheetName -destworkBook $destWorkBook
+
+	}
+
+}
+
 Function Export-Profile($connection,$sheetName, $destWorkbook)
 {
 
@@ -3689,6 +3721,11 @@ if (test-path $ExcelTemplate)
 		write-host -ForegroundColor Cyan "--------- Exporting server hardware"
 		$sheetName  	= 'server'
 		Export-Server -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
+
+		# ---- Export ServerHardwareType (SHT)
+		write-host -ForegroundColor Cyan "--------- Exporting server hardware type"
+		$sheetName  	= 'serverHardwareType'
+		Export-ServerHardwareType -connection $connection -sheetName $sheetName -destWorkBook $destWorkbook
 
 		# ---- Export profile template
         write-host -ForegroundColor Cyan "--------- Exporting server profile template"
