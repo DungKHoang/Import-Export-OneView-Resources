@@ -60,7 +60,7 @@ Export-OVResources.ps1 is a PowerShell script that exports OV resources into Exc
    * Enclosure Groups
    * Enclosures
    * Servers
-   * Server Hardware Type 
+   * Server Hardware Types 
    * Network connections
    * Local Storage connections
    * SAN Storage connections
