@@ -738,8 +738,11 @@ class server
 class sht
 {
 	[string]$name	
-	[string]$formFactor	
 	[string]$model
+	[string]$formFactor	
+	[string]$adapterModel
+	[string]$adapterSlot
+	
 }
 
 
@@ -2956,6 +2959,26 @@ Function Export-ServerHardwareType($connection,$sheetName, $destWorkbook)
 		$_sht.formFactor			= $s.formFactor
 		$_sht.model					= $s.model
 	
+		$aModelArr					= [System.Collections.ArrayList]::new()
+		$aSlotArr					= [System.Collections.ArrayList]::new()
+
+		$_adapterList 				= $s.adapters
+		foreach ($_ad in $_adapterList)
+		{
+			[void]$aModelArr.Add($_ad.model)
+			[void]$aSlotArr.Add($_ad.slot)
+		}
+
+		if ($aModelArr)
+		{
+			$_sht.adapterModel 		= $aModelArr -join $SepChar
+		}
+		if ($aSlotArr)
+		{
+			$_sht.adapterSlot 		= $aSlotArr -join $SepChar
+		}
+
+
 		$valuesArray				+= $_sht
 
 	}
