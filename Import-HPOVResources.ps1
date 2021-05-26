@@ -6716,7 +6716,10 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			{
 
 				# Build Array of HashTables
-				$settingsArr 	= $biosSettings.Split($SepChar)
+				if ($biosSettings)
+				{ 
+					$settingsArr 	= $biosSettings.Split($SepChar)
+				}
 
 				newLine
 				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# -------------- BIOS section ' -isVar $False -indentlevel 1))
@@ -7353,7 +7356,11 @@ Function Import-YMLProfileorTemplate([string]$sheetName, [string]$WorkBook, [str
 			# ############### BIOS Settings
 			if ($bios)
 			{
-				$biosSettingsArr 	= $biosSettings.Replace("@{ ","").Replace("}","").Split($SepChar)
+				if ($biosSettings)
+				{ 
+					$biosSettingsArr 	= $biosSettings.Replace("@{ ","").Replace("}","").Split($SepChar)
+				}
+				
 
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix bios															-indentlevel $indentDataStart ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	manageBios			-value $bios							-indentlevel ($indentDataStart + 1) ))	

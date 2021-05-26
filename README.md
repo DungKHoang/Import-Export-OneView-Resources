@@ -8,7 +8,6 @@ Import-OVResources.ps1 reads Excel sheets for values of OV resources and generat
 
 
 
-
 ## Prerequisites
 Both scripts require:
    * HPE OneView PowerShell library 5.xx
@@ -26,7 +25,7 @@ The scripts have been tested on
    * OneView PowerShell library   v 5.2 -5.3 -5.4
 
 ## OneView scripts
-   * If your environmnet is OneView 5.20, you should use:
+   * If your environment is OneView 5.20, you should use:
       - Import-**HPOV**resources / Export-**HPOV**resources.ps1   
           
    * If your environmnet is OneView 5.30 or greater, you will use:
@@ -43,19 +42,18 @@ Install-Module -Name ImportExcel
 
 ```
 
-
 ## Export-OVResources.PS1 
 
 Export-OVResources.ps1 is a PowerShell script that exports OV resources into Excel spreadsheets including:
    * Address Pool
-   * Ethernet newtorks
+   * Ethernet networks
    * Network set
    * FC / FCOE networks
    * SAN Manager
    * Storage Systems: 3PAR
    * Storage Volume templates
    * Storage Volumes
-   * Logical InterConnect Groups
+   * Logical Interconnect Groups
    * Uplink Sets
    * Enclosure Groups
    * Enclosures
@@ -80,7 +78,6 @@ Export-OVResources.ps1 is a PowerShell script that exports OV resources into Exc
    * Proxy settings
 
 
-
 ## Syntax
 
 ### To export OneView resources
@@ -89,7 +86,7 @@ Export-OVResources.ps1 is a PowerShell script that exports OV resources into Exc
     .\Export-OVResources.ps1 -jsonConfigFiles <list-of-jsonfiles>
 
 ```
-where jsonfile uses the follwoing syntax:
+where jsonfile uses the following syntax:
 ```
 {                                         
      "ip":              "<OV-IP>",  
@@ -114,11 +111,9 @@ will generate Excel files named as : ExportFrom-192.168.1.51.xlsx and ExportFrom
 
 
 
-
 ## Import-OVResources.PS1 
 
 Import-OVResources.ps1 is a PowerShell script that configures OV resources based on Excel sheets. It generates scripts for the follwoing resources:
-
 
    | OneView resource             | PowerShell script | Ansible playbook |
    | -----------------------------|:-----------------:|:----------------:|
@@ -142,7 +137,6 @@ Import-OVResources.ps1 is a PowerShell script that configures OV resources based
    |  Firmware bundles            |       **X**       |                  |
 
 
-
 ## Syntax
 
 There are 2 use cases:
@@ -158,7 +152,6 @@ In this case, open the Excel file, and go to the sheet 'OV Destination'. Fill ou
 The Import-OVResources.ps1 will read the 'OV destination' to generate commands to connect to the OneView instance at destination
 
  To generate the scripts for importing, run the command 
-
 
 ```
     .\Import-OVResources.ps1 -workbook < Excel file>
@@ -183,8 +176,8 @@ https://github.com/DungKHoang/Examples-OneView-Ansible-Playbook
 * You can execute each individual script to create corresponding OV resources
 * All passwords are set to **REDACTED**, so ensure to update them with new values
 
-
 Enjoy!
+
 
 
 
