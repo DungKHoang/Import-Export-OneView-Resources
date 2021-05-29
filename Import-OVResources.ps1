@@ -1478,7 +1478,7 @@ Function Import-dataCenter([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 			newLine
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating datacenter {0} "' -f $name) -isVar $False ))
-			$value 					= 'Get-OVDataCenter' + " | where name -eq  '{0}' " -f $name
+			$value 					= "Get-OVDataCenter -ErrorAction SilentlyContinue -Name  '{0}' " -f $name #HKD
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'dc' 						-Value $value ))		
 
 			ifBlock -condition 'if ($dc -eq $Null)'
@@ -1653,7 +1653,7 @@ Function Import-rack([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Adding rack {0} to datacenter {1} "' -f $rackSN, $dcName) -isVar $False ))
 		newLine
 
-		$value 				= 'Get-OVDataCenter | where name -match "{0}" ' 	-f $dcName
+		$value 				= "Get-OVDataCenter -ErrorAction SilentlyContinue -Name $dcName "  #HKD 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'dc' 						-Value $value ))	
 		$value 				= 'Get-OVRack | where serialNumber -match "{0}" ' -f $rackSN
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'rack' 					-Value $value ))
@@ -1973,7 +1973,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating scopes {0} "' -f $name) -isVar $False ))
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix username -Value ("'{0}'" -f $name)  ))
 
-		ifBlock 		-condition ('if ($null -eq (get-OVScope | where name -eq "{0}" ))' -f $name)
+		ifBlock 		-condition ('if ($null -eq (get-OVScope -name "{0}" ))' -f $name) #HKD
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVScope -name "{0}" {1} ' -f $name, $descParam) -isVar $False -indentlevel 1))
 		
 		newLine
@@ -1992,7 +1992,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
                     $resName 			= '"' + $resName.replace('name=', '').Trim() + '"'  # etract name and surround with quotes
                 }
 
-				$value 	= 'Get-OV{0} | where name -eq {1}' -f $resType, $resName
+				$value 	= "Get-OV$resType -name '$resName' " # HKD
 				$prefix = "res$Index"
 				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $prefix -value $value -indentlevel 1 ))
 
@@ -2090,7 +2090,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			if ($isSnmpAppliance)
 			{
 				# Use Get-OVsnmpV3user to get the user object
-				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'snmpV3user' 	-value ('Get-OVSnmpV3User | where UserName -eq "{0}" ' -f $snmpV3User) -indentlevel $indent))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'snmpV3user' 	-value ("Get-OVSnmpV3User -Name '$snmpV3User' " ) -indentlevel $indent))	# HKD
 			}
 			else 
 			{
@@ -2158,7 +2158,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 			if ($isSnmpAppliance)
             {
-				$condition              = 'if ($null -eq (Get-OVSnmpV3User | where name -eq "{0}"))' -f $snmpV3User
+				$condition              = 'if ($null -eq (Get-OVSnmpV3User -name  "{0}"))' -f $snmpV3User #HKD
             	[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix  $condition 	-isVar $False -indentlevel $indent  ) )
             	[void]$PSscriptCode.Add('{')
 
@@ -2221,7 +2221,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
  Function Import-snmpV3User([string]$sheetName, [string]$WorkBook, [string]$ps1Files )
  {
-	 $PSscriptCode            = [System.Collections.ArrayList]::new()
+	 $PSscriptCode          = [System.Collections.ArrayList]::new()
 	 $cSheet, $sheetName 	= $sheetName.Split($SepChar)       # composer
 
 	 connect-Composer  -sheetName $cSheet    -workBook $WorkBook -PSscriptCode $PSscriptCode
@@ -2558,7 +2558,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating local users {0} "' -f $name) -isVar $False ))
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix username -Value ("'{0}'" -f $name)  ))
 
-		ifBlock			-condition ('if ($null -eq (get-OVUser | where userName -eq "{0}" ))' -f $name) 
+		ifBlock			-condition ('if ($null -eq (get-OVUser -Name  "{0}" ))' -f $name)  #HKD
 		generate-credentialCode -component 'Users' -username $name -password $password -PSscriptCode $PSscriptCode  -indentlevel 1
 
 		$fullNameParam 			= if ($fullName)		{ ' -FullName "{0}" ' 		-f $fullName }			else {''}
@@ -2588,7 +2588,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 				$role 		= $role.replace($Equal, "$Equal'") + "'"    # Add quote around role name
 
 				$scopeIndex = "scope$Index"
-				$value 		= 'Get-OVScope | where name -eq "{0}" ' -f $scopeName 
+				$value 		= 'Get-OVScope -name "{0}" -ErrorAction SilentlyContinue ' -f $scopeName  #HKD
 				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix $scopeIndex -value $value -indentlevel 1))
 
 				ifBlock 	-condition ('if ($null -ne ${0})' -f $scopeIndex) 	-indentlevel 1
@@ -2866,7 +2866,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
          $scopes             = $net.scopes
  
          [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating ethernet networks {0} "' -f $name) -isVar $False ))
-         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetwork | where name -eq '{0}' " -f $name) ))
+         [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetwork -name '{0}' -ErrorAction SilentlyContinue" -f $name) )) #HKD
  
          ifBlock 		-condition 'if ($Null -eq $net )' 
          [void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for Ethernet network "{0}"' -f $name) -isVar $False -indentlevel 1))
@@ -3104,7 +3104,7 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		}
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating FC/FCOE networks {0} "' -f $name) -isVar $False ))
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetwork -type {1} | where name -eq '{0}'  " -f $name, $type) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetwork -type {1} -name '{0}' -ErrorAction SilentlyContinue  " -f $name, $type) )) #HKD
 
 		ifBlock			-condition 'if ($Null -eq $net )' 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for FC network "{0}"' -f $name) -isVar $False -indentlevel 1))
@@ -3193,7 +3193,7 @@ Function Import-fcNetwork([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		if ($scopes)
 		{
 			newLine
-			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVNetwork | where name -eq $name' -isVar $False -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVNetwork -name $name -ErrorAction SilentlyContinue' -isVar $False -indentlevel 1))
 			generate-scopeCode -scopes $scopes -indentlevel 1
 
 		}
@@ -3324,7 +3324,7 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$scopes 			= $ns.scopes
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating networkset {0} "' -f $name) -isVar $False ))
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetworkSet | where name -eq '{0}' " -f $name) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetworkSet -name -eq '{0}' -ErrorAction SilentlyContinue" -f $name) )) #HKD
 
 		ifBlock			-condition 'if ($Null -eq $net )'  
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for Network Set "{0}"' -f $name) -isVar $False -indentlevel 1))
@@ -3529,7 +3529,7 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating logical interconnect group {0} " ' -f $name) -isVar $False ))
 
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup | where name -eq  '{0}' " -f $name) ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup -name -eq  '{0}' -ErrorAction SilentlyContinue" -f $name) )) #HKD
 
 		ifBlock			-condition 'if ($lig -eq $Null)' 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for LIG "{0}"' -f $name) -isVar $False -indentlevel 1))
@@ -3792,7 +3792,7 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating uplinkset {0} on LIG {1}"' -f $uplName,$ligName) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup | where name -eq  '{0}' " -f $ligName ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup -name -eq  '{0}' -ErrorAction SilentlyContinue" -f $ligName ) ))	#HKD	
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'upl' 						-Value ('$lig.uplinksets | where name -eq  "{0}" ' -f $uplName) ))
 		newLine
 
@@ -4543,7 +4543,7 @@ Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [strin
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical Switch Group {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'swg' 						-Value ("get-OVLogicalSwitchGroup | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'swg' 						-Value ("get-OVLogicalSwitchGroup -name '{0}' -ErrorAction SilentlyContinue " -f $name ) ))		#HKD
 
 		ifBlock			-condition 'if ($swg -eq $Null)' 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'switchType' 					-Value ('Get-OVSwitchType -name "{0}"'	-f $switchType) -indentlevel 1))
@@ -4561,7 +4561,7 @@ Function Import-LogicalSwitchGroup([string]$sheetName, [string]$WorkBook, [strin
 		# --- Scopes
 		if ($scopes)
 		{
-			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('Get-OVLogicalSwitchGroup -name -eq "{0}"' -f $name) -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('Get-OVLogicalSwitchGroup -name "{0}" -ErrorAction SilentlyContinue' -f $name) -indentlevel 1)) #HKD
 			generate-scopeCode -scopes $scopes -indentlevel 1
 			newLine
 
@@ -4620,10 +4620,10 @@ Function Import-LogicalSwitch([string]$sheetName, [string]$WorkBook, [string]$ps
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical Switch {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lsw' 						-Value ("get-OVLogicalSwitch | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lsw' 						-Value ("get-OVLogicalSwitch -name '{0}' -ErrorAction SilentlyContinue " -f $name ) ))		#HKD
 
 		ifBlock			-condition 'if ($lsw -eq $Null)' 
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'logicalSwitchGroup' 			-Value ('Get-OVLogicalSwitchGroup -name "{0}"'	-f $logicalSwitchGroup) -indentlevel 1))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'logicalSwitchGroup' 			-Value ('Get-OVLogicalSwitchGroup -name "{0}" -ErrorAction SilentlyContinue'	-f $logicalSwitchGroup) -indentlevel 1))
 		
 		$namegroupParam = ' -name "{0}" -logicalSwitchGroup $logicalSwitchGroup ' -f $name
 		$managedParam 	= if ($isManaged) { ' -Managed'} else {' -Monitored'}
@@ -4717,7 +4717,7 @@ Function Import-SANmanager([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating SAN Manager {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'san' 						-Value ("get-OVSANManager | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'san' 						-Value ("get-OVSANManager -name '{0}' -ErrorAction SilentlyContinue " -f $name ) ))	#HKD	
 		
 		ifBlock			-condition 'if ($san -eq $Null)' 		
 		$nameParam 		= ' -HostName "{0}" -type "{1}" ' -f $name, $type
@@ -4805,7 +4805,7 @@ Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage System {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem -name '{0}' -ErrorAction SilentlyContinue " -f $name ) )) #HKD		
 		ifBlock 'if ($sts -eq $Null)' 	
 		
 		$s 					= if ($showSystemDetails) { ' -ShowSystemDetails'} else {''}
@@ -4822,7 +4822,7 @@ Function Import-StorageSystem([string]$sheetName, [string]$WorkBook, [string]$ps
 		if ($vips)
 		{
 			$ip , $netName 	= $vips.Split($Equal)
-			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' 	-Value ("get-OVNetwork | where name -eq  '{0}' " -f $netName.trim() ) -indentlevel 1 ))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' 	-Value ("get-OVNetwork -name '{0}' -ErrorAction SilentlyContinue " -f $netName.trim() ) -indentlevel 1 ))	 #HKD
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vips' 	-Value ('@{' + ('"{0}" = $net' -f $ip.trim())  + '}') 							-indentlevel 1 )) 
 			$vipsParam 			 = ' -VIPS $vips'
 		}
@@ -4937,7 +4937,7 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage Volume Template {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'svt' 						-Value ("get-OVStorageVolumeTemplate | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'svt' 						-Value ("get-OVStorageVolumeTemplate -name '{0}' -ErrorAction SilentlyContinue" -f $name ) ))		#HKD
 		
 		ifBlock			-condition 'if ($svt -eq $Null)' 		
 		$descParam 			= if ($description) { ' -Description "{0}" ' -f $description} else {''}
@@ -4945,14 +4945,14 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 
 		if ($storagePool)
 		{	
-			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $storagePool ) -indentlevel 1 ))	
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool -name  '{0}' -ErrorAction SilentlyContinue " -f $storagePool ) -indentlevel 1 ))	#HKD
 			
 			ifBlock		-condition 'if ($stp -ne $Null)' 	-indentlevel 1
 			# ---- Storage Pool and SnapshotStoragePool
 			$storagePoolParam 			= ' -StoragePool $stp ' + $lockStoragePool
 			if ($snapshotStoragePool)
 			{
-				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $snapshotStoragePool ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool -name '{0}' -ErrorAction SilentlyContinue " -f $snapshotStoragePool ) -indentlevel 2 ))	#HKD
 				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' -value 'if ($sstp -ne $Null) { $sstp } else {$stp}'  -indentlevel 2) )
 				$storagePoolParam 		+= ' -SnapshotStoragePool $sstp ' + $lockSnapshotStoragePool
 			}
@@ -4961,7 +4961,7 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 			if ($storageSystem)		
 			{
 				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ' # ----- Get Storage System' -isVar $False -indentlevel 2 ))
-				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $storageSystem ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem -name '{0}' -ErrorAction SilentlyContinue " -f $storageSystem ) -indentlevel 2 ))	#HKD
 				$storagePoolParam 		+= ' -storageSystem $sts ' 
 			}
 
@@ -5004,7 +5004,7 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 			$a14						= $null 
 			if ($volumeSet)
 			{
-				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet | where name -eq  '{0}' " -f $volumeSet ) -indentlevel 2 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet -name '{0}' -ErrorAction SilentlyContinue " -f $volumeSet ) -indentlevel 2 ))	#HKD
 				$a14 					= ' -VolumeSet $volumeSet' + $lockVolumeSet
 			}
 			$attributes4Param			= $a12 + $a13 + $a14
@@ -5021,7 +5021,7 @@ Function Import-StorageVolumeTemplate([string]$sheetName, [string]$WorkBook, [st
 			if ($scopes)
 			{
 				newLine
-				[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('getHPOVStorageVolumeTemplate | where name -eq "{0}"' -f $name) -indentlevel 1))
+				[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('getHPOVStorageVolumeTemplate -name "{0}" -ErrorAction SilentlyContinue ' -f $name) -indentlevel 1))   #HKD
 				generate-scopeCode -scopes $scopes -indentlevel 1
 
 			}
@@ -5099,7 +5099,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Storage Volume {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vol' 						-Value ("get-OVStorageVolume | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'vol' 						-Value ("get-OVStorageVolume -name '{0}' -ErrorAction SilentlyContinue " -f $name ) ))		#HKD
 		
 		ifBlock 		-condition  'if ($Null -eq $vol)' 		
 		$descParam 				= if ($description) { ' -Description "{0}" ' -f $description} else {''}
@@ -5107,7 +5107,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 
 		if ($volumeTemplate)
 		{
-			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'svt' 					-Value ("get-OVStorageVolumeTemplate | where name -eq  '{0}' " -f $volumeTemplate ) -indentlevel 1 ))
+			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'svt' 					-Value ("get-OVStorageVolumeTemplate -name '{0}' -ErrorAction SilentlyContinue " -f $volumeTemplate ) -indentlevel 1 )) #HKD
 			ifBlock -condition  'if ($Null -ne $svt)' -indentlevel 1
 			$volumeTemplateParam 	= ' -VolumeTemplate $svt'
 
@@ -5120,7 +5120,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 			if ($scopes)
 			{
 				newLine
-				[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume | where name -eq "{0}"' -f $name) -indentlevel 1))
+				[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume -name "{0}" -ErrorAction SilentlyContinue ' -f $name) -indentlevel 1)) #HKD
 				generate-scopeCode -scopes $scopes -indentlevel 1
 
 			}
@@ -5134,14 +5134,14 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 		{
 			if ($storagePool)
 			{	
-				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $storagePool ) -indentlevel 1 ))	
+				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'stp' 						-Value ("get-OVStoragePool -name '{0}' -ErrorAction SilentlyContinue " -f $storagePool ) -indentlevel 1 ))	#HKD
 				ifBlock -condition 'if ( $Null -ne $stp)' 		-isVar $False -indentlevel 1
 
 				# ---- Storage Pool and SnapshotStoragePool
 				$storagePoolParam 			= ' -StoragePool $stp ' + $lockStoragePool
 				if ($snapshotStoragePool)
 				{
-					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool | where name -eq  '{0}' " -f $snapshotStoragePool ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' 					-Value ("get-OVStoragePool -name '{0}' -ErrorAction SilentlyContinue " -f $snapshotStoragePool ) -indentlevel 2 ))	#HKD
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sstp' -value 'if ($sstp -ne $Null) { $sstp } else {$stp}'  -indentlevel 2) )
 					$storagePoolParam 		+= ' -SnapshotStoragePool $sstp ' + $lockSnapshotStoragePool
 				}
@@ -5150,7 +5150,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 				if ($storageSystem)		
 				{
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ' # ----- Get Storage System' -isVar $False -indentlevel 2 ))
-					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem | where name -eq  '{0}' " -f $storageSystem ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'sts' 						-Value ("get-OVStorageSystem -name '{0}' -ErrorAction SilentlyContinue " -f $storageSystem ) -indentlevel 2 ))	#HKD
 					$storagePoolParam 		+= ' -storageSystem $sts ' 
 				}
 
@@ -5193,7 +5193,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 				$a14						= $null 
 				if ($volumeSet)
 				{
-					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet | where name -eq  '{0}' " -f $volumeSet ) -indentlevel 2 ))	
+					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'volumeSet' 	-Value ("get-OVStorageVolumeSet -name '{0}' -ErrorAction SilentlyContinue " -f $volumeSet ) -indentlevel 2 ))	#HKD
 					$a14 					= ' -VolumeSet $volumeSet' + $lockVolumeSet
 				}
 				$attributes4Param			= $a12 + $a13 + $a14
@@ -5210,7 +5210,7 @@ Function Import-StorageVolume([string]$sheetName, [string]$WorkBook, [string]$ps
 				if ($scopes)
 				{
 					newLine
-					[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume | where name -eq "{0}"' -f $name) -indentlevel 1))
+					[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value ('get-OVStorageVolume -name "{0}" -ErrorAction SilentlyContinue ' -f $name) -indentlevel 1)) #HKD
 					generate-scopeCode -scopes $scopes -indentlevel 1
 
 				}
@@ -5277,14 +5277,14 @@ Function Import-LogicalJBOD([string]$sheetName, [string]$WorkBook, [string]$ps1F
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix '# ----------------------------------------------------------------'  -isVar $False ))
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating Logical JBOD {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'jbod' 						-Value ("get-OVLogicalJBOD| where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'jbod' 						-Value ("get-OVLogicalJBOD -name '{0}' -ErrorAction SilentlyContinue " -f $name ) ))		#HKD
 		
 		ifBlock 		-condition	'if ($Null -eq $jbod )' 		
 		$descParam 				= if ($description) { ' -Description "{0}" ' -f $description} else {''}
 		$nameParam 				= (' -Name "{0}" {1} ' -f $name, $descParam) 
 		$eraseParam 			= if ($eraseDataOnDelete -eq 'True') { ' -eraseDataOnDelete $True'} else {''}
 
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'driveEnclosure' 				-Value ("Get-OVDriveEnclosure | where name -eq  '{0}' " -f $driveEnclosure) -indentlevel 1 ))
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'driveEnclosure' 				-Value ("Get-OVDriveEnclosure -name '{0}' -ErrorAction SilentlyContinue " -f $driveEnclosure) -indentlevel 1 )) #HKD
 		
 		ifBlock 		-condition 'if ( $Null -ne $driveEnclosure )'  -indentlevel 1
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('New-OVLogicalJbod	{0} `' 									-f $nameParam) 										-isVar $False -indentlevel 2)) 
@@ -5349,7 +5349,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating enclosure Group {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'eg' 						-Value ("get-OVEnclosureGroup | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'eg' 						-Value ("get-OVEnclosureGroup -name '{0}' -ErrorAction SilentlyContinue " -f $name ) ))		#HKD
 
 		ifBlock			-condition 'if ($Null -eq $eg)' 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for enclosure group {0} ' -f $name) -isVar $False -indentlevel 1))
@@ -5370,7 +5370,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		if ($ipV4AddressingMode -eq 'AddressPool')
 		{
 			$v4Range 				= 	"@('" + $ipV4Range.replace($SepChar, "','") + "')"
-			$value 					= $v4Range + ' | % {Get-OVAddressPoolRange | where name -eq $_ } '
+			$value 					= $v4Range + ' | % {Get-OVAddressPoolRange -name  $_ -ErrorAction SilentlyContinue } ' #HKD
 			[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'IPv4AddressRange' 		-Value $value -indentlevel 1))
 
 			$v4AddressPoolParam 	+=   ' -IPv4AddressRange $IPv4AddressRange'
@@ -5388,7 +5388,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 			if ($ipV6AddressingMode -eq 'AddressPool')
 			{
 				$v6Range 				= 	"@('" + $ipV6Range.replace($SepChar, "','") + "')"
-				$value 					= $v6Range + ' | % {Get-OVAddressPoolRange | where name -eq $_  } '
+				$value 					= $v6Range + ' | % {Get-OVAddressPoolRange -name $_  -ErrorAction SilentlyContinue} ' #HKD
 				[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'IPv6AddressRange' 		-Value $value -indentlevel 1))
 	
 				$v6AddressPoolParam 	+=   ' -IPv6AddressRange $IPv6AddressRange'
@@ -5463,7 +5463,7 @@ Function Import-EnclosureGroup([string]$sheetName, [string]$WorkBook, [string]$p
 		if ($scopes)
 		{
 			newLine
-			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVEnclosureGroup | where name -eq $name' -indentlevel 1))
+			[void]$PSscriptCode.Add( (Generate-PSCustomVarCode -Prefix 'object' -Value 'get-OVEnclosureGroup -name $name -ErrorAction SilentlyContinue ' -indentlevel 1))   #HKD
 			generate-scopeCode -scopes $scopes -indentlevel 1
 
 		}
@@ -5672,7 +5672,7 @@ Function Import-LogicalEnclosure([string]$sheetName, [string]$WorkBook, [string]
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating logical enclosure {0} "' -f $name) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'le' 						-Value ("get-OVLogicalEnclosure | where name -eq  '{0}' " -f $name ) ))		
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'le' 						-Value ("get-OVLogicalEnclosure -name '{0}' -ErrorAction SilentlyContinue " -f $name ) ))		#HKD
 		
 		ifBlock			-condition 'if ($le -eq $Null)' 	
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for logical enclosure {0} ' -f $name) -isVar $False -indentlevel 1))
@@ -6145,7 +6145,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			$saveCmd 			= 'save-OVServerProfile'
 		}
 
-		$value 					= $getCmd + " | where name -eq  '{0}' " -f $spName
+		$value 					= $getCmd + " -name '{0}' -ErrorAction SilentlyContinue " -f $spName #HKD
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'profile' 						-Value $value ))		
 		
 		ifBlock			-condition 'if ($Null -eq $profile )' 
@@ -6325,10 +6325,10 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					}
 
 
-					$value 			= "Get-OVnetwork | where name -eq '{0}' " -f $network		
+					$value 			= "Get-OVnetwork -name '{0}' -ErrorAction SilentlyContinue " -f $network		#HKD
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'network' 						-Value $value -indentlevel 1))		
 					ifBlock -condition 'if ($null -eq $network)'  -indentlevel 1
-					$value 			= "Get-OVnetworkSet | where name -eq '{0}' " -f $network		
+					$value 			= "Get-OVnetworkSet -name '{0}' -ErrorAction SilentlyContinue " -f $network		#HKD
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'network' 						-Value $value -indentlevel 2))
 					endIfBlock -indentLevel 1
 
