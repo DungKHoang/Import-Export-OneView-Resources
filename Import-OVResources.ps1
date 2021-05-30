@@ -3324,7 +3324,7 @@ Function Import-NetworkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$scopes 			= $ns.scopes
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating networkset {0} "' -f $name) -isVar $False ))
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetworkSet -name -eq '{0}' -ErrorAction SilentlyContinue" -f $name) )) #HKD
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'net' -Value ("get-OVNetworkSet -name '{0}' -ErrorAction SilentlyContinue" -f $name) )) #HKD
 
 		ifBlock			-condition 'if ($Null -eq $net )'  
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for Network Set "{0}"' -f $name) -isVar $False -indentlevel 1))
@@ -3529,7 +3529,7 @@ Function Import-LogicalInterconnectGroup([string]$sheetName, [string]$WorkBook, 
 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating logical interconnect group {0} " ' -f $name) -isVar $False ))
 
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup -name -eq  '{0}' -ErrorAction SilentlyContinue" -f $name) )) #HKD
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup -name  '{0}' -ErrorAction SilentlyContinue" -f $name) )) #HKD
 
 		ifBlock			-condition 'if ($lig -eq $Null)' 
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('# -------------- Attributes for LIG "{0}"' -f $name) -isVar $False -indentlevel 1))
@@ -3792,7 +3792,7 @@ Function Import-UplinkSet([string]$sheetName, [string]$WorkBook, [string]$ps1Fil
 		
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ('write-host -foreground CYAN "----- Creating uplinkset {0} on LIG {1}"' -f $uplName,$ligName) -isVar $False ))
  
-		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup -name -eq  '{0}' -ErrorAction SilentlyContinue" -f $ligName ) ))	#HKD	
+		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'lig' 						-Value ("get-OVLogicalInterconnectGroup -name '{0}' -ErrorAction SilentlyContinue" -f $ligName ) ))	#HKD	
 		[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'upl' 						-Value ('$lig.uplinksets | where name -eq  "{0}" ' -f $uplName) ))
 		newLine
 
