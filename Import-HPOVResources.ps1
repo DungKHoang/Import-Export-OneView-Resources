@@ -6307,19 +6307,17 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						$userDefined 	= $conn.userDefined
 						if ($userDefined)
 						{
-							$macType 	= $Conn.macType
+							#HKD01 $macType 	= $Conn.macType
 							$mac	 	= $Conn.mac
-							$wwpnType	= $Conn.wwpnType
+							#HKD01 $wwpnType	= $Conn.wwpnType
 							$wwpn		= $Conn.wwpn
 							$wwnn		= $Conn.wwnn
 							$_macParam 	= if ($mac)		{ ' -mac {0} '  -f $mac} 	else {''}
 							$_wwnnParam = if ($wwnn)	{ ' -wwnn {0} ' -f $wwnn}	else {''}
 							$_wwpnParam = if ($wwpn)	{ ' -wwpn {0} ' -f $wwpn}	else {''}
 
-							if ($_macParam  -or $_wwnnParam -or $_wwpnParam)
-							{
-								$userDefinedParam = ' -UserDefined:$True ' + $_macParam + $_wwpnParam + $_wwnnParam
-							}
+							#HKD01
+							$userDefinedParam = ' -UserDefined:$True ' + $_macParam + $_wwpnParam + $_wwnnParam
 						}
 
 					}

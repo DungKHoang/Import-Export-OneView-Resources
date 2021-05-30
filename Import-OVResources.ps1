@@ -2269,7 +2269,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		{
 			$comment 			= '# ---------- Appliance snmp Configuration ' 				
 			$title 				= ' appliance read community string'
-			[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -ovTask 'oneview_appliance_device_read_community'))
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -OVTask 'oneview_appliance_device_read_community'))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	'communityString'		-Value $communityString  				-indentlevel $indentDataStart ))
 		}
 	
@@ -2288,7 +2288,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 			$comment 			= '# ---------- Appliance snmp V3 User {0} ' 	-f $userName			
 			$title 				= ' Create snmp v3 user {0}' 					-f $userName
-			[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title -comment $comment -ovTask 'oneview_appliance_device_snmp_v3_users'))
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title -comment $comment -OVTask 'oneview_appliance_device_snmp_v3_users'))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	type 					-value Users				-indentlevel $indentDataStart))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	userName 				-value $userName			-indentlevel $indentDataStart))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode 	-Prefix 	securityLevel 			-value $secLevel			-indentlevel $indentDataStart))
@@ -2327,7 +2327,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 				$ovTask 					= 'oneview_appliance_device_snmp_{0}_users_facts' 		-f $_format
 				$comment 					= '# ---------- Appliance {0} traps ' 					-f $format								
 				$title 						= ' Get snmpV3 user {0} id' 							-f $snmpV3User
-				[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title -comment $comment -ovTask $ovTask -isData $False))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title -comment $comment -OVTask $ovTask -isData $False))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix username	-value $snmpV3User	-indentlevel 2 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 										-indentlevel 1 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix $var_user	-value "'{{appliance_device_snmp_v3_users[0].id}}'"		-indentlevel 2 ))
@@ -2336,7 +2336,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 			$ovTask 					= 'oneview_appliance_device_snmp_{0}_trap_destinations' -f $_format								
 			$title 						= ' Create {0} trap' 									-f $format
 
-			[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title  -ovTask $ovTask))
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 		-title $title  -OVTask $ovTask))
 			
 			if ($format -eq 'snmpV3')
 			{
@@ -2796,7 +2796,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		$_subnetName 			="subnet_{0}" -f $networkId
 		$comment				= '# ---------- IP v4 address pool {0} on subnet {1}' 	-f $name, $networkId
 		$title 					= 'Ensure the ID Pools IPV4 Subnet exists'		
-		[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -ovTask 'oneview_id_pools_ipv4_subnet'))
+		[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -OVTask 'oneview_id_pools_ipv4_subnet'))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $_subnetName				-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		networkId				-value $networkId				-indentlevel $indentDataStart ))		
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		subnetmask				-value $subnetmask				-indentlevel $indentDataStart ))
@@ -2820,7 +2820,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 		
 		# ---- id pools
 		$title 					= 'Ensure the IPV4 Range {0} exists'	-f $name		
-		[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title  -ovTask 'oneview_id_pools_ipv4_range'))
+		[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title  -OVTask 'oneview_id_pools_ipv4_range'))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		subnetUri				-value "'{{$var_subnet}}'"		-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type					-value Range					-indentlevel $indentDataStart ))
@@ -3025,7 +3025,7 @@ Function Import-TimeLocale([string]$sheetName, [string]$WorkBook, [string]$ps1Fi
 
 		 $_category 		= $YMLtype540Enum.item('ethernet')
 		 $title 			= 'Create ethernet network {0}' 	-f $name		
-		 [void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title  -ovTask 'oneview_ethernet_network'))	
+		 [void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title  -OVTask 'oneview_ethernet_network'))	
 		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type					-value $_category				-indentlevel $indentDataStart ))
 		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
 		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		ethernetNetworkType		-value $vLANType				-indentlevel $indentDataStart ))
@@ -3247,7 +3247,7 @@ Function Import-YMLfcNetwork([string]$sheetName, [string]$WorkBook, [string]$YML
 		if ($vlanId) # fcoe network
 		{
 			$title 					= 'Create fcoe network {0}' 				-f $name		
-			[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -ovTask 'oneview_fcoe_network'))
+			[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -OVTask 'oneview_fcoe_network'))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))	
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		vlanId					-value $vlanId					-indentlevel $indentDataStart ))		
 		}
@@ -3256,7 +3256,7 @@ Function Import-YMLfcNetwork([string]$sheetName, [string]$WorkBook, [string]$YML
 
 			$_category 				= $YMLtype540Enum.item('fcnetwork')
 			$title 					= 'Create fc network {0}' 				-f $name		
-			[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -ovTask 'oneview_fc_network'))				
+			[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title -comment $comment -OVTask 'oneview_fc_network'))				
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type					-value $_category				-indentlevel $indentDataStart ))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		fabricType				-value $fabricType				-indentlevel $indentDataStart ))
@@ -3417,7 +3417,7 @@ Function Import-YMLnetworkSet([string]$sheetName, [string]$WorkBook, [string]$YM
 		 
 		 $comment 			= '# ---------- Network set  {0}' 	-f $name
 		 $title 			= 'Create network set {0}' 			-f $name		
-		 [void]$YMLscriptCode.Add((Generate-ymlTask 		-title $title -comment $comment -ovTask 'oneview_network_set'))	
+		 [void]$YMLscriptCode.Add((Generate-ymlTask 		-title $title -comment $comment -OVTask 'oneview_network_set'))	
 
 		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name					-value $name					-indentlevel $indentDataStart ))
 		 [void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		networkSetType			-value $networkSetType			-indentlevel $indentDataStart ))
@@ -4079,7 +4079,7 @@ Function Import-YMLUplinkSet([string]$sheetName, [string]$WorkBook, [string]$YML
 		#### --- End Query section 
 
 		$title 			= ' Create uplink set {0} for LIG {1}' 			-f $uplName, $ligName	
-		[void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title -ovTask 'oneview_logical_interconnect_group'))
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title -OVTask 'oneview_logical_interconnect_group'))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'name'				-value $ligName							-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'uplinkSets'												-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			'name'			-value $uplName 		-isVar $True	-indentlevel ($indentDataStart+1) ))
@@ -4242,7 +4242,7 @@ Function Import-YMLligSNMP([string]$sheetName, [string]$WorkBook, [string]$YMLfi
 		$comment 			= '# ---------- snmp Configuration for LIG {0}' 				-f $ligName
 		$title 				= ' Create snmp Configuration for LIG {0}' 						-f $ligName	
 
-		[void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title -comment $comment -ovTask 'oneview_logical_interconnect_group'))
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 -title $title -comment $comment -OVTask 'oneview_logical_interconnect_group'))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		'name'				-value $ligName					-indentlevel $indentDataStart ))
 	
 		if ($communityString)
@@ -4423,7 +4423,7 @@ Function Import-YMLLogicalInterconnectGroup([string]$sheetName, [string]$WorkBoo
 		$comment 					= '# ---------- Logical Interconnect Group {0}' 	-f $ligName
 		$title 						= ' Create logical InterConnect Group {0}' 			-f $ligName	
 
-		[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -ovTask 'oneview_logical_interconnect_group'))
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -OVTask 'oneview_logical_interconnect_group'))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name				-value $name							-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		enclosureType		-value $enclosureType					-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		interconnectBaySet	-value $ICBaySet						-indentlevel $indentDataStart ))	
@@ -5532,13 +5532,13 @@ Function Import-YMLEnclosureGroup([string]$sheetName, [string]$WorkBook, [string
 			foreach ($_ligName in $varArray)
 			{
 				$title 						= ' Get lig {0} Information' 			-f $_ligName	
-				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 	-ovTask 'oneview_logical_interconnect_group_facts'))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 	-OVTask 'oneview_logical_interconnect_group_facts'))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name			-value $_ligName									-indentlevel 2 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 										-indentlevel 1 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	lig			-value "'{{logical_interconnect_groups}}' "			-indentlevel 2 ))
 				
 				$title 						= ' Try SAS lig {0} Information' 			-f $_ligName	
-				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 	-ovTask 'oneview_sas_logical_interconnect_group_facts'))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 	-OVTask 'oneview_sas_logical_interconnect_group_facts'))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name			-value $_ligName									-indentlevel 2 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 		-isVar $True 										-indentlevel 1 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	lig			-value "'{{sas_logical_interconnect_groups}}' "		-indentlevel 2 ))
@@ -5566,7 +5566,7 @@ Function Import-YMLEnclosureGroup([string]$sheetName, [string]$WorkBook, [string
 				$_range			= $_range.Trim() 	
 				$var_subnet_uri = "var_{0}_subnet_uri" 	-f $_range
 				$title			= ' Get subnet URI for subnet {0}' 			-f $_range	
-				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_id_pools_ipv4_range_facts'))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-OVTask 'oneview_id_pools_ipv4_range_facts'))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value $_range								-indentlevel 2 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 								-indentlevel 1 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$var_subnet_uri	-value "'{{id_pools_ipv4_ranges[0].uri}}'"	-indentlevel 2 ))
@@ -5579,7 +5579,7 @@ Function Import-YMLEnclosureGroup([string]$sheetName, [string]$WorkBook, [string
 		
 
 		$title 						= ' Create Enclosure group' 			-f $name	
-		[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title 	-ovTask 'oneview_enclosure_group'))
+		[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title 	-OVTask 'oneview_enclosure_group'))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name						-value $name					-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	enclosureCount				-value $enclosureCount			-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	powerMode					-value $powerMode				-indentlevel $indentDataStart ))
@@ -5838,7 +5838,7 @@ Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [stri
 				$varName 			= 'var_{0}_Name' 						-f $_sn
 				$_filter			= "item.serialNumber == '{0}'"			-f $_sn
 				$title 				= 'Get URI for enclosure with SN {0}' 	-f $_sn
-				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_enclosure_facts'))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-OVTask 'oneview_enclosure_facts'))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 							-indentlevel 1 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$varUri			-value "'{{item.uri}}' "				-indentlevel 2 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	$varName		-value "'{{item.name}}' "				-indentlevel 2 ))
@@ -5848,7 +5848,7 @@ Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [stri
 
 			# --- Get uri of enclosure group
 			$title 				= 'Get URI for enclosure group {0}' 	-f $enclosureGroup
-			[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_enclosure_group_facts'))
+			[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-OVTask 'oneview_enclosure_group_facts'))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name			-value $enclosureGroup						-indentlevel 2 ))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 								-indentlevel 1 ))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	var_eg_uri		-value "`"{{enclosure_groups['uri']}}`" "	-indentlevel 2 ))
@@ -5857,7 +5857,7 @@ Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [stri
 			if ($fwBaseline)
 			{
 				$title 				= 'Get URI for firmware {0}' 	-f $fwBaseline
-				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-ovTask 'oneview_firmware_driver_facts'))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -isData $False 		-OVTask 'oneview_firmware_driver_facts'))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	name			-value $fwBaseline							-indentlevel 2 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix set_fact 			-isVar $True 								-indentlevel 1 ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	var_fw_uri		-value "'{{firmware_drivers[0].uri}}' "		-indentlevel 2 ))			
@@ -5868,7 +5868,7 @@ Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [stri
 
 			# --- Create logical enclosure 
 			$title 				= 'Configure logical enclosures {0}' 	-f $name
-			[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title 	-comment $comment		-ovTask 'oneview_logical_enclosure'))
+			[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title 	-comment $comment		-OVTask 'oneview_logical_enclosure'))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value $name						-indentlevel $indentDataStart ))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix enclosureGroupUri	-value "'{{var_eg_uri}}'"			-indentlevel $indentDataStart ))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix enclosureUris											-indentlevel $indentDataStart ))
@@ -5891,7 +5891,7 @@ Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [stri
 					$newName 			= $newNameArr[$i]
 
 					$title 				= 'Rename enclosures'
-					[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -iseTag $True			-ovTask 'oneview_enclosure'))
+					[void]$YMLscriptCode.Add((Generate-ymlTask 	-title $title -iseTag $True			-OVTask 'oneview_enclosure'))
 					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value "'{{$varName}}'"			-indentlevel $indentDataStart ))
 					[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix newName				-value $newName					-indentlevel $indentDataStart ))	
 				}
@@ -5902,7 +5902,7 @@ Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [stri
 			if ($manualAddresses)
 			{
 				$title 				= 'Configure logical enclosures {0} with EBIPA' 	-f $name
-				[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title 				-state reconfigured		-ovTask 'oneview_logical_enclosure'))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title 				-state reconfigured		-OVTask 'oneview_logical_enclosure'))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name				-value $name						-indentlevel $indentDataStart ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix ipAddressingMode	-value 	Manual						-indentlevel $indentDataStart ))
 
@@ -5998,7 +5998,7 @@ Function Import-YMLlogicalEnclosure([string]$sheetName, [string]$WorkBook, [stri
 			if ($fwBaseline)
 			{
 				$title 				= 'Update firmware on logical enclosures {0} ' 					-f $name
-				[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title 					-state firmware_updated		-ovTask 'oneview_logical_enclosure'))
+				[void]$YMLscriptCode.Add((Generate-ymlTask 			-title $title 					-state firmware_updated		-OVTask 'oneview_logical_enclosure'))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix name					-value $name						-indentlevel $indentDataStart ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix firmware													-indentlevel $indentDataStart ))
 				[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 	firmwareBaselineUri 						-value 	"'{{var_fw_uri}}'" -indentlevel ($indentDataStart +1) ))
@@ -6307,19 +6307,17 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						$userDefined 	= $conn.userDefined
 						if ($userDefined)
 						{
-							$macType 	= $Conn.macType
+							#HKD01 $macType 	= $Conn.macType
 							$mac	 	= $Conn.mac
-							$wwpnType	= $Conn.wwpnType
+							#HKD01 $wwpnType	= $Conn.wwpnType
 							$wwpn		= $Conn.wwpn
 							$wwnn		= $Conn.wwnn
 							$_macParam 	= if ($mac)		{ ' -mac {0} '  -f $mac} 	else {''}
 							$_wwnnParam = if ($wwnn)	{ ' -wwnn {0} ' -f $wwnn}	else {''}
 							$_wwpnParam = if ($wwpn)	{ ' -wwpn {0} ' -f $wwpn}	else {''}
 
-							if ($_macParam  -or $_wwnnParam -or $_wwpnParam)
-							{
-								$userDefinedParam = ' -UserDefined:$True ' + $_macParam + $_wwpnParam + $_wwnnParam
-							}
+							#HKD01
+							$userDefinedParam = ' -UserDefined:$True ' + $_macParam + $_wwpnParam + $_wwnnParam
 						}
 
 					}
@@ -7232,7 +7230,7 @@ Function Import-YMLProfileorTemplate([string]$sheetName, [string]$WorkBook, [str
 		{
 			newLine	-code $YMLscriptCode
 			$title 			= ' Power off server {0}' 	-f $serverHardware
-			[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title  -ovTask 'oneview_server_hardware'))
+			[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title  -OVTask 'oneview_server_hardware'))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name				-value "'$serverHardware'"				-indentlevel $indentDataStart )) 
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		powerStateData 												-indentlevel $indentDataStart ))
 			[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 			powerState			-value "'Off'" 						-indentlevel ($indentDataStart +1) ))
@@ -7247,7 +7245,7 @@ Function Import-YMLProfileorTemplate([string]$sheetName, [string]$WorkBook, [str
 			$title 			= ' Create server profile {0} from template  {1}' 		-f $spName, $template
 		}
 
-		[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -ovTask $newFact))
+		[void]$YMLscriptCode.Add((Generate-ymlTask 		 	-title $title -comment $comment -OVTask $newFact))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		name				-value $spName							-indentlevel $indentDataStart ))
 		[void]$YMLscriptCode.Add((Generate-YMLCustomVarCode -prefix 		type				-value $_spType							-indentlevel $indentDataStart ))	
 
