@@ -864,8 +864,10 @@ class connection
 	[Boolean]$boot
 	[string]$priority
 	[string]$bootVolumeSource
-
-	[Boolean]$userDefined 				= $False
+	[string]$bootTarget
+	[string]$targetLUN 					# LunID
+	
+	[Boolean]$userDefined 			= $False			
 	[string]$macType
 	[string]$mac
 	[string]$wwpnType
@@ -3195,11 +3197,18 @@ function Export-ProfileorTemplate($connection,$sheetName, $destWorkbook,$profLis
 
 			$priority 			= $bootSettings.priority
 			$bootVolumeSource 	= $bootSettings.bootVolumeSource
-			
-			
+
+			if ($bootVolumeSource -eq 'UserDefined')		#HKD02
+			{
+				$_conn.bootTarget 	= $boot.arrayTarget
+				$_conn.targetLun 	= $boot.lun
+			}
+			$_conn.bootVolumeSource	= $bootVolumeSource
+
 			$_conn.boot 		= -not($priority -eq 'NotBootable')
 			$_conn.priority 	= $priority 
-			$_conn.bootVolumeSource	= $bootVolumeSource
+
+			
 
 			if ($isSp)
 			{

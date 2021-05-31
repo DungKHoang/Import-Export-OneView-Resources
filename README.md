@@ -179,6 +179,11 @@ https://github.com/DungKHoang/Examples-OneView-Ansible-Playbook
 Enjoy!
 
 
+## Updates
 
-
+   | Date            | Description                          |
+   | ----------------|:------------------------------------:|
+   |  June 2021      |  - Fix issue #5                      |
+   |                 |  - Validate custom MAC/WWPN in SP    |
+   |                 |  - Fix Boot from SAN with Target Lun |
 

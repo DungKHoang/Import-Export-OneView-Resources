@@ -910,7 +910,10 @@ class connection
 	[Boolean]$boot
 	[string]$priority
 	[string]$bootVolumeSource
-	[boolean]$userDefined
+	[string]$bootTarget
+	[string]$targetLUN 					# LunID
+
+	[boolean]$userDefined = $False
 	[string]$macType
 	[string]$mac
 	[string]$wwpnType
@@ -6299,17 +6302,20 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					$bootable			= $conn.boot
 					$priority       	= $conn.priority
 					$bootVolumeSource 	= $conn.bootVolumeSource
+					$targetLUN 			= $conn.targetLun
+					$bootTarget 		= $conn.bootTarget
 
 
 					if ($isSp)
 					{
+						### Custom MAC and WWPN
 						$userDefinedParam 	= ''
 						$userDefined 	= $conn.userDefined
 						if ($userDefined)
 						{
-							#HKD01 $macType 	= $Conn.macType
+							$macType 	= $Conn.macType
 							$mac	 	= $Conn.mac
-							#HKD01 $wwpnType	= $Conn.wwpnType
+							$wwpnType	= $Conn.wwpnType
 							$wwpn		= $Conn.wwpn
 							$wwnn		= $Conn.wwnn
 							$_macParam 	= if ($mac)		{ ' -mac {0} '  -f $mac} 	else {''}
@@ -6318,6 +6324,13 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 							#HKD01
 							$userDefinedParam = ' -UserDefined:$True ' + $_macParam + $_wwpnParam + $_wwnnParam
+						}
+
+						### Boot from SAN
+						$_bootFromSAN 		= " -bootVolumeSource $bootVolumeSourcc "
+						if ($bootVolumeSource -eq 'UserDefined')
+						{
+							$_bootFromSAN 	+= " -bootTarget $bootTarget -targetLun $targetLUN "
 						}
 
 					}
@@ -6334,7 +6347,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 					if ($bootable)
 					{
-						$bootParam 	= ' -bootable:${0} -priority {1} -bootVolumeSource {2} ' -f $bootable,$priority,$bootVolumeSource
+						$bootParam 	= ' -bootable:${0} -priority {1} {2} ' -f $bootable,$priority,$_bootFromSAN
 					}
 
 					# TBD FibreChannel Bfs
