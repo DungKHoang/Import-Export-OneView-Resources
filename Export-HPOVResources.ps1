@@ -864,8 +864,8 @@ class connection
 	[Boolean]$boot
 	[string]$priority
 	[string]$bootVolumeSource
-	[string]$bootTarget
-	[string]$targetLUN 					# LunID
+	[string]$targets				#HKD03
+
 	
 	[Boolean]$userDefined 			= $False			
 	[string]$macType
