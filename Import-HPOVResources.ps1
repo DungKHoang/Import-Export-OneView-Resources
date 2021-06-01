@@ -6302,8 +6302,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					$bootable			= $conn.boot
 					$priority       	= $conn.priority
 					$bootVolumeSource 	= $conn.bootVolumeSource
-					$targetLUN 			= $conn.targetLun
-					$bootTarget 		= $conn.bootTarget
+					$targets 			= $conn.targets   		#HKD03
 
 
 					if ($isSp)
@@ -6330,7 +6329,14 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						$_bootFromSAN 		= " -bootVolumeSource $bootVolumeSourcc "
 						if ($bootVolumeSource -eq 'UserDefined')
 						{
-							$_bootFromSAN 	+= " -TargetWwpn $bootTarget -LUN $targetLUN " #HKD02
+							if ($targets)    #HKD03
+							{
+								$targetArr		= $targets -split $SepChar
+								$targetWWpn		= $targetArr[0].targetWWpn
+								$lun 			= $targetArr[0].lun
+								$_bootFromSAN 	+= " -TargetWwpn $targetWWpn -LUN $lun " #HKD03
+							}
+							
 						}
 
 					}

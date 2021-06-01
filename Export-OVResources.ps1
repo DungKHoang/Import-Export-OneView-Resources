@@ -3199,8 +3199,16 @@ function Export-ProfileorTemplate($connection,$sheetName, $destWorkbook,$profLis
 			
 			if ($bootVolumeSource -eq 'UserDefined')		#HKD02
 			{
-				$_conn.bootTarget 	= $bootSettings.arrayTarget     #HKD02
-				$_conn.targetLun 	= $bootSettings.lun
+				$targetArray 		= [System.Collections.ArrayList]::new()	#HKD03
+				foreach ($t in $bootSettings.targets)
+				{
+					$s 			= '@{ ' + 'arrayWwpn = {0} ; lun = {1} ' -f $t.arrayWwpn, $t.lun + '}'
+					[void]$targetArray.Add($s)
+				}
+				if ($targetArray)
+				{
+					$_conn.targets 	= $targetArray -join $SepChar
+				}
 			}
 			$_conn.bootVolumeSource	= $bootVolumeSource
 			
