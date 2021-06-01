@@ -6330,7 +6330,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						$_bootFromSAN 		= " -bootVolumeSource $bootVolumeSourcc "
 						if ($bootVolumeSource -eq 'UserDefined')
 						{
-							$_bootFromSAN 	+= " -bootTarget $bootTarget -targetLun $targetLUN "
+							$_bootFromSAN 	+= " -TargetWwpn $bootTarget -LUN $targetLUN "
 						}
 
 					}

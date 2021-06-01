@@ -3199,8 +3199,8 @@ function Export-ProfileorTemplate($connection,$sheetName, $destWorkbook,$profLis
 			
 			if ($bootVolumeSource -eq 'UserDefined')		#HKD02
 			{
-				$_conn.bootTarget 	= $boot.arrayTarget
-				$_conn.targetLun 	= $boot.lun
+				$_conn.bootTarget 	= $bootSettings.arrayTarget
+				$_conn.targetLun 	= $bootSettings.lun
 			}
 			$_conn.bootVolumeSource	= $bootVolumeSource
 			
