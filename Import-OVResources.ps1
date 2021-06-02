@@ -6359,7 +6359,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 
 					if ($bootable)
-					8
+					{
 						$bootParam 	= ' -bootable -priority {0} {1} ' -f $priority,$_bootfromSAN 	#Issue 9
 					}
 
