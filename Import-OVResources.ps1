@@ -6715,7 +6715,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 				{
 					$bootOrder 	 = "@('" + $order.Replace($SepChar,"'$Comma'") + "')" 
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'bootOrder' 		-Value ('{0}' -f $bootOrder) -indentlevel 1)) 
-					$boParam     = ' -ManageBoot ${0} -BootOrder $bootOrder' -f $bo
+					$boParam     = ' -ManageBoot:${0} -BootOrder $bootOrder ' -f $bo   #Issue #8
 				}
 
 				$bmConsistencyParam	= $null
