@@ -6335,7 +6335,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						{
 							if ($targets)    #HKD03
 							{
-								$targetArr		= $targets -split $SepChar
+								$targetArr		= $targets.Split($SepChar)
 								$_first 		= $targetArr[0].Replace('@{','').Replace('}','').split(';')
 								# Limitation of OV cmdlet that allows only ONE WWWpn, and lun
 								$_tw			= $_first[0].Split('=')[1]
@@ -6711,11 +6711,11 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					$bmParam 	+= ' -SecureBoot $secureBoot'
 				}
 
-				if ($order)
+				if ($order -and $bo)
 				{
 					$bootOrder 	 = "@('" + $order.Replace($SepChar,"'$Comma'") + "')" 
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'bootOrder' 		-Value ('{0}' -f $bootOrder) -indentlevel 1)) 
-					$boParam     = ' -ManageBoot:${0} -BootOrder $bootOrder ' -f $bo   #Issue #8
+					$boParam     = ' -ManageBoot -BootOrder $bootOrder '   #Issue #8
 				}
 
 				$bmConsistencyParam	= $null
