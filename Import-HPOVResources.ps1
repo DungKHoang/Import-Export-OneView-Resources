@@ -911,7 +911,7 @@ class connection
 	[string]$priority
 	[string]$bootVolumeSource
 	[string]$targets				#HKD03
-	
+
 
 	[boolean]$userDefined    = $False
 	[string]$macType
@@ -6211,6 +6211,10 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix status -value $value  -indentlevel 1))
 				
 		}
+		else 		# Issue 9 - HKD04
+		{
+			$hwParam 		= 	' -AssignmentType unassigned '		
+		}
 
 	if ($Null -eq $template) 			# Standalone SP or SPT
 	{
@@ -6326,14 +6330,19 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 						}
 
 						### Boot from SAN
-						$_bootFromSAN 		= " -bootVolumeSource $bootVolumeSourcc "
+						$_bootFromSAN 		= " -bootVolumeSource $bootVolumeSource "
 						if ($bootVolumeSource -eq 'UserDefined')
 						{
 							if ($targets)    #HKD03
 							{
 								$targetArr		= $targets -split $SepChar
-								$targetWWpn		= $targetArr[0].targetWWpn
-								$lun 			= $targetArr[0].lun
+								$_first 		= $targetArr[0].Replace('@{','').Replace('}','').split(';')
+								# Limitation of OV cmdlet that allows only ONE WWWpn, and lun
+								$_tw			= $_first[0].Split('=')[1]
+								$targetWWpn		= $_tw.Trim()	
+								$targetWWpn 	= $targetWWpn -replace '(..)(?=.)','$1:' # convert to WWN format
+								$_l				= $_first[1].Split('=')[1]
+								$lun 			= $_l.Trim()
 								$_bootFromSAN 	+= " -TargetWwpn $targetWWpn -LUN $lun " #HKD03
 							}
 							
@@ -6353,7 +6362,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 
 					if ($bootable)
 					{
-						$bootParam 	= ' -bootable:${0} -priority {1} {2} ' -f $bootable,$priority,$_bootfromSAN
+						$bootParam 	= ' -bootable -priority {0} {1} ' -f $priority,$_bootfromSAN 	#Issue 8
 					}
 
 					# TBD FibreChannel Bfs
@@ -7015,7 +7024,11 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		}
 		else # SPT or standalone profile
 		{
-			$prefix 	= $newCmd + '	 	 -Name $name {0}{1}{2}{3}{4} `' -f $descParam, $spDescParam, $shtParam, $egParam, $affinityParam
+
+			$_prefix 	= $newCmd + '	 	 -Name $name {0}{1}{2}{3}{4} ' -f $descParam, $spDescParam, $shtParam, $egParam, $affinityParam
+			# Issue #9 HKD04
+			$prefix 	= if ($isSP) 	{ '{0} {1} `' -f $_prefix, $hwParam } 	else 	{ '{0} `' -f $_prefix }
+
 			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 1))
 
 			if ($fwParam)
