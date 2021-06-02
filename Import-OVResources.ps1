@@ -6340,7 +6340,6 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 								# Limitation of OV cmdlet that allows only ONE WWWpn, and lun
 								$_tw			= $_first[0].Split('=')[1]
 								$targetWWpn		= $_tw.Trim() 
-								$targetWWpn 	= $targetWWpn -replace '(..)(?=.)','$1:' # convert to WWN format
 								$_l				= $_first[1].Split('=')[1]
 								$lun 			= $_l.Trim()
 								$_bootFromSAN 	+= " -TargetWwpn $targetWWpn -LUN $lun " #HKD03

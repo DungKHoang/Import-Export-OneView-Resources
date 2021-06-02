@@ -3202,8 +3202,9 @@ function Export-ProfileorTemplate($connection,$sheetName, $destWorkbook,$profLis
 			{
 				$targetArray 		= [System.Collections.ArrayList]::new()	#HKD03
 				foreach ($t in $bootSettings.targets)
-				{
-					$s 			= '@{ ' + 'arrayWwpn = {0} ; lun = {1} ' -f $t.arrayWwpn, $t.lun + '}'
+				{   
+					$targetWWpn 	= $t.arrayWwpn -replace '(..)(?=.)','$1:' # convert to WWN format
+					$s 				= '@{ ' + 'arrayWwpn = {0} ; lun = {1} '  -f $targetWWpn , $t.lun + '}'
 					[void]$targetArray.Add($s)
 				}
 				if ($targetArray)
