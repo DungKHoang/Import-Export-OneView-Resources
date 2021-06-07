@@ -6094,6 +6094,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		$sht 					= $prof.serverHardwareType
 		$eg 					= $prof.enclosureGroupName
 		$affinity 				= $prof.affinity
+        $serialNumberType       = $prof.serialNumberType
 
 		$manageFirmware			= [Boolean]($prof.manageFirmware)
 		$fwBaseline				= $prof.firmwareBaselineName
@@ -6214,6 +6215,11 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		{
 			$hwParam 		= 	' -AssignmentType unassigned '		
 		}
+
+        if ($serialNumberType -eq 'Physical')
+        {
+            $snParam        =   ' -SnAssignment Physical '
+        }
 
 	if ($Null -eq $template) 			# Standalone SP or SPT
 	{
@@ -7024,7 +7030,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		{
 			$_prefix 	= $newCmd + '	 	 -Name $name {0}{1}{2}{3}{4} `' -f $descParam, $spDescParam, $shtParam, $egParam, $affinityParam
 			# Issue #9 HKD04
-			$prefix 	= if ($isSP) 	{ '{0} {1} `' -f $_prefix, $hwParam } 	else 	{ '{0} `' -f $_prefix }
+			$prefix 	= if ($isSP) 	{ '{0} {1} {2} `' -f $_prefix, $hwParam, $snParam } 	else 	{ '{0} `' -f $_prefix }
 			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 1))
 
 			if ($fwParam)
@@ -7188,6 +7194,7 @@ Function Import-YMLProfileorTemplate([string]$sheetName, [string]$WorkBook, [str
 		$sht 					= $prof.serverHardwareType
 		$eg 					= $prof.enclosureGroupName
 		$affinity 				= $prof.affinity
+        $serialNumberType       = $prof.serialNumberType
 
 		$manageFirmware			= [Boolean]($prof.manageFirmware)
 		$fwBaseline				= $prof.firmwareBaselineName
@@ -8871,9 +8878,3 @@ else
 {
     write-host -ForegroundColor Yellow ' No Excel workbook provided. Skip importing......'    
 }
-
-
-
-
-
-
