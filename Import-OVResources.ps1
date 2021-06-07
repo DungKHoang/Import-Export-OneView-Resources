@@ -6094,7 +6094,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		$sht 					= $prof.serverHardwareType
 		$eg 					= $prof.enclosureGroupName
 		$affinity 				= $prof.affinity
-        $serialNumberType       = $prof.serialNumberType
+        $serialNumberType       = $prof.serialNumberType #AJB
 
 		$manageFirmware			= [Boolean]($prof.manageFirmware)
 		$fwBaseline				= $prof.firmwareBaselineName
@@ -6216,7 +6216,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 			$hwParam 		= 	' -AssignmentType unassigned '		
 		}
 
-        if ($serialNumberType -eq 'Physical')
+        if ($serialNumberType -eq 'Physical') #AJB
         {
             $snParam        =   ' -SnAssignment Physical '
         }
@@ -7030,7 +7030,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 		{
 			$_prefix 	= $newCmd + '	 	 -Name $name {0}{1}{2}{3}{4} `' -f $descParam, $spDescParam, $shtParam, $egParam, $affinityParam
 			# Issue #9 HKD04
-			$prefix 	= if ($isSP) 	{ '{0} {1} {2} `' -f $_prefix, $hwParam, $snParam } 	else 	{ '{0} `' -f $_prefix }
+			$prefix 	= if ($isSP) 	{ '{0} {1} {2} `' -f $_prefix, $hwParam, $snParam } 	else 	{ '{0} `' -f $_prefix } #AJB
 			[void]$PSscriptCode.Add(( Generate-PSCustomVarCode -Prefix $prefix -isVar $False -indentlevel 1))
 
 			if ($fwParam)
