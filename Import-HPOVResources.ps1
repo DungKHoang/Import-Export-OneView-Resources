@@ -6349,7 +6349,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 								$_tw2			= $_tw2.Trim() 
 								$_l2			= $_second[1].Split('=')[1]
 								$_l2 			= $_l2.Trim()
-								$value 			= '[PSCustomObject]@' + "{arrayWwpn = $_tw2 ; lun = $_l2 }"
+								$value 			= '[PSCustomObject]@' + "{arrayWwpn = `"$_tw2`" ; lun = $_l2 }"
 								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'target2' -value $value   -indentlevel 1))
 
 							}
