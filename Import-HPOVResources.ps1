@@ -6343,6 +6343,15 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 								$_l				= $_first[1].Split('=')[1]
 								$lun 			= $_l.Trim()
 								$_bootFromSAN 	+= " -TargetWwpn $targetWWpn -LUN $lun " #HKD03
+								#HKD07 - Add second boot target
+								$_second 		= $targetArr[1].Replace('@{','').Replace('}','').split(';')
+								$_tw2			= $_second[0].Split('=')[1]
+								$_tw2			= $_tw2.Trim() 
+								$_l2			= $_second[1].Split('=')[1]
+								$_l2 			= $_l2.Trim()
+								$value 			= '[PSCustomObject]@' + "{arrayWwpn = $_tw2 ; lun = $_l2 }"
+								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'target2' -value $value   -indentlevel 1))
+
 							}
 							
 						}
@@ -6376,6 +6385,12 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '{0}   = New-HPOVServerProfileConnection {1} -ConnectionID {2} `' 	-f $_connection,$nameParam, $id)  		-isVar $False  -indentlevel 1))
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '  -PortId "{0}" -RequestedBW {1} `' 								-f $portId , $requestedMbps) 		-isVar $False  -indentlevel 11))
 					[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '  -network $network {0} {1} ' 										-f $bootParam, $userDefinedParam)	-isVar $False  -indentlevel 11))
+					
+					#HKD07 - Add second Target
+					if ($targets)
+					{
+						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '{0}.boot.targets   += ${1}' 	-f $_connection, 'target2')  -isVar $False -indentlevel 1))
+					}
 					
 					newLine
 					[void]$connectionArray.Add($_connection)
