@@ -3194,31 +3194,33 @@ function Export-ProfileorTemplate($connection,$sheetName, $destWorkbook,$profLis
 			$_conn.requestedMbps= $conn.requestedMbps
 			$_conn.requestedVFs = $Conn.requestedVFs
 			$_conn.lagName 		= $conn.lagName
+			$priority 			= ""
+			$bootVolumeSource	= ""
 
-			$priority 			= $bootSettings.priority
-			$bootVolumeSource 	= $bootSettings.bootVolumeSource
+			if($bootSettings){
+				$priority 			= $bootSettings.priority
+				$bootVolumeSource 	= $bootSettings.bootVolumeSource
 
-			if ($bootVolumeSource -eq 'UserDefined')		#HKD02
-			{
-				$targetArray 		= [System.Collections.ArrayList]::new()	#HKD03
-				foreach ($t in $bootSettings.targets)
-				{   
-					$targetWWpn 	= $t.arrayWwpn -replace '(..)(?=.)','$1:' # convert to WWN format
-					$s 				= '@{ ' + 'arrayWwpn = {0} ; lun = {1} '  -f $targetWWpn , $t.lun + '}'
-					[void]$targetArray.Add($s)
-				}
-				if ($targetArray)
+				if ($bootVolumeSource -eq 'UserDefined')		#HKD02
 				{
-					$_conn.targets 	= $targetArray -join $SepChar
+					$targetArray 		= [System.Collections.ArrayList]::new()	#HKD03
+					foreach ($t in $bootSettings.targets)
+					{   
+						$targetWWpn 	= $t.arrayWwpn -replace '(..)(?=.)','$1:' # convert to WWN format
+						$s 				= '@{ ' + 'arrayWwpn = {0} ; lun = {1} '  -f $targetWWpn , $t.lun + '}'
+						[void]$targetArray.Add($s)
+					}
+					if ($targetArray)
+					{
+						$_conn.targets 	= $targetArray -join $SepChar
+					}
+
 				}
+				$_conn.bootVolumeSource	= $bootVolumeSource
 
-			}
-			$_conn.bootVolumeSource	= $bootVolumeSource
-
-			$_conn.boot 		= -not($priority -eq 'NotBootable')
-			$_conn.priority 	= $priority 
-
-			
+				$_conn.boot 		= -not($priority -eq 'NotBootable')
+				$_conn.priority 	= $priority 
+			}			
 
 			if ($isSp)
 			{
