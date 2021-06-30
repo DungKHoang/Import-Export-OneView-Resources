@@ -3084,7 +3084,7 @@ function Export-ProfileorTemplate($connection,$sheetName, $destWorkbook,$profLis
 		$biosSettings 		= $bios.overriddenSettings
 
 		$ilo 				= $InputObject.managementProcessor
-		$isManageILO 		= $ilo.manageMp
+		$isManageILO 		= $ilo.manageIlo
 		$iloSettings 		= $ilo.mpSettings
 
 		$hideFlexNics       = $InputObject.hideUnusedFlexNics
