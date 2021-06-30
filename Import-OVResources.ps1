@@ -6350,19 +6350,18 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 								$lun 			= $_l.Trim()
 								$_bootFromSAN 	+= " -TargetWwpn $targetWWpn -LUN $lun " #HKD03
 								#HKD07 - Add second boot target
-								$_second 		= $targetArr[1].Replace('@{','').Replace('}','').split(';')
-								$_tw2			= $_second[0].Split('=')[1]
-								$_tw2			= $_tw2.Trim() 
-								$_l2			= $_second[1].Split('=')[1]
-								$_l2 			= $_l2.Trim()
-								$value 			= '[PSCustomObject]@' + "{arrayWwpn = `"$_tw2`" ; lun = $_l2 }"
-								[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'target2' -value $value   -indentlevel 1))
-								
-
-
+								if($targetArr[1])
+                                {
+									$_second 		= $targetArr[1].Replace('@{','').Replace('}','').split(';')
+									$_tw2			= $_second[0].Split('=')[1]
+									$_tw2			= $_tw2.Trim() 
+									$_l2			= $_second[1].Split('=')[1]
+									$_l2 			= $_l2.Trim()
+									$value 			= '[PSCustomObject]@' + "{arrayWwpn = `"$_tw2`" ; lun = $_l2 }"
+									[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix 'target2' -value $value   -indentlevel 1))
+								}
 							}
 						}
-
 					}
 
 
