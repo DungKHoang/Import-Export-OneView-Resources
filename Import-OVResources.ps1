@@ -6826,7 +6826,7 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 								$iloAdminParam 			+= ' -RemoveLocalAdministratorAccount ${0} ' -f $s.deleteAdministratorAccount 
 								if ($s.adminPassword)
 								{
-									$iloAdminParam 		+= ' -LocalAdministratorPassword $({0} | ConvertTo-SecureString -AsPlainText -Force )' -f $s.adminPassword
+									$iloAdminParam 		+= ' -LocalAdministratorPassword $("{0}" | ConvertTo-SecureString -AsPlainText -Force )' -f $s.adminPassword
 								}
 							}					
 						
