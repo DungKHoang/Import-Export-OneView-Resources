@@ -6395,7 +6395,11 @@ Function Import-ProfileorTemplate([string]$sheetName, [string]$WorkBook, [string
 					#HKD07 - Add second Target
 					if ($targets)
 					{
-						[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '{0}.boot.targets   += ${1}' 	-f $_connection, 'target2')  -isVar $False -indentlevel 1))
+						$targetArr		= $targets.Split($SepChar)
+						if($targetArr[1])
+						{
+							[void]$PSscriptCode.Add((Generate-PSCustomVarCode -Prefix ( '{0}.boot.targets   += ${1}' 	-f $_connection, 'target2')  -isVar $False -indentlevel 1))
+						}
 					}
 					newLine
 					[void]$connectionArray.Add($_connection)
